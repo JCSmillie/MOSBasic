@@ -20,38 +20,47 @@
 
 IFS=$'\n'
 
-#set -e
+CMDRAN="MOSBASIC"
+
+set -e
 export BAGCLI_WORKDIR=$(cd $(dirname $0) && pwd)
 # shellcheck source=common
 . "$BAGCLI_WORKDIR/common"
 
 cli_help() {
   cli_name=${0##*/}
+  cli_graffitti
   echo "
+
 $cli_name
 Brot and Games CLI
 Version: $(cat $BAGCLI_WORKDIR/VERSION)
 https://github.com/brotandgames/bagcli
 Usage: $cli_name [command]
 Commands:
-  deploy    Deploy
-  *         Help
+  deploy    		Deploy
+  datadump		Dump info for all iOS devices from Mosyle
+  			to local reference files.
+  *         		Help
 "
   exit 1
 }
 
-cli_log "Exporting config ..."
 [ ! -f "$BAGCLI_WORKDIR/config" ] \
   && echo "ERROR: No $BAGCLI_WORKDIR/config file found. " \
   && echo "cp $BAGCLI_WORKDIR/config.template $BAGCLI_WORKDIR/config and adjust." \
   && exit 1
 
-export $(cat "$BAGCLI_WORKDIR/config" | xargs)
+#export $(cat "$BAGCLI_WORKDIR/config" | xargs)
+source "$BAGCLI_WORKDIR/config"
 
 case "$1" in
   deploy|d)
     "$BAGCLI_WORKDIR/commands/deploy" "$2" | tee -ia "$BAGCLI_WORKDIR/logs/deploy_${2}.log"
     ;;
+datadump)
+	"$BAGCLI_WORKDIR/commands/mosdatadump.sh"
+	;; 
   *)
     cli_help
     ;;

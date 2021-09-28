@@ -10,7 +10,28 @@
 #
 
 #Common Variables
-LOG="~/MOSBasic/actions.log"
+LOCALCONF="/users/jsmillie/"
+LOG="$LOCALCONF/MOSBasic/actions.log"
+
+#The source file is a local file which holds a variable containing
+#our MosyleAPI key.  Should look like:
+#     MOSYLE_API_key="<<<<<<<<OUR-KEY>>>>>>>>"
+# This file should have rights on it as secure as possible.  Runner
+# of our scripts needs to read it but no one else.
+source $LOCALCONF/.MosyleAPI
+APIKey="$MOSYLE_API_key"
+
+# IncidentIQ Support -- This is not REQUIRED but is dependant for some
+# functions.  In the future this could be modular too so common results
+# would work from any source someone would just have to write the bridge.
+#IIQSup="YES"
+source $LOCALCONF/.incidentIQ
+#apitoken, siteid, and baseurl all come from the source file above.
+IIQAuth=$(echo "Authorization: Bearer $apitoken")
+
+
+
+#Output files of current enrolled Mosyle devices.  
 TEMPOUTPUTFILE_Stu="/tmp/Mosyle_active_iOS_Tagz_StudentiPads.txt"
 TEMPOUTPUTFILE_Teachers="/tmp/Mosyle_active_iOS_Tagz_TeacheriPads.txt"
 TEMPOUTPUTFILE_Limbo="/tmp/Mosyle_active_iOS_Tagz_LimboiPads.txt"

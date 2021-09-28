@@ -15,11 +15,21 @@
 ################################
 #          FUNCTIONS           #
 ################################
-log_line() {
-        LINE=$1
-        TODAY=`date '+%a %x %X'`
-        #Print on stdout
-        echo "$TODAY =====>$LINE"
-        #Log to file
-        echo "$CMDRAN ++> $TODAY =====> $LINE" >> $LOG
+cli_log() {
+	LINE=$1
+	TODAY=`date '+%a %x %X'`
+	#Print on stdout
+	echo "$TODAY =====>$LINE"
+	#Log to file
+	echo "$CMDRAN ++> $TODAY =====> $LINE" >> $LOG
+}
+
+cli_graffitti() {
+	echo '   __  __  ____   _____ ____            _       '
+	echo '  |  \/  |/ __ \ / ____|  _ \          (_)      '
+	echo '  | \  / | |  | | (___ | |_) | __ _ ___ _  ___  '
+	echo '  | |\/| | |  | |\___ \|  _ < / _` / __| |/ __| '
+	echo '  | |  | | |__| |____) | |_) | (_| \__ \ | (__  '
+	echo '  |_|  |_|\____/|_____/|____/ \__,_|___/_|\___| '
+
 }
