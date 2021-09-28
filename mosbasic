@@ -33,14 +33,17 @@ cli_help() {
   echo "
 
 $cli_name
-Brot and Games CLI
+CLI tools for manipulating the Mosyle MDM.
+
 Version: $(cat $BAGCLI_WORKDIR/VERSION)
-https://github.com/brotandgames/bagcli
+https://github.com/JCSmillie/MOSBasic
 Usage: $cli_name [command]
 Commands:
   deploy    		Deploy
-  datadump		Dump info for all iOS devices from Mosyle
+  iosdump		Dump info for all iOS devices from Mosyle
   			to local reference files.
+  userdump		Dump info for all Users in Mosyle to local
+			reference files.
   *         		Help
 "
   exit 1
@@ -58,8 +61,11 @@ case "$1" in
   deploy|d)
     "$BAGCLI_WORKDIR/commands/deploy" "$2" | tee -ia "$BAGCLI_WORKDIR/logs/deploy_${2}.log"
     ;;
-datadump)
-	"$BAGCLI_WORKDIR/commands/mosdatadump.sh"
+iosdump)
+	"$BAGCLI_WORKDIR/commands/mosdatadump-iOS.sh"
+	;; 
+userdump)
+	"$BAGCLI_WORKDIR/commands/mosdatadump-USERS.sh"
 	;; 
   *)
     cli_help

@@ -2,7 +2,7 @@
 
 ################################################################
 #
-#	mosyledatadump.sh  
+#	iosdump.sh  
 #		Script pulls all iPads from Mosyle and sorts them out 
 #		into other files.  These files are utilized after the
 #		fact by other scripts.
@@ -15,7 +15,7 @@ source "$BAGCLI_WORKDIR/common"
 IFS=$'\n'
 
 
-CMDRAN="datadump"
+CMDRAN="iOSdump"
 
 
 
@@ -40,7 +40,7 @@ while true; do
 	THEPAGE="$THECOUNT"
 	content="{\"accessToken\":\"$APIKey\",\"options\":{\"os\":\"ios\",\"specific_columns\":\"deviceudid,serial_number,device_name,tags,asset_tag,userid,date_app_info\",\"page\":$THEPAGE}}"
 	output=$(curl -s -k -X POST -d 'content='$content 'https://managerapi.mosyle.com/v2/listdevices') >> $LOG
-	
+
 
 
 
@@ -62,13 +62,17 @@ while true; do
 	#Right from the git go exclude any results which are for General (Limbo) iPads, Shared iPads, Staff iPads, or Teacher iPads.
 	#This creates the list of student iPads
 	echo "$output"| awk 'BEGIN{FS=",";RS="},{"}{print $0}' | grep -v GENERAL | grep -v SHARED | grep -v Teachers | grep -v Staff | grep -v Leader | grep serial_number |  perl -pe 's/.*"deviceudid":"?(.*?)"?,"serial_number":"(.*?)","device_name":"?(.*?)"?,"tags":"?(.*?)"?,"asset_tag":"?(.*?)"?,"date_app_info":"?(.*?)","enrollment_type":"?(.*?)","userid":"?(.*?)","username":"?(.*?)","usertype":"?(.*?)",*.*/\1\t\2\t\3\t\4\t\5\t\6\t\7\t\8\t\9/' >> "$TEMPOUTPUTFILE_Stu"
-	
+
 	#Now a file with just Teachers/Staff in it.
 	echo "$output"| awk 'BEGIN{FS=",";RS="},{"}{print $0}' | grep -v GENERAL | grep -v SHARED|grep -v Student | grep serial_number |  perl -pe 's/.*"deviceudid":"?(.*?)"?,"serial_number":"(.*?)","device_name":"?(.*?)"?,"tags":"?(.*?)"?,"asset_tag":"?(.*?)"?,"date_app_info":"?(.*?)","enrollment_type":"?(.*?)","userid":"?(.*?)","username":"?(.*?)","usertype":"?(.*?)",*.*/\1\t\2\t\3\t\4\t\5\t\6\t\7\t\8\t\9/' >> "$TEMPOUTPUTFILE_Teachers"
-	
+
 	#Finally a file with all the Limbo devices
-		echo "$output"| awk 'BEGIN{FS=",";RS="},{"}{print $0}' | grep GENERAL | grep serial_number |  perl -pe 's/.*"deviceudid":"?(.*?)"?,"serial_number":"(.*?)","device_name":"?(.*?)"?,"tags":"?(.*?)"?,"asset_tag":"?(.*?)"?,"date_app_info":"?(.*?)","enrollment_type":"?(.*?)",*.*/\1\t\2\t\3\t\4\t\5\t\6/' >> "$TEMPOUTPUTFILE_Limbo"
+	echo "$output"| awk 'BEGIN{FS=",";RS="},{"}{print $0}' | grep GENERAL | grep serial_number |  perl -pe 's/.*"deviceudid":"?(.*?)"?,"serial_number":"(.*?)","device_name":"?(.*?)"?,"tags":"?(.*?)"?,"asset_tag":"?(.*?)"?,"date_app_info":"?(.*?)","enrollment_type":"?(.*?)",*.*/\1\t\2\t\3\t\4\t\5\t\6/' >> "$TEMPOUTPUTFILE_Limbo"
+
+
 done
+
+
 
 
 #At this point I would run a follow up script to used the data we parsed above. All data above ends up 

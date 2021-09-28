@@ -35,3 +35,4 @@ IIQAuth=$(echo "Authorization: Bearer $apitoken")
 TEMPOUTPUTFILE_Stu="/tmp/Mosyle_active_iOS_Tagz_StudentiPads.txt"
 TEMPOUTPUTFILE_Teachers="/tmp/Mosyle_active_iOS_Tagz_TeacheriPads.txt"
 TEMPOUTPUTFILE_Limbo="/tmp/Mosyle_active_iOS_Tagz_LimboiPads.txt"
+TEMPOUTPUTFILE_Users="/tmp/Mosyle_active_Users.txt"
