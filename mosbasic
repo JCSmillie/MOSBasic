@@ -39,11 +39,12 @@ Version: $(cat $BAGCLI_WORKDIR/VERSION)
 https://github.com/JCSmillie/MOSBasic
 Usage: $cli_name [command]
 Commands:
-  deploy    		Deploy
   iosdump		Dump info for all iOS devices from Mosyle
   			to local reference files.
   userdump		Dump info for all Users in Mosyle to local
 			reference files.
+  info <ASSET TAG/USERID/SERIAL>	Look up device assignment data
+            by reference point  <ASSET TAG/USERID/SERIAL>		
   *         		Help
 "
   exit 1
@@ -57,16 +58,23 @@ Commands:
 #export $(cat "$BAGCLI_WORKDIR/config" | xargs)
 source "$BAGCLI_WORKDIR/config"
 
+
+echo "Variable 1-> $1"
+echo "Variable 2-> $2"
+
 case "$1" in
-  deploy|d)
-    "$BAGCLI_WORKDIR/commands/deploy" "$2" | tee -ia "$BAGCLI_WORKDIR/logs/deploy_${2}.log"
-    ;;
+  # deploy|d)
+  #   "$BAGCLI_WORKDIR/commands/deploy" "$2" | tee -ia "$BAGCLI_WORKDIR/logs/deploy_${2}.log"
+  #   ;;
 iosdump)
 	"$BAGCLI_WORKDIR/commands/mosdatadump-iOS.sh"
 	;; 
 userdump)
 	"$BAGCLI_WORKDIR/commands/mosdatadump-USERS.sh"
 	;; 
+info)
+	"$BAGCLI_WORKDIR/commands/getinfo.sh" "$2"
+	;; 	
   *)
     cli_help
     ;;

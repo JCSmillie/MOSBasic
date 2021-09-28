@@ -33,3 +33,15 @@ cli_graffitti() {
 	echo '  |_|  |_|\____/|_____/|____/ \__,_|___/_|\___| '
 
 }
+
+ParseIt_ios() {
+	UDID=$(echo "$line" | cut -f 1 -d$'\t')
+	DeviceSerialNumber=$(echo "$line" | cut -f 2 -d$'\t')
+	CURRENTNAME=$(echo "$line" | cut -f 3 -d$'\t')
+	TAGS=$(echo "$line" | cut -f 4 -d$'\t')
+	ASSETTAG=$(echo "$line" | cut -f 5 -d$'\t')
+	LASTCHECKIN=$(echo "$line" | cut -f 6 -d$'\t')
+	ENROLLMENT_TYPE=$(echo "$line" | cut -f 7 -d$'\t')
+	USERID=$(echo "$line" | cut -f 8 -d$'\t')
+	NAME=$(echo "$line" | cut -f 9 -d$'\t')
+}

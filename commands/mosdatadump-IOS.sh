@@ -26,6 +26,7 @@ CMDRAN="iOSdump"
 rm -Rf "$TEMPOUTPUTFILE_Stu"
 rm -Rf "$TEMPOUTPUTFILE_Teachers"
 rm -Rf "$TEMPOUTPUTFILE_Limbo"
+rm -Rf "$TEMPOUTPUTFILE_MERGEDIOS"
 rm -Rf /tmp/TEMP.json
 
 #Initialize the base count variable. This will be
@@ -71,6 +72,14 @@ while true; do
 
 
 done
+
+#Build file of all this data now that we've sorted it out and parsed it.
+#we still need the single/individual files for legacy support of other
+#scripts but going forward the merge'd file will be the way to go.
+cat "$TEMPOUTPUTFILE_Stu" > "$TEMPOUTPUTFILE_MERGEDIOS"
+cat "$TEMPOUTPUTFILE_Teachers" >> "$TEMPOUTPUTFILE_MERGEDIOS"
+cat "$TEMPOUTPUTFILE_Limbo" >> "$TEMPOUTPUTFILE_MERGEDIOS"
+
 
 
 
