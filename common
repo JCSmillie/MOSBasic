@@ -1,0 +1,25 @@
+#!/bin/zsh
+#
+#MOSBasic 
+#
+#   __  __  ____   _____ ____            _      
+#  |  \/  |/ __ \ / ____|  _ \          (_)     
+#  | \  / | |  | | (___ | |_) | __ _ ___ _  ___ 
+#  | |\/| | |  | |\___ \|  _ < / _` / __| |/ __|
+#  | |  | | |__| |____) | |_) | (_| \__ \ | (__ 
+#  |_|  |_|\____/|_____/|____/ \__,_|___/_|\___|
+#
+# This file is dedicated to functions which could be called
+# across the board through out all commands.
+#
+################################
+#          FUNCTIONS           #
+################################
+log_line() {
+        LINE=$1
+        TODAY=`date '+%a %x %X'`
+        #Print on stdout
+        echo "$TODAY =====>$LINE"
+        #Log to file
+        echo "$CMDRAN ++> $TODAY =====> $LINE" >> $LOG
+}

@@ -1,0 +1,60 @@
+#!/bin/zsh
+#
+#MOSBasic 
+#
+#   __  __  ____   _____ ____            _      
+#  |  \/  |/ __ \ / ____|  _ \          (_)     
+#  | \  / | |  | | (___ | |_) | __ _ ___ _  ___ 
+#  | |\/| | |  | |\___ \|  _ < / _` / __| |/ __|
+#  | |  | | |__| |____) | |_) | (_| \__ \ | (__ 
+#  |_|  |_|\____/|_____/|____/ \__,_|___/_|\___|
+#
+#  Easy to use command line tools for interacting with MOSYLE MDM.  In 
+#  places I also will interact with IncidentIQ ticket system for data.  
+#  I'm going to try to run my inventory check module so anyone could 
+#  easily write their own module for the ticket system they use.  Will
+#  post a note about that in the wiki later when we get there.
+#
+# This file is the CLI binder.  Its just to establish our basic command (mosbasic)
+# and link up all of its abillities.  Each ability gets a sub file in ./commands
+
+IFS=$'\n'
+
+#set -e
+export BAGCLI_WORKDIR=$(cd $(dirname $0) && pwd)
+# shellcheck source=common
+. "$BAGCLI_WORKDIR/common"
+
+cli_help() {
+  cli_name=${0##*/}
+  echo "
+$cli_name
+Brot and Games CLI
+Version: $(cat $BAGCLI_WORKDIR/VERSION)
+https://github.com/brotandgames/bagcli
+Usage: $cli_name [command]
+Commands:
+  deploy    Deploy
+  *         Help
+"
+  exit 1
+}
+
+cli_log "Exporting config ..."
+[ ! -f "$BAGCLI_WORKDIR/config" ] \
+  && echo "ERROR: No $BAGCLI_WORKDIR/config file found. " \
+  && echo "cp $BAGCLI_WORKDIR/config.template $BAGCLI_WORKDIR/config and adjust." \
+  && exit 1
+
+export $(cat "$BAGCLI_WORKDIR/config" | xargs)
+
+case "$1" in
+  deploy|d)
+    "$BAGCLI_WORKDIR/commands/deploy" "$2" | tee -ia "$BAGCLI_WORKDIR/logs/deploy_${2}.log"
+    ;;
+  *)
+    cli_help
+    ;;
+esac
+
+

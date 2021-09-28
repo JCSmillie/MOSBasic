@@ -1,0 +1,16 @@
+#MOSBasic 
+#
+#   __  __  ____   _____ ____            _      
+#  |  \/  |/ __ \ / ____|  _ \          (_)     
+#  | \  / | |  | | (___ | |_) | __ _ ___ _  ___ 
+#  | |\/| | |  | |\___ \|  _ < / _` / __| |/ __|
+#  | |  | | |__| |____) | |_) | (_| \__ \ | (__ 
+#  |_|  |_|\____/|_____/|____/ \__,_|___/_|\___|
+#
+#
+
+#Common Variables
+LOG="~/MOSBasic/actions.log"
+TEMPOUTPUTFILE_Stu="/tmp/Mosyle_active_iOS_Tagz_StudentiPads.txt"
+TEMPOUTPUTFILE_Teachers="/tmp/Mosyle_active_iOS_Tagz_TeacheriPads.txt"
+TEMPOUTPUTFILE_Limbo="/tmp/Mosyle_active_iOS_Tagz_LimboiPads.txt"
