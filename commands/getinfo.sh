@@ -32,63 +32,71 @@ if [ -z "$1" ]; then
 	exit 1
 fi
 
-#Find by Asset Tag
-BYASSTAG=$(cat "$TEMPOUTPUTFILE_MERGEDIOS" | grep "$1" )
-echo "BYASSTAG-> $BYASSTAG"
-if [ ! -z "$BYASSTAG" ]; then
-	echo "Tag Check-> $BYASSTAG"
-	line="$BYASSTAG"
-	ParseIt_ios 
-	echo "UDID=$UDID"
-	echo "DeviceSerialNumber=$DeviceSerialNumber"
-	echo "CURRENTNAME=$CURRENTNAME"
-	echo "TAGS=$TAGS"
-	echo "ASSET TAG=$ASSETTAG"
-	echo "LASTCHECKIN=$LASTCHECKIN"
-	echo "ENROLLMENT_TYPE=$ENROLLMENT_TYPE"
-	echo "USERID=$USERID"
-	echo "ASSIGNED TO=$NAME"
-	
-	#We had a good hit.  Stop.
-	exit 0
-fi
+#Find by Asset Tag, Serial, or Username.  Same Search actually works both ways.
+FoundIt=$(cat "$TEMPOUTPUTFILE_MERGEDIOS" | grep "$1" )
+echo "We Got a Hit-> $FoundIt"
+if [ ! -z "$FoundIt" ]; then
+	echo "Tag Check-> $FoundIt"
 
-#Find by USERID
-BYUSERID=$(cat "$TEMPOUTPUTFILE_MERGEDIOS" | grep "$1" )
-echo "BYASSTAG-> $BYUSERID"
-if [ ! -z "$BYUSERID" ]; then
-	echo "Tag Check-> $BYUSERID"
-	line="$BYUSERID"
-	ParseIt_ios 
-	echo "UDID=$UDID"
-	echo "DeviceSerialNumber=$DeviceSerialNumber"
-	echo "CURRENTNAME=$CURRENTNAME"
-	echo "TAGS=$TAGS"
-	echo "ASSET TAG=$ASSETTAG"
-	echo "LASTCHECKIN=$LASTCHECKIN"
-	echo "ENROLLMENT_TYPE=$ENROLLMENT_TYPE"
-	echo "USERID=$USERID"
-	echo "ASSIGNED TO=$NAME"
+	#Check to see how many results we got.
+	WCC=$(echo "$FoundIt" | wc -l )
+	WCC="${WCC//[[:space:]]/}"
+	echo "WC=$WCC"
 	
-	#We had a good hit.  Stop.
-	exit 0
-fi
+	#If we got more than 1 result lets use a loop to look
+	#each one up.
+	if [ "$WCC" -gt "0" ]; then
+		echo "Search for $1 gave multiple results."
+		
+		echo $FoundIt | while read FoundOne; do
+						
+			line="$FoundOne"
+			ParseIt_ios 
 
-#Find by Serial
-BYSERIAL=$(cat "$TEMPOUTPUTFILE_MERGEDIOS" | grep "$1" )
-if [ ! -z "$BYSERIAL" ]; then
-	echo "Tag Check-> $BYSERIAL"
-	line="$BYSERIAL"
-	ParseIt_ios 
-	echo "UDID=$UDID"
-	echo "DeviceSerialNumber=$DeviceSerialNumber"
-	echo "CURRENTNAME=$CURRENTNAME"
-	echo "TAGS=$TAGS"
-	echo "ASSET TAG=$ASSETTAG"
-	echo "LASTCHECKIN=$LASTCHECKIN"
-	echo "ENROLLMENT_TYPE=$ENROLLMENT_TYPE"
-	echo "USERID=$USERID"
-	echo "ASSIGNED TO=$NAME"
+			if [ -z "$ENROLLMENT_TYPE" ]; then
+				cli_log "$1 <$ASSETTAG/$DeviceSerialNumber> Is in Limbo."
+			else
+				echo "${Red}--------------------------------------------------${reset}"
+				echo "${Blue}UDID=${Green}$UDID${reset}"
+				echo "${Blue}DeviceSerialNumber=${Green}$DeviceSerialNumber${reset}"
+				echo "${Blue}CURRENTNAME=${Green}$CURRENTNAME${reset}"
+				echo "${Blue}TAGS=${Green}$TAGS${reset}"
+				echo "${Blue}ASSET TAG=${Green}$ASSETTAG${reset}"
+				echo "${Blue}LASTCHECKIN=${Green}$LASTCHECKIN${reset}"
+				echo "${Blue}ENROLLMENT_TYPE=${Green}$ENROLLMENT_TYPE${reset}"
+				echo "${Blue}USERID=${Green}$USERID${reset}"
+				echo "${Blue}ASSIGNED TO=${Green}$NAME${reset}"
+				echo "${Red}--------------------------------------------------${reset}"
+			fi
+			
+			
+		done
+		
+		exit 0
+		
+	else
+		
+		#Otherwise we got one device.  Just display with no loop call.
+		line="$FoundIt"
+		ParseIt_ios 
+
+		if [ -z "$ENROLLMENT_TYPE" ]; then
+			cli_log "$1 <$ASSETTAG/$DeviceSerialNumber> Is in Limbo."
+		else
+			echo "${Blue}UDID=${Green}$UDID${reset}"
+			echo "${Blue}DeviceSerialNumber=${Green}$DeviceSerialNumber${reset}"
+			echo "${Blue}CURRENTNAME=${Green}$CURRENTNAME${reset}"
+			echo "${Blue}TAGS=${Green}$TAGS${reset}"
+			echo "${Blue}ASSET TAG=${Green}$ASSETTAG${reset}"
+			echo "${Blue}LASTCHECKIN=${Green}$LASTCHECKIN${reset}"
+			echo "${Blue}ENROLLMENT_TYPE=${Green}$ENROLLMENT_TYPE${reset}"
+			echo "${Blue}USERID=${Green}$USERID${reset}"
+			echo "${Blue}ASSIGNED TO=${Green}$NAME${reset}"
+
+		fi
+	fi
+
+
 	
 	#We had a good hit.  Stop.
 	exit 0
