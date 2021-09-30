@@ -10,7 +10,7 @@
 #
 
 #Common Variables
-LOCALCONF="/users/jsmillie/"
+LOCALCONF="/Users/jsmillie/"
 LOG="$LOCALCONF/MOSBasic/actions.log"
 
 #The source file is a local file which holds a variable containing
