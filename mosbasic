@@ -39,6 +39,14 @@ Version: $(cat $BAGCLI_WORKDIR/VERSION)
 https://github.com/JCSmillie/MOSBasic
 Usage: $cli_name [command]
 Commands:
+  ioswipe		Give single asset tag.  Will Limbo and Wipe that iPad.
+  			**NOTE** Wipe will fail if device is not on Wifi.
+  ioswipe --scan	Scan multiple devices.  When done hit enter to give a blank.
+  			All will be Limbo'd and wiped.  If an individual tag can't be found
+			it will be skipped and logged.
+  ioswipe --mass <FILE>	Give file with multiple tags.  One per line.  All will 
+            be Limbo'd and wiped.  If an individual tag can't be found
+		    it will be skipped and logged.
   iosdump		Dump info for all iOS devices from Mosyle
   			to local reference files.
   userdump		Dump info for all Users in Mosyle to local
@@ -74,7 +82,10 @@ userdump)
 	;; 
 info)
 	"$BAGCLI_WORKDIR/commands/getinfo.sh" "$2"
-	;; 	
+	;;
+ioswipe)
+	"$BAGCLI_WORKDIR/commands/iosLimboNWipe.sh" "$2" "$3"
+	;;	 	
   *)
     cli_help
     ;;

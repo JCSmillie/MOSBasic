@@ -46,6 +46,38 @@ ParseIt_ios() {
 	NAME=$(echo "$line" | cut -f 9 -d$'\t')
 }
 
+SerialFromTag() {
+	#Search through our known serials
+	SERIALIS=$(cat "$TEMPOUTPUTFILE_MERGEDIOS" | grep "$TAG_GIVEN")
+	
+	#echo "DEBUG--> $SERIALIS"
+	if [ ! -z "$SERIALIS" ]; then
+		
+		line="$SERIALIS"
+		ParseIt_ios
+		
+		# echo "${Red}--------------------------------------------------${reset}"
+		# echo "${Blue}UDID=${Green}$UDID${reset}"
+		# echo "${Blue}DeviceSerialNumber=${Green}$DeviceSerialNumber${reset}"
+		# echo "${Blue}CURRENTNAME=${Green}$CURRENTNAME${reset}"
+		# echo "${Blue}TAGS=${Green}$TAGS${reset}"
+		# echo "${Blue}ASSET TAG=${Green}$ASSETTAG${reset}"
+		# echo "${Blue}LASTCHECKIN=${Green}$LASTCHECKIN${reset}"
+		# echo "${Blue}ENROLLMENT_TYPE=${Green}$ENROLLMENT_TYPE${reset}"
+		# echo "${Blue}USERID=${Green}$USERID${reset}"
+		# echo "${Blue}ASSIGNED TO=${Green}$NAME${reset}"
+		# echo "${Red}--------------------------------------------------${reset}"
+		
+		RETURNSERIAL="$DeviceSerialNumber"
+		#echo "DEBUG--> $RETURNSERIAL"
+
+	else
+		cli_log "Attempted to find serial for tag #$TAG_GIVEN and failed."
+		RETURNSERIAL="EPICFAIL"
+	fi
+
+}
+
 #ColorCodes
 Red=`tput setaf 1`
 Green=`tput setaf 2`
