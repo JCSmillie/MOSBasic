@@ -10,8 +10,8 @@
 #
 
 #Common Variables
-LOCALCONF="/Users/jsmillie/"
-LOG="$LOCALCONF/MOSBasic/actions.log"
+LOCALCONF="/Users/jsmillie/"	#Where your local config files are
+LOG="$LOCALCONF/MOSBasic/actions.log"	#Where Logs are kept
 
 #The source file is a local file which holds a variable containing
 #our MosyleAPI key.  Should look like:
@@ -25,9 +25,9 @@ APIKey="$MOSYLE_API_key"
 # functions.  In the future this could be modular too so common results
 # would work from any source someone would just have to write the bridge.
 #IIQSup="YES"
-source $LOCALCONF/.incidentIQ
+#source $LOCALCONF/.incidentIQ
 #apitoken, siteid, and baseurl all come from the source file above.
-IIQAuth=$(echo "Authorization: Bearer $apitoken")
+#IIQAuth=$(echo "Authorization: Bearer $apitoken")
 
 
 
