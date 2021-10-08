@@ -54,5 +54,29 @@ ___  ________ ___________           _
  Its great that MOS makes me think of two things I love working on:
  * MOSyle
  * [MOS](https://en.wikipedia.org/wiki/MOS_Technology), Commodore's chip foundry out in West Chester, PA
+
+
+#Setup
+To setup MOSBasic you need to do the following things:
+  *Copy config.template to config
+  *Edit config and change whats necessary.  For most people you will just change the LOCALCONF variable.
+  *Run the mosbasic command.  It will detect and fix from there.
+  
+  
+  
+##Module Support
+MOSBasic supports external modules for lookup support.  When you run SETUP you will be asked if you want support for external modules.  Today the only supported options are: iiq, other, and none.
+  *iiq-> IndcidentIQ support.  This also requires $LOCALCONF/.incidentIQ to exist.  You must create this file by hand.
+  *other-> <<NOT SUPPORTED TODAY BUT WILL BE>>
+  *none-> Do not use modules.  This will cripple some features of MOSBasic like assigning iPads unless you are inputting USERNAME and SERIAL.  If you are inputting student ID number or anything else you will need these look ups to do cross references.
+  
+  
+###IIQ File Setup
+The IIQ file must be setup as so:
+apitoken="<<<YOUR KEY FROM INCIDENTIQ>>>"   
+siteid="<<<YYOUR SITE ID FROM INCIDENT IQ>>>"
+baseurl="<<<YYOUR BASE URL FROM INCIDENT IQ>>>"
+	
+All of the above should be listed in $LOCALCONF/.incidentIQ
  
  

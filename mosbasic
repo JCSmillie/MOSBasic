@@ -50,7 +50,7 @@ Commands:
 			it will be skipped and logged.
   ioswipe --mass <FILE>	Give file with multiple tags.  One per line.  All will 
             be Limbo'd and wiped.  If an individual tag can't be found
-		    it will be skipped and logged.
+		    it will be skipped and logged.  <<PLANNED NOT YET READY>>
   iosdump		Dump info for all iOS devices from Mosyle
   			to local reference files.
   userdump		Dump info for all Users in Mosyle to local
@@ -118,6 +118,9 @@ if [ ! -s "$LOCALCONF/MOSBasic/.modules" ]; then
 		if [ ! -s "$LOCALCONF/.incidentIQ" ]; then
 			echo "HEADS UP, no local incidentIQ API info is available."
 			echo "SEE README FOR MORE INFO."
+		else
+			source $LOCALCONF/.incidentIQ
+			IIQAuth=$(echo "Authorization: Bearer $apitoken")
 		fi
 		
 	elif [ "$GotModules" = "other" ]; then
