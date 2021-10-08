@@ -84,14 +84,60 @@ if [ ! -d "$LOCALCONF/MOSBasic" ]; then
 	mkdir "$LOCALCONF/MOSBasic"
 fi
 
+#Check for locally cache'd API key
+if [ ! -s "$LOCALCONF/.MosyleAPI" ]; then
+	echo "I cant find a local copy of your Mosyle API key.  This can be found in Mosyle"
+	echo "Under My School->API Intergration.  Make sure API access is enabled and copy "
+	echo "your Access token.  Please provide here:"
+	
+	read MosyleAPIKeyProvided
+	
+	if [ -z "$MosyleAPIKeyProvided" ]; then
+		echo "No Key Provided.  Epic Fail."
+		exit 1
+		
+	else
+		echo "MOSYLE_API_key=\"$MosyleAPIKeyProvided\"" > "$LOCALCONF/.MosyleAPI"
+	fi
+fi
+
+#Check for outside module support
+if [ ! -s "$LOCALCONF/MOSBasic/.modules" ]; then
+	echo "Will you be using outside modules to help with lookups of student IDs"
+	echo "or other data?  OPTIONS are: iiq, none, or custom  More info can be found"
+	echo "in the readme.  DEFAULT is none"
+	
+	read GotModules
+	
+	if [ -z "$GotModules" ]; then
+		echo "GotModules=none" > "$LOCALCONF/MOSBasic/.modules"
+	elif [ "$GotModules" = "iiq" ]; then
+		echo "Enabling IncidentIQ support."
+		echo "GotModules=iiq" > "$LOCALCONF/MOSBasic/.modules"
+				
+		if [ ! -s "$LOCALCONF/.incidentIQ" ]; then
+			echo "HEADS UP, no local incidentIQ API info is available."
+			echo "SEE README FOR MORE INFO."
+		fi
+		
+	elif [ "$GotModules" = "other" ]; then
+		echo "This feature is not supported, YET.  Setting to none.."
+		echo "GotModules=none" > "$LOCALCONF/MOSBasic/.modules"
+	else
+		echo "Whatever you typed ($GotModules) I don't know what that is."
+		echo "Epic Fail"
+		exit 1
+	fi
+fi	
+
 #First Make sure we have what we need
 if [ ! -s "$TEMPOUTPUTFILE_MERGEDIOS" ]; then
-	log_line "$TEMPOUTPUTFILE_MERGEDIOS is missing.  Must grab NOW."
+	cli_log "$TEMPOUTPUTFILE_MERGEDIOS is missing.  Must grab NOW."
 	"$BAGCLI_WORKDIR/commands/mosdatadump-iOS.sh"
 fi
 
 if [ ! -s "$TEMPOUTPUTFILE_Users" ]; then
-	log_line "$TEMPOUTPUTFILE_Users is missing.   Must grab NOW."
+	cli_log "$TEMPOUTPUTFILE_Users is missing.   Must grab NOW."
 	"$BAGCLI_WORKDIR/commands/mosdatadump-USERS.sh"
 	exit 1
 fi
