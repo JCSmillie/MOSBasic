@@ -48,7 +48,8 @@ ParseIt_ios() {
 
 SerialFromTag() {
 	#Search through our known serials
-	SERIALIS=$(cat "$TEMPOUTPUTFILE_MERGEDIOS" | grep "$TAG_GIVEN")
+	SERIALIS=$(cat "$TEMPOUTPUTFILE_MERGEDIOS" | cut -d$'\t' -f 2-9 | grep "$TAG_GIVEN")
+	SERIALIS=$(cat "$TEMPOUTPUTFILE_MERGEDIOS" | grep "$SERIALIS")
 	
 	#echo "DEBUG--> $SERIALIS"
 	if [ ! -z "$SERIALIS" ]; then
@@ -77,6 +78,23 @@ SerialFromTag() {
 	fi
 
 }
+
+#Ask Mosyle if a specific serial # is a Shared Mode iPad
+IsThisiPadSharedMode() {
+	#Our query.  We are asking for a specific serial # and only asking back for UDID, Serial and enrollment type
+	content="{\"accessToken\":\"$APIKey\",\"options\":{\"os\":\"ios\",\"serial_numbers\":[\"$DeviceSerialNumber\"],\"specific_columns\":\"deviceudid,serial_number,enrollment_type\"}}"
+
+	#Do the Query
+	output=$(curl -s -k -X POST -d 'content='$content 'https://managerapi.mosyle.com/v2/listdevices')
+
+	if echo "$output" | grep SHARED; then
+		echo "This is a Shared iPad."
+		ISSHARED="TRUE"
+	else
+		ISSHARED="FALSE"
+	fi
+}
+
 
 #ColorCodes
 Red=`tput setaf 1`

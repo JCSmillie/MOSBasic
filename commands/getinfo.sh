@@ -33,7 +33,9 @@ if [ -z "$1" ]; then
 fi
 
 #Find by Asset Tag, Serial, or Username.  Same Search actually works both ways.
-FoundIt=$(cat "$TEMPOUTPUTFILE_MERGEDIOS" | grep "$1" )
+FoundIt=$(cat "$TEMPOUTPUTFILE_MERGEDIOS" | cut -d$'\t' -f 2-9 | grep "$1")
+#Strip FoundIt down to JUST THE SERIAL #
+FoundIt=$(echo "$FoundIt" | cut -d$'\t' -f 1)
 echo "We Got a Hit-> $FoundIt"
 if [ ! -z "$FoundIt" ]; then
 	echo "Tag Check-> $FoundIt"
@@ -45,16 +47,19 @@ if [ ! -z "$FoundIt" ]; then
 	
 	#If we got more than 1 result lets use a loop to look
 	#each one up.
-	if [ "$WCC" -gt "0" ]; then
+	if [ "$WCC" -gt "1" ]; then
 		echo "Search for $1 gave multiple results."
 		
 		echo $FoundIt | while read FoundOne; do
+			
+			FoundOne=$(cat "$TEMPOUTPUTFILE_MERGEDIOS" | grep "$FoundOne")
+			
 						
 			line="$FoundOne"
 			ParseIt_ios 
 
 			if [ -z "$ENROLLMENT_TYPE" ]; then
-				cli_log "$1 <$ASSETTAG/$DeviceSerialNumber> Is in Limbo."
+			cli_log "$1 <$ASSETTAG/$DeviceSerialNumber> Is in Limbo or Shared Mode."
 			else
 				echo "${Red}--------------------------------------------------${reset}"
 				echo "${Blue}UDID=${Green}$UDID${reset}"
@@ -77,11 +82,12 @@ if [ ! -z "$FoundIt" ]; then
 	else
 		
 		#Otherwise we got one device.  Just display with no loop call.
+		FoundIt=$(cat "$TEMPOUTPUTFILE_MERGEDIOS" | grep "$FoundIt")
 		line="$FoundIt"
 		ParseIt_ios 
 
 		if [ -z "$ENROLLMENT_TYPE" ]; then
-			cli_log "$1 <$ASSETTAG/$DeviceSerialNumber> Is in Limbo."
+			cli_log "$1 <$ASSETTAG/$DeviceSerialNumber> Is in Limbo or Shared Mode."
 		else
 			echo "${Blue}UDID=${Green}$UDID${reset}"
 			echo "${Blue}DeviceSerialNumber=${Green}$DeviceSerialNumber${reset}"

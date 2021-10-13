@@ -26,6 +26,42 @@ echo "Variable 4-> $4"
 #Delete our file of previous scanned devices if it exists
 rm -Rf /tmp/Scand2Wipe.txt
 rm -Rf /tmp/Scand2Wipe_Serialz.txt
+rm -Rf /tmp/Scand2WipeLimbo_Serialz.txt
+
+
+SorterOfiPadz() {
+	#Find out if the iPad we are operating on
+	#is a Shared mode iPad
+	IsThisiPadSharedMode
+	
+	#if Shared we only want to wipe
+	if [ "$ISSHARED" = "TRUE" ]; then
+		
+		cli_log "$ASSETTAG is a Shared iPad.  Will not Limbo first; ONLY WIPE"
+	
+		#if this is our first entry just fill the variable
+		if [ -z "$WIPEUDiDs" ]; then
+			WIPEUDiDs="$UDID"
+		else
+			#all others are additons to the variable
+			WIPEUDiDs=$(echo "$WIPEUDiDs,$UDID")
+		fi
+		
+		echo "$RETURNSERIAL" >> /tmp/Scand2Wipe_Serialz.txt
+		
+	else
+		#Otherwise Wipe and Limbo.
+		#if this is our first entry just fill the variable
+		if [ -z "$LIMBOSetUDiDs" ]; then
+			LIMBOSetUDiDs="$UDID"
+		else
+			#all others are additons to the variable
+			LIMBOSetUDiDs=$(echo "$LIMBOSetUDiDs,$UDID")
+		fi
+		
+		echo "$RETURNSERIAL" >> /tmp/Scand2WipeLimbo_Serialz.txt
+	fi
+}
 
 #############################
 #          Do Work          #
@@ -68,15 +104,10 @@ if [ "$1" = "--scan" ]; then
 			echo "${Red}Skipping $TAG_GIVEN.  EPIC FAIL${reset}"
 		else
 			echo "Asset tag $TAG_GIVEN is $RETURNSERIAL"
-			echo "$RETURNSERIAL" >> /tmp/Scand2Wipe_Serialz.txt
-
-			#if this is our first entry just fill the variable
-			if [ -z "$UDiDs" ]; then
-				UDiDs="$UDID"
-			else
-				#all others are additons to the variable
-				UDiDs=$(echo "$UDiDs,$UDID")
-			fi
+			
+			#Call Sorter function to seperate out the Shared iPads from regular iPads
+			#before we act.  Shared iPads should NEVER be limbo'd before wiping.
+			SorterOfiPadz
 		fi
 	done
 		
@@ -100,46 +131,60 @@ else
 		echo "Asset tag $TAG_GIVEN is $RETURNSERIAL"
 		echo "$RETURNSERIAL" >> /tmp/Scand2Wipe_Serialz.txt
 		
-	#if this is our first entry just fill the variable
-		if [ -z "$UDiDs" ]; then
-			UDiDs="$UDID"
-		else
-			#all others are additons to the variable
-			UDiDs=$(echo "$UDiDs,$UDID")
-		fi
+		#Call Sorter function to seperate out the Shared iPads from regular iPads
+		#before we act.  Shared iPads should NEVER be limbo'd before wiping.
+		SorterOfiPadz
 	fi
 fi
 
-#echo "UDIDs--> $UDiDs"
+echo "Proceeding to Wipe & Limbo the following:"
+echo "------------------------------------------"	
+cat /tmp/Scand2WipeLimbo_Serialz.txt
+echo "Limbo and Wipe UDIDs-> $LIMBOSetUDiDs"
 
-#At this point we are almost ready to do the wipe and limbo
-if [ -z "$UDIDs" ]; then
+echo "Proceeding to Wipe the following:"
+echo "----------------------------------"
+cat /tmp/Scand2Wipe_Serialz.txt
+echo "Just Wipe UDIDs-> $WIPEUDiDs"
 
-	echo "Proceeding to Wipe the following:"
-	echo "----------------------------------"
-	cat /tmp/Scand2Wipe_Serialz.txt
-	
-	echo "Are you sure <Y/N>"
-	
-	read shouldwedoit
-	
-	if [ "$shouldwedoit" = "Y" ]; then
-		echo "Making it So #1."
-		#Call out to Mosyle MDM to submit list of UDIDs which need Limbo'd
-		content="{\"accessToken\":\"$APIKey\",\"elements\":[{\"devices\":\"$UDiDs\",\"operation\":\"change_to_limbo\"}]}"
-		curl  -s -k -X POST -d 'content='$content 'https://managerapi.mosyle.com/v2/bulkops'
+echo "Are you sure <Y/N>"
 
-		content="{\"accessToken\":\"$APIKey\",\"elements\":[{\"devices\":\"$UDiDs\",\"operation\":\"wipe_devices\"}]}"
-		curl  -s -k -X POST -d 'content='$content 'https://managerapi.mosyle.com/v2/bulkops'
+read shouldwedoit
+
+if [ "$shouldwedoit" = "Y" ]; then
+
+	#At this point we are almost ready to do the wipe and limbo
+	if [ ! -z "$LIMBOSetUDiDs" ]; then
 		
-		exit 0
-		
+			echo "Making it So #1."
+			#Call out to Mosyle MDM to submit list of UDIDs which need Limbo'd
+			content="{\"accessToken\":\"$APIKey\",\"elements\":[{\"devices\":\"$LIMBOSetUDiDs\",\"operation\":\"change_to_limbo\"}]}"
+			echo "--> $content <--"
+			curl  -s -k -X POST -d 'content='$content 'https://managerapi.mosyle.com/v2/bulkops'
+
+			content="{\"accessToken\":\"$APIKey\",\"elements\":[{\"devices\":\"$LIMBOSetUDiDs\",\"operation\":\"wipe_devices\"}]}"
+			echo "--> $content <--"
+			curl  -s -k -X POST -d 'content='$content 'https://managerapi.mosyle.com/v2/bulkops'
+
 	else
-		echo "Its ok... we all get cold feet sometimes...."
-		exit 1
+		#If we are here then we got nothing to work on
+		echo "No UDIDs are in cache for Limbo and Wipe.  Doing Nothing."
 	fi
+
+	#At this point we are almost ready to do the wipe and limbo
+	if [ ! -z "$WIPEUDiDs" ]; then
+		
+			echo "Making it So #1."
+			#Call out to Mosyle MDM to submit list of UDIDs which need Wiped
+			content="{\"accessToken\":\"$APIKey\",\"elements\":[{\"devices\":\"$WIPEUDiDs\",\"operation\":\"wipe_devices\"}]}"
+			echo "--> $content <--"
+			curl  -s -k -X POST -d 'content='$content 'https://managerapi.mosyle.com/v2/bulkops'
+
+	else
+		echo "No UDIDs are in cache for Wipe.  Doing Nothing."
+	fi
+
 else
-	echo "No UDIDs are in cache.  Cant continue"
+	echo "Its ok... we all get cold feet sometimes...."
 	exit 1
 fi
-
