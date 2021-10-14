@@ -33,7 +33,7 @@ if [ -z "$1" ]; then
 fi
 
 #Find by Asset Tag, Serial, or Username.  Same Search actually works both ways.
-FoundIt=$(cat "$TEMPOUTPUTFILE_MERGEDIOS" | cut -d$'\t' -f 2-9 | grep "$1")
+FoundIt=$(cat "$TEMPOUTPUTFILE_MERGEDIOS" | cut -d$'\t' -f 2-5,7-9 | grep "$1")
 #Strip FoundIt down to JUST THE SERIAL #
 FoundIt=$(echo "$FoundIt" | cut -d$'\t' -f 1)
 echo "We Got a Hit-> $FoundIt"

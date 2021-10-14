@@ -48,7 +48,7 @@ ParseIt_ios() {
 
 SerialFromTag() {
 	#Search through our known serials
-	SERIALIS=$(cat "$TEMPOUTPUTFILE_MERGEDIOS" | cut -d$'\t' -f 2-9 | grep "$TAG_GIVEN")
+	SERIALIS=$(cat "$TEMPOUTPUTFILE_MERGEDIOS" | cut -d$'\t' -f 2-5,7-9 | grep "$TAG_GIVEN")
 	SERIALIS=$(cat "$TEMPOUTPUTFILE_MERGEDIOS" | grep "$SERIALIS")
 	
 	#echo "DEBUG--> $SERIALIS"
