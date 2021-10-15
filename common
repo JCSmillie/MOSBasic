@@ -44,11 +44,14 @@ ParseIt_ios() {
 	ENROLLMENT_TYPE=$(echo "$line" | cut -f 7 -d$'\t')
 	USERID=$(echo "$line" | cut -f 8 -d$'\t')
 	NAME=$(echo "$line" | cut -f 9 -d$'\t')
+	
+	#Take Epoch time and convert to hours
+	LASTCHECKIN=$(python -c "import datetime; print(datetime.datetime.fromtimestamp(int("$LASTCHECKIN")).strftime('%Y-%m-%d %I:%M:%S %p'))")
 }
 
 SerialFromTag() {
 	#Search through our known serials
-	SERIALIS=$(cat "$TEMPOUTPUTFILE_MERGEDIOS" | cut -d$'\t' -f 2-5,7-9 | grep "$TAG_GIVEN")
+	SERIALIS=$(cat "$TEMPOUTPUTFILE_MERGEDIOS" | cut -d$'\t' -f 2-5,7-9 | grep "$TAG_GIVEN" | cut -d$'\t' -f 1 )
 	SERIALIS=$(cat "$TEMPOUTPUTFILE_MERGEDIOS" | grep "$SERIALIS")
 	
 	#echo "DEBUG--> $SERIALIS"
