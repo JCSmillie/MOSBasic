@@ -175,7 +175,10 @@ lostmodeoff)
 	;;	 
 annoy)
 	"$BAGCLI_WORKDIR/commands/lostmodefun.sh" "--sound" "$2"
-	;;	 		
+	;;
+lostmodestatus)
+	"$BAGCLI_WORKDIR/commands/lostmodefun.sh" "--status" "$2"				 		
+	;;
   *)
     cli_help
     ;;
