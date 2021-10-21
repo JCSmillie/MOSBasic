@@ -8,7 +8,8 @@ source /usr/local/Smillieware/Hash/.incidentIQ
 #apitoken, siteid, and baseurl all come from the source file above
 
 
-IIQ_UserLookup() {
+USERLOOKUP() {
+	USER2Search="$1"
 	Auth=$(echo "Authorization: Bearer $apitoken")
 	Query="$baseurl/Users/Search/$USER2Search"
 
@@ -54,38 +55,27 @@ IIQ_UserLookup() {
 
 
 
+DEVICELOOKUP() {
+	echo "Sorry this feature is not ready yet!"
+	exit 1
+}
 
+TICKETLOOKUP() {
+	echo "Sorry this feature is not ready yet!"
+	exit 1
+}
 
+SUBMITTICKET() {
+	echo "Sorry this feature is not ready yet!"
+	exit 1
+}
 
+INVENTORYASSSIGNDEVICE() {
+	echo "Sorry this feature is not ready yet!"
+	exit 1
+}
 
-
-
-# "FirstName": "ALEXIS",
-# "LastName": "AUSTIN",
-# "Email": "aaa106@gatewayk12.net",
-# "Username": "aaa106@gatewayk12.net",
-# "Phone": "",
-# "SchoolIdNumber": "901833",
-# "Grade": "7",
-# "Homeroom": "0111",
-
-
-
-
-
-USER2Search="901833"
-IIQ_UserLookup
-
-
-
-if [ -z "$Username" ]; then
-	echo "User not found."
-else
-	echo "$Username"
-	echo "$FirstName"
-	echo "$LastName"
-	echo "$SchoolIdNumber"
-	echo "$LocationName"
-	echo "$Grade"
-	echo "$Homeroom"
-fi
+INVENTORYUNASSIGNDEVICE() {
+	echo "Sorry this feature is not ready yet!"
+	exit 1
+}

@@ -21,16 +21,6 @@ LOG="$LOCALCONF/MOSBasic/actions.log"	#Where Logs are kept
 source $LOCALCONF/.MosyleAPI
 APIKey="$MOSYLE_API_key"
 
-# IncidentIQ Support -- This is not REQUIRED but is dependant for some
-# functions.  In the future this could be modular too so common results
-# would work from any source someone would just have to write the bridge.
-#IIQSup="YES"
-#source $LOCALCONF/.incidentIQ
-#apitoken, siteid, and baseurl all come from the source file above.
-#IIQAuth=$(echo "Authorization: Bearer $apitoken")
-
-
-
 #Output files of current enrolled Mosyle devices.  
 TEMPOUTPUTFILE_Stu="/tmp/Mosyle_active_iOS_Tagz_StudentiPads.txt"
 TEMPOUTPUTFILE_Teachers="/tmp/Mosyle_active_iOS_Tagz_TeacheriPads.txt"
@@ -38,3 +28,14 @@ TEMPOUTPUTFILE_Shared="/tmp/Mosyle_active_iOS_Tagz_SharedModeiPads.txt"
 TEMPOUTPUTFILE_Limbo="/tmp/Mosyle_active_iOS_Tagz_LimboiPads.txt"
 TEMPOUTPUTFILE_MERGEDIOS="/tmp/Mosyle_active_iOS_Tagz_MergediPads.txt"
 TEMPOUTPUTFILE_Users="/tmp/Mosyle_active_Users.txt"
+
+###EXTERNAL MODULES SUPPORT
+#This support is for external support systems which
+#can help to do outside lookups of things like usernames,
+#open tickets, make tickets, etc.  Read the README in 
+#the modules directory for more info.  By default this
+#is all disabled.  Uncomment the support you want.
+#source "$BAGCLI_WORKDIR/modules/Default.sh"
+
+#IncidentIQ support
+source "$BAGCLI_WORKDIR/modules/incidentiq.sh"

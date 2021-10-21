@@ -140,19 +140,18 @@ CheckLostMode() {
 		echo "($UDID) / ($LASTBEAT) / ($TAGS) / ($LOSTMODE) / ($LONGITUDE) / ($LATITUDE)"
 		
 		
-		LASTBEATDATE=$(python -c "import datetime; print(datetime.datetime.fromtimestamp(int("$LASTBEAT")).strftime('%Y-%m-%d %H:%M:%S'))")
+		LASTBEATDATE=$(python -c "import datetime; print(datetime.datetime.fromtimestamp(int("$LASTBEAT")).strftime('%Y-%m-%d %I:%M:%S %p'))")
 		
 		#Figure out how many hours ago last beat was
 		current_time=$(date +%s)
 		current_time=$(expr "$current_time" / 3600 )
 		before_time=$(expr "$LASTBEAT" / 3600 )
 		hoursago=$(expr "$current_time" - "$before_time" )
+	fi
 		
-		echo "$current_time"
-		echo "$before_time"
-		echo "$hoursago"
-		
-		
+}
+
+DisplayCheckdLostModeData() {	
 		echo "$DeviceSerialNumber last seen by Mosyle on $LASTBEATDATE"
 		
 		echo "${Red}--------------------------------------------------${reset}"
@@ -169,6 +168,7 @@ CheckLostMode() {
 		echo "${Blue}Last Seen (Hours Ago)=${Green}$hoursago${reset}"
 		echo "${Blue}Lost Mode Status=${Green}$LOSTMODE${reset}"	
 
+		#If we have locational data, show it.
 		if [ ! -z "$LONGITUDE" ] && [ ! -z "$LATITUDE" ]; then
 			echo "${Blue}Location Data=${Green}$LATITUDE,$LONGITUDE${reset}"
 			echo " "
@@ -177,18 +177,12 @@ CheckLostMode() {
 		fi
 		
 		echo "${Red}--------------------------------------------------${reset}"
-		
-		
-
-
-
 	
 		#If TAGS variable says null then swap out variable
 		#to be nothing.
 		if [ "$TAGS" = "null" ] ; then
 			TAGS=""
 		fi
-	fi
 }
 
 
@@ -217,6 +211,7 @@ elif [ "$1" = "--disable" ]; then
 	
 elif [ "$1" = "--status" ]; then
 	CheckLostMode	
+	DisplayCheckdLostModeData
 else
 	cli_log "Bad arguments given <$1/$2> Try again."
 	exit 1

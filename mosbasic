@@ -43,6 +43,7 @@ Commands:
   lostmodeoff   Give single asset tag.  Will disable lost mode.
   annoy         Give single asset tag.  Will play sound.  If device is not in lost mode
                 will also enable it. 
+  lostmodestatus  Find out current Lost mode status of device.				
   ioswipe		Give single asset tag.  Will Limbo and Wipe that iPad.
   			**NOTE** Wipe will fail if device is not on Wifi.
   ioswipe --scan	Scan multiple devices.  When done hit enter to give a blank.
@@ -55,6 +56,13 @@ Commands:
   			to local reference files.
   userdump		Dump info for all Users in Mosyle to local
 			reference files.
+  iosassign	Info will be looked up and then device will be assigned.  <<REQUIRES USERLOOKUP MODULE>>
+  iosassign --scan	Scan multiple devices  Tag first then assignment tag.  When done 
+  			hit enter to give a blank.  Info will be looked up and then device will
+			be assigned.  <<REQUIRES USERLOOKUP MODULE>>
+  iosassign --mass	Give file with multiple devices in form of ASSET TAG,USERNAME.  One
+  				per line.  All will be assigned properly.  <<PLANNED NOT YET READY>> <<REQUIRES USERLOOKUP MODULE>>
+  			
   info <ASSET TAG/USERID/SERIAL>	Look up device assignment data
             by reference point  <ASSET TAG/USERID/SERIAL>		
   *         		Help
@@ -167,6 +175,9 @@ info)
 ioswipe)
 	"$BAGCLI_WORKDIR/commands/iosLimboNWipe.sh" "$2" "$3"
 	;;
+iosassign)
+	"$BAGCLI_WORKDIR/commands/iosAssignDevice.sh" "$2" "$3"
+	;;	
 lostmodeon)
 	"$BAGCLI_WORKDIR/commands/lostmodefun.sh" "--enable" "$2"
 	;;	 
