@@ -72,13 +72,11 @@ if [ "$1" = "--scan" ]; then
 	#prompt User to scan.
 	echo "${Green}Please scan an asset tag.  When you've scanned"
 	echo "them all just press ENTER to give me a blank${reset}"
-
-	read scannedin
-	echo "$scannedin" > /tmp/Scand2Wipe.txt
 	
 	#Do a loop and keep taking scan data until we get null
 	while true; do
 		
+		echo "Asset tag of device?"
 		read scannedin
 		echo "$scannedin" >> /tmp/Scand2Wipe.txt
 		

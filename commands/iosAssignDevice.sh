@@ -36,20 +36,22 @@ AssigniPad() {
 	content="{\"accessToken\":\"$APIKey\",\"elements\":[{\"id\":\"$USERNAME_GIVEN\",\"operation\":\"assign_device\",\"serial_number\":\"$RETURNSERIAL\"}]}"
 	APIOUTPUT=$(curl  -s -k -X POST -d 'content='$content 'https://managerapi.mosyle.com/v2/users')
 	
-	#echo "curl  -s -k -X POST -d 'content='$content 'https://managerapi.mosyle.com/v2/users'"
-
 	CMDStatus=$(echo "$APIOUTPUT" | cut -d ":" -f 4 | cut -d "," -f 1 | tr -d '"' | tr -d '}]})')
 
+	#DEBUGGING
 	#echo "CMD Status--> $CMDStatus"
 	#echo "APIOUTPUT---> $APIOUTPUT"
 
 	if [ "$CMDStatus" = "DEVICES_NOTFOUND" ]; then
 		cli_log "Device not found in Mosyle.  Can't Assign!"
 
+	elif echo "$APIOUTPUT" | grep -q "UNKNOWN_USER" ; then
+			cli_log "User not found in Mosyle.  Can't Assign!"		
+
 	elif [ "$CMDStatus" = "COMMAND_SENT" ]; then
 		cli_log "Command was Successful!"
 		
-	elif echo "$APIOUTPUT" | grep "OK" ; then
+	elif echo "$APIOUTPUT" | grep -q "OK" ; then
 		cli_log "Command was Successful!"
 
 	else
@@ -174,6 +176,9 @@ cat "/tmp/Scan2Assign.txt" | while read line; do
 	if [ "$RETURNSERIAL" = "EPICFAIL" ]; then
 		echo "${Red}Cant find $TAG_GIVEN in cached Mosyle data.  EPIC FAIL${reset}"
 		echo "${Red}Skipping $TAG_GIVEN.  EPIC FAIL${reset}"
+		
+	elif [ -z "$USERNAME_GIVEN" ]; then
+		cli_log "Could not find user in lookup routine.  Skipping."
 	else
 		cli_log "Asset tag $TAG_GIVEN is $RETURNSERIAL which will be assigned to $FirstName $LastName ($USERNAME_GIVEN) at $LocationName"
 		echo "$TAG_GIVEN to $FirstName $LastName ($USERNAME_GIVEN) at $LocationName" >> /tmp/Scan2Assign_ExtraInfo.txt
