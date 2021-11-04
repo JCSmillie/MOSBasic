@@ -20,15 +20,38 @@
 
 IFS=$'\n'
 
+
+
+if [ -h "/usr/local/bin/mosbasic" ]; then
+	BAGCLI_WORKDIR=$(readlink /usr/local/bin/mosbasic)
+	#Remove our command name from the output above
+	BAGCLI_WORKDIR=${BAGCLI_WORKDIR//mosbasic/}
+	
+	export BAGCLI_WORKDIR
+	
+else
+	#Assume the directory we are in is where our files are.
+	export BAGCLI_WORKDIR=$(cd $(dirname $0) && pwd)
+fi
+
+echo "WORKING DIR-> $BAGCLI_WORKDIR"
+
+
 CMDRAN="MOSBASIC"
 
 set -e
-export BAGCLI_WORKDIR=$(cd $(dirname $0) && pwd)
-# shellcheck source=common
+
+#export $(cat "$BAGCLI_WORKDIR/config" | xargs)
+source "$BAGCLI_WORKDIR/config"
+
+ #shellcheck source=common
 . "$BAGCLI_WORKDIR/common"
 
+echo "Mosyle API Key-> $MOSYLE_API_key"
+echo "WORKING DIR-> $BAGCLI_WORKDIR"
+
 cli_help() {
-  cli_name=${0##*/}
+  cli_name="mosbasic"
   cli_graffitti
   echo "
 
@@ -71,7 +94,7 @@ Commands:
 }
 
 [ ! -f "$BAGCLI_WORKDIR/config" ] \
-  && echo "ERROR: No $BAGCLI_WORKDIR/config file found. " \
+  && echo "ERROR: No $BAGCLI_WORKDIR/config file not found. " \
   && echo "cp $BAGCLI_WORKDIR/config.template $BAGCLI_WORKDIR/config and adjust." \
   && exit 1
 
