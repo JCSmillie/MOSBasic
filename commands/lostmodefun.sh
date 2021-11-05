@@ -105,8 +105,9 @@ CheckLostMode() {
 	content="{\"accessToken\":\"$APIKey\",\"options\":{\"os\":\"ios\",\"serial_numbers\":[\"$DeviceSerialNumber\"],\"specific_columns\":\"deviceudid,date_last_beat,tags,lostmode_status,longitude,latitude\"}}"
 
 	output=$(curl -s -k -X POST -d 'content='$content 'https://managerapi.mosyle.com/v2/listdevices')
-	
-	#echo "Output->> $output"
+
+	# echo "What we asked for-->> $content"
+	# echo "Output->> $output"
 
 	if echo "$output" | grep "DEVICES_NOTFOUND"; then
 		log_line "Mosyle doesn't know $DeviceSerialNumber.  Epic Fail."
