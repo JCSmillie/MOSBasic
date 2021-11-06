@@ -34,9 +34,6 @@ else
 	export BAGCLI_WORKDIR=$(cd $(dirname $0) && pwd)
 fi
 
-echo "WORKING DIR-> $BAGCLI_WORKDIR"
-
-
 CMDRAN="MOSBASIC"
 
 set -e
@@ -47,8 +44,8 @@ source "$BAGCLI_WORKDIR/config"
  #shellcheck source=common
 . "$BAGCLI_WORKDIR/common"
 
-echo "Mosyle API Key-> $MOSYLE_API_key"
-echo "WORKING DIR-> $BAGCLI_WORKDIR"
+# echo "Mosyle API Key-> $MOSYLE_API_key"
+# echo "WORKING DIR-> $BAGCLI_WORKDIR"
 
 cli_help() {
   cli_name="mosbasic"
@@ -58,44 +55,42 @@ cli_help() {
 $cli_name
 CLI tools for manipulating the Mosyle MDM.
 
-Version: $(cat $BAGCLI_WORKDIR/VERSION)
-https://github.com/JCSmillie/MOSBasic
+Version:${Magenta} $(cat $BAGCLI_WORKDIR/VERSION) ${reset}
+${Yellow}https://github.com/JCSmillie/MOSBasic${reset}
 Usage: $cli_name [command]
 Commands:
-  lostmodeon    Give single asset tag.  Will enable lost mode with default message.
-  lostmodeoff   Give single asset tag.  Will disable lost mode.
-  annoy         Give single asset tag.  Will play sound.  If device is not in lost mode
-                will also enable it. 
-  lostmodestatus  Find out current Lost mode status of device.				
-  ioswipe		Give single asset tag.  Will Limbo and Wipe that iPad.
-  			**NOTE** Wipe will fail if device is not on Wifi.
-  ioswipe --scan	Scan multiple devices.  When done hit enter to give a blank.
-  			All will be Limbo'd and wiped.  If an individual tag can't be found
-			it will be skipped and logged.
-  ioswipe --mass <FILE>	Give file with multiple tags.  One per line.  All will 
-            be Limbo'd and wiped.  If an individual tag can't be found
-		    it will be skipped and logged.  <<PLANNED NOT YET READY>>
-  iosdump		Dump info for all iOS devices from Mosyle
-  			to local reference files.
-  userdump		Dump info for all Users in Mosyle to local
-			reference files.
-  iosassign	Info will be looked up and then device will be assigned.  <<REQUIRES USERLOOKUP MODULE>>
-  iosassign --scan	Scan multiple devices  Tag first then assignment tag.  When done 
-  			hit enter to give a blank.  Info will be looked up and then device will
-			be assigned.  <<REQUIRES USERLOOKUP MODULE>>
-  iosassign --mass	Give file with multiple devices in form of ASSET TAG,USERNAME.  One
+  lostmodeon			Give single asset tag.  Will enable lost mode with default message.
+  lostmodeoff			Give single asset tag.  Will disable lost mode.
+  annoy         		Give single asset tag.  Will play sound.  If device is not in lost mode
+ 				will also enable it. 
+  lostmodestatus  		Find out current Lost mode status of device.				
+  ioswipe			Give single asset tag.  Will Limbo and Wipe that iPad.
+  				**NOTE** Wipe will fail if device is not on Wifi.
+  ioswipe --scan		Scan multiple devices.  When done hit enter to give a blank.
+  				All will be Limbo'd and wiped.  If an individual tag can't be found
+				it will be skipped and logged.
+  ioswipe --mass <FILE>		Give file with multiple tags.  One per line.  All will 
+            			be Limbo'd and wiped.  If an individual tag can't be found
+		    		it will be skipped and logged.  <<PLANNED NOT YET READY>>
+  iosdump			Dump info for all iOS devices from Mosyle
+  				to local reference files.
+  userdump			Dump info for all Users in Mosyle to local
+				reference files.
+  iosassign			Info will be looked up and then device will be assigned.  <<REQUIRES USERLOOKUP MODULE>>
+  iosassign --scan		Scan multiple devices  Tag first then assignment tag.  When done 
+  				hit enter to give a blank.  Info will be looked up and then device will
+				be assigned.  <<REQUIRES USERLOOKUP MODULE>>
+  iosassign --mass		Give file with multiple devices in form of ASSET TAG,USERNAME.  One
   				per line.  All will be assigned properly.  <<PLANNED NOT YET READY>> <<REQUIRES USERLOOKUP MODULE>>
   			
-  info <ASSET TAG/USERID/SERIAL>	Look up device assignment data
-            by reference point  <ASSET TAG/USERID/SERIAL>		
-  *         		Help
+  info <ASSET TAG/USERID/SERIAL>	Look up device assignment data by reference point  <ASSET TAG/USERID/SERIAL>		
 "
   exit 1
 }
 
 [ ! -f "$BAGCLI_WORKDIR/config" ] \
   && echo "ERROR: No $BAGCLI_WORKDIR/config file not found. " \
-  && echo "cp $BAGCLI_WORKDIR/config.template $BAGCLI_WORKDIR/config and adjust." \
+  && echo "sudo $BAGCLI_WORKDIR/RUNME1st_CONFIGSCRIPT.sh to setup." \
   && exit 1
 
 ###############################
@@ -164,22 +159,37 @@ if [ ! -s "$LOCALCONF/MOSBasic/.modules" ]; then
 	fi
 fi	
 
+#######################################
+# Do we have cache'd data about iPads
+#######################################
 #First Make sure we have what we need
 if [ ! -s "$TEMPOUTPUTFILE_MERGEDIOS" ]; then
 	cli_log "$TEMPOUTPUTFILE_MERGEDIOS is missing.  Must grab NOW."
 	"$BAGCLI_WORKDIR/commands/mosdatadump-iOS.sh"
+
+#If our data is older than 24hr then update it.
+elif [ `find "$TEMPOUTPUTFILE_MERGEDIOS" -mmin +1440 | egrep '.*'` ]; then
+	cli_log "$TEMPOUTPUTFILE_MERGEDIOS is older than a day.  Updating."
+	"$BAGCLI_WORKDIR/commands/mosdatadump-iOS.sh"
 fi
 
+#######################################
+# Do we have cache'd data about Users
+#######################################
 if [ ! -s "$TEMPOUTPUTFILE_Users" ]; then
 	cli_log "$TEMPOUTPUTFILE_Users is missing.   Must grab NOW."
+	"$BAGCLI_WORKDIR/commands/mosdatadump-USERS.sh"
+#If our data is older than 24hr then update it.
+elif [ `find "$TEMPOUTPUTFILE_Users" -mmin +1440 | egrep '.*'` ]; then
+	cli_log "$TEMPOUTPUTFILE_Users is older than a day.  Updating."
 	"$BAGCLI_WORKDIR/commands/mosdatadump-USERS.sh"
 fi
 
 
 
 
-echo "Variable 1-> $1"
-echo "Variable 2-> $2"
+# echo "Variable 1-> $1"
+# echo "Variable 2-> $2"
 
 case "$1" in
 iosdump)
