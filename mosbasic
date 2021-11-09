@@ -216,6 +216,9 @@ annoy)
 lostmodestatus)
 	"$BAGCLI_WORKDIR/commands/lostmodefun.sh" "--status" "$2"				 		
 	;;
+whoislost)
+	"$BAGCLI_WORKDIR/commands/lostmodefun.sh" "--whoislost"
+	;;
   *)
     cli_help
     ;;

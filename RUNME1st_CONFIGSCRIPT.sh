@@ -64,6 +64,7 @@ if [ ! -f "$BAGCLI_WORKDIR/config" ] ; then
 		echo "Enabling IncidentIQ Support"
 		echo "#IncidentIQ support " >> $BAGCLI_WORKDIR/config
 		echo 'source "$BAGCLI_WORKDIR/modules/incidentiq.sh" ' >> $BAGCLI_WORKDIR/config
+		echo "GotModules=iiq" > "$LOCALCONF/MOSBasic/.modules"
 		echo " "  >> $BAGCLI_WORKDIR/config
 		echo '#source "$BAGCLI_WORKDIR/modules/Default.sh" ' >> $BAGCLI_WORKDIR/config
 		
@@ -71,6 +72,7 @@ if [ ! -f "$BAGCLI_WORKDIR/config" ] ; then
 		echo "Setting Default value"		
 		echo "##IncidentIQ support " >> $BAGCLI_WORKDIR/config
 		echo '#source "$BAGCLI_WORKDIR/modules/incidentiq.sh" ' >> $BAGCLI_WORKDIR/config
+		echo "GotModules=none" > "$LOCALCONF/MOSBasic/.modules"
 		echo " "  >> $BAGCLI_WORKDIR/config
 		echo 'source "$BAGCLI_WORKDIR/modules/Default.sh" ' >> $BAGCLI_WORKDIR/config
 	fi
