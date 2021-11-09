@@ -63,7 +63,10 @@ Commands:
   lostmodeoff			Give single asset tag.  Will disable lost mode.
   annoy         		Give single asset tag.  Will play sound.  If device is not in lost mode
  				will also enable it. 
-  lostmodestatus  		Find out current Lost mode status of device.				
+  lostmodestatus  		Find out current Lost mode status of device.	
+  whoislost			Gives list of all devices currently in lost mode and waitng to be in
+  			  	in lost mode.  Output is color coded and when ran ALL ENABLED DEVICES
+				are sent the command to play sound.	
   ioswipe			Give single asset tag.  Will Limbo and Wipe that iPad.
   				**NOTE** Wipe will fail if device is not on Wifi.
   ioswipe --scan		Scan multiple devices.  When done hit enter to give a blank.
