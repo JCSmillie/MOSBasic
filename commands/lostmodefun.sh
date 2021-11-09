@@ -30,6 +30,16 @@ echo "Variable 4-> $4"
 EnableLostMode() {
 	#Run Parsing Routine to get fields from tab delimited data
 	# ParseIt
+	# 
+ 	#Based on hours above color code our output.  Green is 12 hrs or less,
+	#Yellow is 24 hrs or less, and red is everything else.
+	if [ "$hoursagoLMQ" -lt 12 ]; then
+		echo "${Green}Device has checked in to MDM in the last 12 hrs...  Good possibilty this works!${reset}"
+	elif [ "$hoursagoLMQ" -lt 24 ]; then
+		echo "${Yellow}Device has checked in to MDM in the last 24 hrs...  Fair possibilty this works....${reset}"
+	else
+		echo "${Red}Device hasn't checked into MDM in over a day..  Milage may very on this attempt....${reset}"	
+	fi	
 	
 	#echo "UDID--> $UDID"
 	MessagetoSend="Please take this device to the main office or call the GatorIT HelpDesk!"
@@ -50,16 +60,17 @@ EnableLostMode() {
 }
 
 PlayLostSound() {
-	#Run Parsing Routine to get fields from tab delimited data
-	# ParseIt
+
 	
 	content="{\"accessToken\":\"$APIKey\",\"elements\":[{\"devices\":\"$UDID\",\"operation\":\"play_sound\"}]}"
 	APIOUTPUT=$(curl -s -k -X POST -d 'content='$content 'https://managerapi.mosyle.com/v2/lostmode')
 
+	###DEBUG SHOW STRING SENT TO MOSYLE
+	#echo "curl -s -k -X POST -d 'content='$content 'https://managerapi.mosyle.com/v2/lostmode'"
 
 	CMDStatus=$(echo "$APIOUTPUT" | cut -d ":" -f 3 | cut -d "," -f 1 | tr -d '"')
 	
-	echo "$CMDStatus"
+	$echo "$CMDStatus"
 	
 	if [ "$CMDStatus" = "LOSTMODE_NOTENABLED" ]; then
 		echo "API Says iPad is not currently in Lost Mode.  Enabling."
@@ -187,47 +198,47 @@ DisplayCheckdLostModeData() {
 }
 
 WHOISLOST() {
-	# rm -Rf /tmp/.*.lost_ish.txt
-	# #Initialize the base count variable. This will be
-	# #used to figure out what page we are on and where
-	# #we end up.
-	# THECOUNT=0
-	#
-	# # Connect to Mosyle API multiple times (for each page) so we
-	# # get all of the available data.
-	# while true; do
-	# 	let "THECOUNT=$THECOUNT+1"
-	# 	THEPAGE="$THECOUNT"
-	# 	content="{\"accessToken\":\"$APIKey\",\"options\":{\"os\":\"ios\",\"specific_columns\":\"deviceudid,date_last_beat,tags,lostmode_status\",\"page\":$THEPAGE}}"
-	# 	output=$(curl -s -k -X POST -d 'content='$content 'https://managerapi.mosyle.com/v2/listdevices') >> $LOG
-	#
-	# 	#echo "$content"
-	#
-	#
-	# 	#Detect we just loaded a page with no content and stop.
-	# 	LASTPAGE=$(echo $output | grep DEVICES_NOTFOUND)
-	# 	if [ -n "$LASTPAGE" ]; then
-	# 		let "THECOUNT=$THECOUNT-1"
-	# 		cli_log "Yo we are at the end of the list (Last good page was $THECOUNT)"
-	# 		break
-	# 	fi
-	#
-	# 	FAILURE=$(echo $output | grep INVALID_JSON)
-	# 	if [ -n "$FAILURE" ]; then
-	# 		cli_log "I sent bad code to Mosyle.."
-	# 		cli_log "Content-> $content"
-	# 		break
-	# 	fi
-	#
-	# 	echo " "
-	# 	cli_log "Page $THEPAGE data."
-	# 	echo "-----------------------"
-	# 	#Now take the JSON data we received and parse it into tab
-	# 	#delimited output.
-	# 	echo "$output"| awk 'BEGIN{FS=",";RS="},{"}{print $0}' | grep ENABLED | perl -pe 's/.*"deviceudid":"?(.*?)"?,"date_last_beat":"?(.*?)"?,"tags":"(.*?)","lostmode_status":"?(.*?)",*.*/\1\t\2\t\3\t\4/' | cut -d ']' -f 1  >> /tmp/.enabled.lost_ish.txt
-	# 	echo "$output"| awk 'BEGIN{FS=",";RS="},{"}{print $0}' | grep PENDINGTOENABLE | perl -pe 's/.*"deviceudid":"?(.*?)"?,"date_last_beat":"?(.*?)"?,"tags":"(.*?)","lostmode_status":"?(.*?)",*.*/\1\t\2\t\3\t\4/' | cut -d ']' -f 1  >> /tmp/.pending2enable.lost_ish.txt
-	# 	echo "$output"| awk 'BEGIN{FS=",";RS="},{"}{print $0}' | grep PENDINGTODISABLE | perl -pe 's/.*"deviceudid":"?(.*?)"?,"date_last_beat":"?(.*?)"?,"tags":"(.*?)","lostmode_status":"?(.*?)",*.*/\1\t\2\t\3\t\4/' | cut -d ']' -f 1  >> /tmp/.pending2disable.lost_ish.txt
-	# done
+	rm -Rf /tmp/.*.lost_ish.txt
+	#Initialize the base count variable. This will be
+	#used to figure out what page we are on and where
+	#we end up.
+	THECOUNT=0
+
+	# Connect to Mosyle API multiple times (for each page) so we
+	# get all of the available data.
+	while true; do
+		let "THECOUNT=$THECOUNT+1"
+		THEPAGE="$THECOUNT"
+		content="{\"accessToken\":\"$APIKey\",\"options\":{\"os\":\"ios\",\"specific_columns\":\"deviceudid,date_last_beat,tags,lostmode_status\",\"page\":$THEPAGE}}"
+		output=$(curl -s -k -X POST -d 'content='$content 'https://managerapi.mosyle.com/v2/listdevices') >> $LOG
+
+		#echo "$content"
+
+
+		#Detect we just loaded a page with no content and stop.
+		LASTPAGE=$(echo $output | grep DEVICES_NOTFOUND)
+		if [ -n "$LASTPAGE" ]; then
+			let "THECOUNT=$THECOUNT-1"
+			cli_log "Yo we are at the end of the list (Last good page was $THECOUNT)"
+			break
+		fi
+
+		FAILURE=$(echo $output | grep INVALID_JSON)
+		if [ -n "$FAILURE" ]; then
+			cli_log "I sent bad code to Mosyle.."
+			cli_log "Content-> $content"
+			break
+		fi
+
+		echo " "
+		cli_log "Page $THEPAGE data."
+		echo "-----------------------"
+		#Now take the JSON data we received and parse it into tab
+		#delimited output.
+		echo "$output"| awk 'BEGIN{FS=",";RS="},{"}{print $0}' | grep ENABLED | perl -pe 's/.*"deviceudid":"?(.*?)"?,"date_last_beat":"?(.*?)"?,"tags":"(.*?)","lostmode_status":"?(.*?)",*.*/\1\t\2\t\3\t\4/' | cut -d ']' -f 1  >> /tmp/.enabled.lost_ish.txt
+		echo "$output"| awk 'BEGIN{FS=",";RS="},{"}{print $0}' | grep PENDINGTOENABLE | perl -pe 's/.*"deviceudid":"?(.*?)"?,"date_last_beat":"?(.*?)"?,"tags":"(.*?)","lostmode_status":"?(.*?)",*.*/\1\t\2\t\3\t\4/' | cut -d ']' -f 1  >> /tmp/.pending2enable.lost_ish.txt
+		echo "$output"| awk 'BEGIN{FS=",";RS="},{"}{print $0}' | grep PENDINGTODISABLE | perl -pe 's/.*"deviceudid":"?(.*?)"?,"date_last_beat":"?(.*?)"?,"tags":"(.*?)","lostmode_status":"?(.*?)",*.*/\1\t\2\t\3\t\4/' | cut -d ']' -f 1  >> /tmp/.pending2disable.lost_ish.txt
+	done
 
 	#Work the Enabled Pile...
 	echo "${Magenta}             Devices Currently IN LOST MODE (ENABLED)${reset}"
@@ -272,14 +283,19 @@ WHOISLOST() {
 			echo "${Red}$ASSETTAG / $USERID / $LASTCHECKINLMQ / $NAME${reset}"	
 		fi
 		
+		# UDID="$UDID2LookupLMQ"
+		# PlayLostSound
+		
 		#Lets fill a variable of UDIDs to work with later....
 		#if this is our first entry just fill the variable
-		if [ -z "$LIMBOSetUDiDs" ]; then
+		if [ -z "$PlaySoundUDiDs" ]; then
 			PlaySoundUDiDs="$UDID2LookupLMQ"
 		else
 			#all others are additons to the variable
 			PlaySoundUDiDs=$(echo "$PlaySoundUDiDs,$UDID2LookupLMQ")
-		fi		
+		fi
+		
+		
 	done
 	echo " "
 	echo " "
@@ -403,6 +419,7 @@ if [ "$1" = "--sound" ]; then
 	PlayLostSound
 
 elif [ "$1" = "--enable" ]; then
+	CheckLostMode
 	EnableLostMode
 	
 elif [ "$1" = "--disable" ]; then
