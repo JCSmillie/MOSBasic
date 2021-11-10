@@ -20,7 +20,7 @@ ___  ________ ___________           _      <br/>
  * Deassign device (send to Limbo) single, masss (scan from the command line,) or by file
  * Wipe device (requires device to have recently checked in)
  
- Today if you type the //mosbasic// command with no argument it tells you it can do the following things:
+ Today if you type the _mosbasic_ command with no argument it tells you it can do the following things:
  ```
     __  __  ____   _____ ____            _
    |  \/  |/ __ \ / ____|  _ \          (_)
@@ -35,7 +35,7 @@ ___  ________ ___________           _      <br/>
  CLI tools for manipulating the Mosyle MDM.
 
  Version: 0.1.0
- https://github.com/JCSmillie/MOSBasic
+ https:_github.com/JCSmillie/MOSBasic
  Usage: mosbasic [command]
  Commands:
    lostmodeon			Give single asset tag.  Will enable lost mode with default message.
@@ -68,11 +68,12 @@ ___  ________ ___________           _      <br/>
    info <ASSET TAG/USERID/SERIAL>	Look up device assignment data by reference point  <ASSET TAG/USERID/SERIAL>
  ```
  
- How this stuff works will be detailed better in the Wiki but for example if you wanted to enable lost mode on a device you would:
-     mosbasic lostmodeon 23692
- At this point the tag would be queried against our cache'd data to get the UDID and then that UDID would be sent to the MoyleAPI to put the device in lost mode followed by playing a sound.  So now with the iPad in lost mode we can ask for more info:
-     mosbasic lostmodestatus 23692
+How this stuff works will be detailed better in the Wiki but for example if you wanted to enable lost mode on a device you would:
+    mosbasic lostmodeon 23692
+At this point the tag would be queried against our cache'd data to get the UDID and then that UDID would be sent to the MoyleAPI to put the device in lost mode followed by playing a sound.  So now with the iPad in lost mode we can ask for more info:
+    mosbasic lostmodestatus 23692
  Serial number is grabbed from our cached query data and then we ask the MosyleAPI about just this unit for more info and get:
+ ```
 	--------------------------------------------------
 	UDID=000000000000abcdabcd00000000000
 	DeviceSerialNumber=DMPXXXXX4JF8J
@@ -88,27 +89,28 @@ ___  ________ ___________           _      <br/>
 	Lost Mode Status=ENABLED
 	Location Data=40.4294700623,-79.7585754395
     
-	GO TO THIS LINK TO SEE LOST IPAD LOCATION-> https://maps.google.com/?q=40.4294700623,-79.7585754395
+	GO TO THIS LINK TO SEE LOST IPAD LOCATION-> https:_maps.google.com/?q=40.4294700623,-79.7585754395
 	--------------------------------------------------
- If lost mode is enabled and location data is available we get it back and provide a hyper link to the location on Google Maps.  Now this iPad in the example is a Shared iPad so somet data is not noted, but you can see that had it been normally assigned we would have something there.
- 
- From here we can make the iPad play sound again:
+ ```
+If lost mode is enabled and location data is available we get it back and provide a hyper link to the location on Google Maps.  Now this iPad in the example is a Shared iPad so somet data is not noted, but you can see that had it been normally assigned we would have something there.
+
+From here we can make the iPad play sound again:
     mosbasic annoy 23692
  
- Or we can disable lost mode:
+Or we can disable lost mode:
     mosbasic lostmodeoff 23692
  
- The above example is just dealing with lost devices, but mosbasic can do more.  See the wiki.
+The above example is just dealing with lost devices, but mosbasic can do more.  See the wiki.
  
  
 ## Configuration
- To get started you need to use the //RUNME1st_CONFIGSCRIPT.sh// to setup.  //RUNME1st_CONFIGSCRIPT.sh// command will prompt you through the setup process of:
+ To get started you need to use the _RUNME1st_CONFIGSCRIPT.sh_ to setup.  _RUNME1st_CONFIGSCRIPT.sh_ command will prompt you through the setup process of:
  * Save your Mosyle API key (to have a MosyleAPI key you must be a premium customer) to ~/.mosyleapikey
  * Detect where you have saved the github.
- * Link the //mosbasic// command to /usr/local/bin/mosbasic
+ * Link the _mosbasic_ command to /usr/local/bin/mosbasic
  * Enable IncidentIQ dependancies id desired.
 
-Now run the //mosbasic// command.  It will ensure everything else is in place and run a query for the first time to get a cache of your iOS devices and User accounts for local query.  This will happen any time these cached queries are not found in /tmp or the queried files are older than a day.
+Now run the _mosbasic_ command.  It will ensure everything else is in place and run a query for the first time to get a cache of your iOS devices and User accounts for local query.  This will happen any time these cached queries are not found in /tmp or the queried files are older than a day.
  
  
  
@@ -116,7 +118,7 @@ Now run the //mosbasic// command.  It will ensure everything else is in place an
 ### A side note MOS
 Its great that MOS makes me think of two things I love working on:
  * MOSyle
- * [MOS Technology](https://en.wikipedia.org/wiki/MOS_Technology), Commodore's chip foundry out in West Chester, PA
+ * [MOS Technology](https:_en.wikipedia.org/wiki/MOS_Technology), Commodore's chip foundry out in West Chester, PA
 
 
 
@@ -124,7 +126,7 @@ Its great that MOS makes me think of two things I love working on:
   
   
 ## Module Support
-MOSBasic supports external modules for lookup support.  When you run //RUNME1st_CONFIGSCRIPT.sh// you will be asked if you want support for external modules.  Today the only supported options are: iiq, other, and none.
+MOSBasic supports external modules for lookup support.  When you run _RUNME1st_CONFIGSCRIPT.sh_ you will be asked if you want support for external modules.  Today the only supported options are: iiq, other, and none.
   * iiq-> IndcidentIQ support.  This also requires $LOCALCONF/.incidentIQ to exist.  You must create this file by hand.
   * other-> <<NOT SUPPORTED TODAY BUT WILL BE>>
   * none-> Do not use modules.  This will cripple some features of MOSBasic like assigning iPads unless you are inputting USERNAME and SERIAL.  If you are inputting student ID number or anything else you will need these look ups to do cross references.
