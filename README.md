@@ -1,14 +1,14 @@
 # MOSBasic
 
-___  ________ ___________           _      <br/>
-|  \/  |  _  /  ___| ___ \         (_)     <br/>
-| .  . | | | \ `--.| |_/ / __ _ ___ _  ___ <br/>
-| |\/| | | | |`--. \ ___ \/ _` / __| |/ __|<br/>
-| |  | \ \_/ /\__/ / |_/ / (_| \__ \ | (__ <br/>
-\_|  |_/\___/\____/\____/ \__,_|___/_|\___|<br/>
+___  ________ ___________           _      <br />
+|  \/  |  _  /  ___| ___ \         (_)     <br />
+| .  . | | | \ `--.| |_/ / __ _ ___ _  ___ <br />
+| |\/| | | | |`--. \ ___ \/ _` / __| |/ __|<br />
+| |  | \ \_/ /\__/ / |_/ / (_| \__ \ | (__ <br />
+\_|  |_/\___/\____/\____/ \__,_|___/_|\___|<br />
 
 
- Easy to use command line tools for interacting with MOSYLE MDM.  In places I also will interact with IncidentIQ ticket system for data.  I'm going to try to run my inventory check module so anyone could easily write their own module for the ticket system they use.  Will post a note about that in the wiki later when we get there.
+Easy to use command line tools for interacting with MOSYLE MDM.  In places I also will interact with IncidentIQ ticket system for data.  I'm going to try to run my inventory check module so anyone could easily write their own module for the ticket system they use.  Will post a note about that in the wiki later when we get there.  This command was built for daily use at Gateway School District so we could easily maniplulate devices without having to go to the GUI every time.  It is 
  
  **NOTE** These commands rely on asset tags for reference.  
  
@@ -93,7 +93,7 @@ At this point the tag would be queried against our cache'd data to get the UDID 
 	Lost Mode Status=ENABLED
 	Location Data=40.4294700623,-79.7585754395
     
-	GO TO THIS LINK TO SEE LOST IPAD LOCATION-> https:_maps.google.com/?q=40.4294700623,-79.7585754395
+	GO TO THIS LINK TO SEE LOST IPAD LOCATION-> https://maps.google.com/?q=40.4294700623,-79.7585754395
 	--------------------------------------------------
  ```
 If lost mode is enabled and location data is available we get it back and provide a hyper link to the location on Google Maps.  Now this iPad in the example is a Shared iPad so somet data is not noted, but you can see that had it been normally assigned we would have something there.
@@ -113,7 +113,7 @@ The above example is just dealing with lost devices, but mosbasic can do more.  
  To get started you need to use the _RUNME1st_CONFIGSCRIPT.sh_ to setup.  _RUNME1st_CONFIGSCRIPT.sh_ command will prompt you through the setup process of:
  * Save your Mosyle API key (to have a MosyleAPI key you must be a premium customer) to ~/.mosyleapikey
  * Detect where you have saved the github.
- * Link the _mosbasic_ command to /usr/local/bin/mosbasic
+ * Link the _mosbasic_ command to _/usr/local/bin/mosbasic_
  * Enable IncidentIQ dependancies id desired.
 
 Now run the _mosbasic_ command.  It will ensure everything else is in place and run a query for the first time to get a cache of your iOS devices and User accounts for local query.  This will happen any time these cached queries are not found in /tmp or the queried files are older than a day.
@@ -134,16 +134,17 @@ Its great that MOS makes me think of two things I love working on:
 ## Module Support
 MOSBasic supports external modules for lookup support.  When you run _RUNME1st_CONFIGSCRIPT.sh_ you will be asked if you want support for external modules.  Today the only supported options are: iiq, other, and none.
   * iiq-> IndcidentIQ support.  This also requires $LOCALCONF/.incidentIQ to exist.  You must create this file by hand.
-  * other-> <<NOT SUPPORTED TODAY BUT WILL BE>>
+  * other-> _NOT SUPPORTED TODAY BUT WILL BE_
   * none-> Do not use modules.  This will cripple some features of MOSBasic like assigning iPads unless you are inputting USERNAME and SERIAL.  If you are inputting student ID number or anything else you will need these look ups to do cross references.
   
   
 ### IIQ File Setup
 The IIQ file must be setup as so:
+ ```
 apitoken="<<<YOUR KEY FROM INCIDENTIQ>>>"   
 siteid="<<<YYOUR SITE ID FROM INCIDENT IQ>>>"
 baseurl="<<<YYOUR BASE URL FROM INCIDENT IQ>>>"
-	
+ ```	
 All of the above should be listed in ~/.incidentIQ
  
  
