@@ -69,9 +69,13 @@ ___  ________ ___________           _      <br/>
  ```
  
 How this stuff works will be detailed better in the Wiki but for example if you wanted to enable lost mode on a device you would:
+ ```
     mosbasic lostmodeon 23692
+ ```
 At this point the tag would be queried against our cache'd data to get the UDID and then that UDID would be sent to the MoyleAPI to put the device in lost mode followed by playing a sound.  So now with the iPad in lost mode we can ask for more info:
+ ```
     mosbasic lostmodestatus 23692
+ ```
  Serial number is grabbed from our cached query data and then we ask the MosyleAPI about just this unit for more info and get:
  ```
 	--------------------------------------------------
@@ -95,9 +99,11 @@ At this point the tag would be queried against our cache'd data to get the UDID 
 If lost mode is enabled and location data is available we get it back and provide a hyper link to the location on Google Maps.  Now this iPad in the example is a Shared iPad so somet data is not noted, but you can see that had it been normally assigned we would have something there.
 
 From here we can make the iPad play sound again:
+
     mosbasic annoy 23692
  
 Or we can disable lost mode:
+
     mosbasic lostmodeoff 23692
  
 The above example is just dealing with lost devices, but mosbasic can do more.  See the wiki.
