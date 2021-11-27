@@ -60,10 +60,11 @@ while true; do
 
 	#Now take the JSON data we received and parse it into tab
 	#delimited output.
+	#echo "$output" >> /tmp/MOSBasicRAW.txt
 
 	#Right from the git go exclude any results which are for General (Limbo) iPads, Shared iPads, Staff iPads, or Teacher iPads.
 	#This creates the list of student iPads
-	echo "$output"| awk 'BEGIN{FS=",";RS="},{"}{print $0}' | grep -v GENERAL | grep -v SHARED | grep -v Teachers | grep -v Staff | grep -v Leader | grep serial_number |  perl -pe 's/.*"deviceudid":"?(.*?)"?,"serial_number":"(.*?)","device_name":"?(.*?)"?,"tags":"?(.*?)"?,"asset_tag":"?(.*?)"?,"date_app_info":"?(.*?)","enrollment_type":"?(.*?)","userid":"?(.*?)","username":"?(.*?)","usertype":"?(.*?)",*.*/\1\t\2\t\3\t\4\t\5\t\6\t\7\t\8\t\9/' >> "$TEMPOUTPUTFILE_Stu"
+	echo "$output"| awk 'BEGIN{FS=",";RS="},{"}{print $0}' | grep -v GENERAL | grep -v SHARED | grep -v Teacher | grep -v Staff | grep -v Leader | grep serial_number |  perl -pe 's/.*"deviceudid":"?(.*?)"?,"serial_number":"(.*?)","device_name":"?(.*?)"?,"tags":"?(.*?)"?,"asset_tag":"?(.*?)"?,"date_app_info":"?(.*?)","enrollment_type":"?(.*?)","userid":"?(.*?)","username":"?(.*?)","usertype":"?(.*?)",*.*/\1\t\2\t\3\t\4\t\5\t\6\t\7\t\8\t\9/' >> "$TEMPOUTPUTFILE_Stu"
 
 	#Now a file with just Teachers/Staff in it.
 	echo "$output"| awk 'BEGIN{FS=",";RS="},{"}{print $0}' | grep -v GENERAL | grep -v SHARED |grep -v Student | grep serial_number |  perl -pe 's/.*"deviceudid":"?(.*?)"?,"serial_number":"(.*?)","device_name":"?(.*?)"?,"tags":"?(.*?)"?,"asset_tag":"?(.*?)"?,"date_app_info":"?(.*?)","enrollment_type":"?(.*?)","userid":"?(.*?)","username":"?(.*?)","usertype":"?(.*?)",*.*/\1\t\2\t\3\t\4\t\5\t\6\t\7\t\8\t\9/' >> "$TEMPOUTPUTFILE_Teachers"
