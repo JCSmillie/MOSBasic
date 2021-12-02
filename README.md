@@ -1,18 +1,10 @@
 # MOSBasic
 
-___  ________ ___________           _      <br />
-|  \/  |  _  /  ___| ___ \         (_)     <br />
-| .  . | | | \ `--.| |_/ / __ _ ___ _  ___ <br />
-| |\/| | | | |`--. \ ___ \/ _` / __| |/ __|<br />
-| |  | \ \_/ /\__/ / |_/ / (_| \__ \ | (__ <br />
-\_|  |_/\___/\____/\____/ \__,_|___/_|\___|<br />
-
-
 Easy to use command line tools for interacting with MOSYLE MDM.  In places I also will interact with IncidentIQ ticket system for data.  I'm going to try to run my inventory check module so anyone could easily write their own module for the ticket system they use.  Will post a note about that in the wiki later when we get there.  This command was built for daily use at Gateway School District so we could easily maniplulate devices without having to go to the GUI every time.  It is 
  
  **NOTE** These commands rely on asset tags for reference.  
  
- My goal here is to try to create some simple command line tools which can let admins quickly do common tasks from the CLI.  Tasks like:
+ My goal here is to try to create some simple command line tools using commands and methods which should always be available on any Mac which can let admins quickly do common tasks from the CLI.  Tasks like:
  * Work with tags (add, remove, remove all)
  * Work with Lost Mode (enable, disable, play sound)
  * Compare assignment of device Mosyle vs. IncidentIQ
@@ -117,10 +109,7 @@ The above example is just dealing with lost devices, but mosbasic can do more.  
  * Enable IncidentIQ dependancies id desired.
 
 Now run the _mosbasic_ command.  It will ensure everything else is in place and run a query for the first time to get a cache of your iOS devices and User accounts for local query.  This will happen any time these cached queries are not found in /tmp or the queried files are older than a day.
- 
- 
- 
- 
+
 ### A side note MOS
 Its great that MOS makes me think of two things I love working on:
  * MOSyle
@@ -146,5 +135,8 @@ siteid="<<<YYOUR SITE ID FROM INCIDENT IQ>>>"
 baseurl="<<<YYOUR BASE URL FROM INCIDENT IQ>>>"
  ```	
 All of the above should be listed in ~/.incidentIQ
+
+# Disclaimer
+While all of this stuff is used on a daily bases at Gateway School District in our persuit to best support the students there is always a chance for a bug to be found that doesn't effect me.  I'm not a master coder by any means but know enough to get myself into trouble... so don't be surprised if there is a better way to do things I'm not using.  As far as I'm aware there is nothing malacious in my code.  It only works on files created by itself and shouldn't hurt anything.  That being said end responsibility I take none and as my favorite AppleSE always said "Mileage may very" but I hope this does work for you.
  
  
