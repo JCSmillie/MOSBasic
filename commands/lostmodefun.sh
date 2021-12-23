@@ -15,13 +15,15 @@ source "$BAGCLI_WORKDIR/config"
 source "$BAGCLI_WORKDIR/common"
 IFS=$'\n'
 
-
 CMDRAN="LostMode=> $2"
 
-echo "Variable 1-> $1"
-echo "Variable 2-> $2"
-echo "Variable 3-> $3"
-echo "Variable 4-> $4"
+if [ "$MB_DEBUG" = "Y" ]; then
+	echo "Variable 1-> $1"
+	echo "Variable 2-> $2"
+	echo "Variable 3-> $3"
+	echo "Variable 4-> $4"
+fi
+
 
 
 #############################
@@ -70,7 +72,7 @@ PlayLostSound() {
 
 	CMDStatus=$(echo "$APIOUTPUT" | cut -d ":" -f 3 | cut -d "," -f 1 | tr -d '"')
 	
-	$echo "$CMDStatus"
+	#echo "$CMDStatus"
 	
 	if [ "$CMDStatus" = "LOSTMODE_NOTENABLED" ]; then
 		echo "API Says iPad is not currently in Lost Mode.  Enabling."
@@ -85,15 +87,6 @@ PlayLostSound() {
 		echo "Command yeilded Unknown Status ($APIOUTPUT)"
 	fi
 }
-
-# RequestLocation(){
-# 	#Run Parsing Routine to get fields from tab delimited data
-# 	ParseIt
-#
-# 	content="{\"accessToken\":\"$APIKey\",\"elements\":[{\"devices\":\"$UDID\",\"operation\":\"request_location\"}]}"
-# 	curl  -s -k -X POST -d 'content='$content 'https://managerapi.mosyle.com/v2/lostmode'
-#
-# }
 
 DisableLostMode(){
 	# ParseIt
@@ -267,6 +260,10 @@ WHOISLOST() {
 			NAME="NOT ASSIGNED"
 		fi
 		
+		if [ -z "$TAGSLMQ" ]; then
+			TAGSLMQ="NO TAGS"
+		fi
+		
 		#Figure out how many hours ago last beat was
 		current_time=$(date +%s)
 		current_time=$(expr "$current_time" / 3600 )
@@ -276,11 +273,11 @@ WHOISLOST() {
 		#Based on hours above color code our output.  Green is day or less, Yellow is 3
 		#days or less, and red is everything else.
 		if [ "$hoursagoLMQ" -lt 24 ]; then
-			echo "${Green}$ASSETTAG / $USERID / $LASTCHECKINLMQ / $NAME${reset}"
+			echo "${Green}$ASSETTAG / $LASTCHECKINLMQ / $USERID / $NAME / $TAGSLMQ ${reset}"
 		elif [ "$hoursagoLMQ" -lt 72 ]; then
-			echo "${Yellow}$ASSETTAG / $USERID / $LASTCHECKINLMQ / $NAME${reset}"
+			echo "${Yellow}$ASSETTAG / $LASTCHECKINLMQ / $USERID / $NAME / $TAGSLMQ ${reset}"
 		else
-			echo "${Red}$ASSETTAG / $USERID / $LASTCHECKINLMQ / $NAME${reset}"	
+			echo "${Red}$ASSETTAG  / $LASTCHECKINLMQ / $USERID / $NAME / $TAGSLMQ ${reset}"	
 		fi
 		
 		# UDID="$UDID2LookupLMQ"
@@ -332,6 +329,10 @@ WHOISLOST() {
 			NAME="NOT ASSIGNED"
 		fi
 		
+		if [ -z "$TAGSLMQ" ]; then
+			TAGSLMQ="NO TAGS"
+		fi
+		
 		#Figure out how many hours ago last beat was
 		current_time=$(date +%s)
 		current_time=$(expr "$current_time" / 3600 )
@@ -341,61 +342,18 @@ WHOISLOST() {
 		#Based on hours above color code our output.  Green is day or less, Yellow is 3
 		#days or less, and red is everything else.
 		if [ "$hoursagoLMQ" -lt 24 ]; then
-			echo "${Green}$ASSETTAG / $USERID / $LASTCHECKINLMQ / $NAME${reset}"
+			echo "${Green}$ASSETTAG / $LASTCHECKINLMQ / $USERID / $NAME / $TAGSLMQ ${reset}"
 		elif [ "$hoursagoLMQ" -lt 72 ]; then
-			echo "${Yellow}$ASSETTAG / $USERID / $LASTCHECKINLMQ / $NAME${reset}"
+			echo "${Yellow}$ASSETTAG/ $LASTCHECKINLMQ / $USERID / $NAME / $TAGSLMQ ${reset}"
 		else
-			echo "${Red}$ASSETTAG / $USERID / $LASTCHECKINLMQ / $NAME${reset}"	
+			echo "${Red}$ASSETTAG / $LASTCHECKINLMQ / $USERID / $NAME / $TAGSLMQ ${reset}"	
 		fi
 		
-		# #Lets fill a variable of UDIDs to work with later....
-		# #if this is our first entry just fill the variable
-		# if [ -z "$LIMBOSetUDiDs" ]; then
-		# 	PlaySoundUDiDs="$UDID2LookupLMQ"
-		# else
-		# 	#all others are additons to the variable
-		# 	PlaySoundUDiDs=$(echo "$PlaySoundUDiDs,$UDID2LookupLMQ")
-		# fi		
 	done
 
 	echo " "
 	echo " "	
-	# #Work the Enabled Pile...
-	# echo "             Devices Currently WAITING TO COME OUT OF LOST MODE"
-	# echo "-----------******************************************************-----------"
-	# cat /tmp/.pending2disable.lost_ish.txt | while read DataFromLostModeQuery; do
-	# 	#Fill variables based on data from file
-	# 	UDID2LookupLMQ=$(echo "$DataFromLostModeQuery" | cut -f 1 -d$'\t' )
-	# 	LASTBEATLMQ=$(echo "$DataFromLostModeQuery" |  cut -f 2 -d$'\t' )
-	# 	TAGSLMQ=$(echo "$DataFromLostModeQuery" | cut -f 3 -d$'\t')
-	# 	LOSTMODELMQ=$(echo "$DataFromLostModeQuery" |  cut -f 4 -d$'\t' )
-	#
-	# 	#Take Epoch time and convert to hours
-	# 	LASTCHECKINLMQ=$(python -c "import datetime; print(datetime.datetime.fromtimestamp(int("$LASTBEATLMQ")).strftime('%Y-%m-%d %I:%M:%S %p'))")
-	#
-	# 	#Now query our cache'd info to fill in the blanks.
-	# 	UDID2Lookup=$(cat "$TEMPOUTPUTFILE_MERGEDIOS" | grep "$UDID2LookupLMQ")
-	#
-	# 	#Pass the info we just got to the parse routine.
-	# 	line="$UDID2Lookup"
-	# 	ParseIt_ios
-	#
-	# 	if [ -z "$USERID" ]; then
-	# 		USERID="NotAss"
-	# 		NAME="NOT ASSIGNED"
-	# 	fi
-	#
-	# 	echo "$ASSETTAG / $USERID / $LASTCHECKINLMQ / $NAME"
-	#
-	# 	# #Lets fill a variable of UDIDs to work with later....
-	# 	# #if this is our first entry just fill the variable
-	# 	# if [ -z "$LIMBOSetUDiDs" ]; then
-	# 	# 	PlaySoundUDiDs="$UDID2LookupLMQ"
-	# 	# else
-	# 	# 	#all others are additons to the variable
-	# 	# 	PlaySoundUDiDs=$(echo "$PlaySoundUDiDs,$UDID2LookupLMQ")
-	# 	# fi
-	# done
+
 }
 
 

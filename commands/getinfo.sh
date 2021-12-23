@@ -13,13 +13,14 @@ source "$BAGCLI_WORKDIR/config"
 source "$BAGCLI_WORKDIR/common"
 IFS=$'\n'
 
+CMDRAN="GETINFO"
 
-CMDRAN="GetInfo"
-
-echo "Variable 1-> $1"
-echo "Variable 2-> $2"
-echo "Variable 3-> $3"
-echo "Variable 4-> $4"
+if [ "$MB_DEBUG" = "Y" ]; then
+	echo "Variable 1-> $1"
+	echo "Variable 2-> $2"
+	echo "Variable 3-> $3"
+	echo "Variable 4-> $4"
+fi
 
 ################################
 #            DO WORK           #

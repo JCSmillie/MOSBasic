@@ -17,7 +17,12 @@ IFS=$'\n'
 
 CMDRAN="iOSdump"
 
-
+if [ "$MB_DEBUG" = "Y" ]; then
+	echo "Variable 1-> $1"
+	echo "Variable 2-> $2"
+	echo "Variable 3-> $3"
+	echo "Variable 4-> $4"
+fi
 
 ################################
 #            DO WORK           #

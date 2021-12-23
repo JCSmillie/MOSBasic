@@ -18,10 +18,12 @@ IFS=$'\n'
 
 CMDRAN="iOSLimboNWipe"
 
-echo "Variable 1-> $1"
-echo "Variable 2-> $2"
-echo "Variable 3-> $3"
-echo "Variable 4-> $4"
+if [ "$MB_DEBUG" = "Y" ]; then
+	echo "Variable 1-> $1"
+	echo "Variable 2-> $2"
+	echo "Variable 3-> $3"
+	echo "Variable 4-> $4"
+fi
 
 #Delete our file of previous scanned devices if it exists
 rm -Rf /tmp/Scand2Wipe.txt
@@ -157,11 +159,11 @@ if [ "$shouldwedoit" = "Y" ]; then
 			echo "Making it So #1."
 			#Call out to Mosyle MDM to submit list of UDIDs which need Limbo'd
 			content="{\"accessToken\":\"$APIKey\",\"elements\":[{\"devices\":\"$LIMBOSetUDiDs\",\"operation\":\"change_to_limbo\"}]}"
-			echo "--> $content <--"
+			#echo "--> $content <--"
 			curl  -s -k -X POST -d 'content='$content 'https://managerapi.mosyle.com/v2/bulkops'
 
 			content="{\"accessToken\":\"$APIKey\",\"elements\":[{\"devices\":\"$LIMBOSetUDiDs\",\"operation\":\"wipe_devices\"}]}"
-			echo "--> $content <--"
+			#echo "--> $content <--"
 			curl  -s -k -X POST -d 'content='$content 'https://managerapi.mosyle.com/v2/bulkops'
 
 	else
@@ -175,7 +177,7 @@ if [ "$shouldwedoit" = "Y" ]; then
 			echo "Making it So #1."
 			#Call out to Mosyle MDM to submit list of UDIDs which need Wiped
 			content="{\"accessToken\":\"$APIKey\",\"elements\":[{\"devices\":\"$WIPEUDiDs\",\"operation\":\"wipe_devices\"}]}"
-			echo "--> $content <--"
+			#echo "--> $content <--"
 			curl  -s -k -X POST -d 'content='$content 'https://managerapi.mosyle.com/v2/bulkops'
 
 	else

@@ -18,10 +18,14 @@ IFS=$'\n'
 
 CMDRAN="iOSAssignDevice"
 
-echo "Variable 1-> $1"
-echo "Variable 2-> $2"
-echo "Variable 3-> $3"
-echo "Variable 4-> $4"
+if [ "$MB_DEBUG" = "Y" ]; then
+	CMDRAN="iOSAssignDevice"
+
+	echo "Variable 1-> $1"
+	echo "Variable 2-> $2"
+	echo "Variable 3-> $3"
+	echo "Variable 4-> $4"
+fi
 
 #Delete our file of previous scanned devices if it exists
 rm -Rf /tmp/Scan2Assign.txt
