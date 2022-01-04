@@ -17,6 +17,7 @@ fi
 
 
 
+
 rm -Rf $BAGCLI_WORKDIR/config
 
 #Make sure we can find out config file...
@@ -47,6 +48,17 @@ if [ ! -f "$BAGCLI_WORKDIR/config" ] ; then
 	echo "#is all disabled.  Uncomment the support you want. " >> $BAGCLI_WORKDIR/config
 	echo '#source "$BAGCLI_WORKDIR/modules/Default.sh" ' >> $BAGCLI_WORKDIR/config
 	echo " "  >> $BAGCLI_WORKDIR/config
+	
+	#Now load the variables from config into memory
+	source "$BAGCLI_WORKDIR/config"
+	
+	#Make sure our personal MOSBasic folder exists...
+	if [ -f "$LOCALCONF/MOSBasic/" ]; then
+		echo "Local MOSBasic folder found.  Not touching.."
+	else
+		echo "Creating Local MOSBasic folder..."
+		mkdir "$LOCALCONF/MOSBasic/"
+	fi
 	
 	
 	#SHOW THE USER - ASKING ABOUT EXTERNAL MODULE SUPPORT

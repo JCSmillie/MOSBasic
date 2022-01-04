@@ -4,7 +4,7 @@
 # apitoken="S0M3KeY"
 # siteid="IIQ_SiteID"
 # baseurl="https://YourSite.incidentiq.com/api/v1.0
-source /usr/local/Smillieware/Hash/.incidentIQ
+source $LOCALCONF/.incidentIQ
 #apitoken, siteid, and baseurl all come from the source file above
 
 
