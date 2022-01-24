@@ -11,6 +11,7 @@
 #
 # This file is dedicated to functions which could be called
 # across the board through out all commands.
+
 #
 ################################
 #          FUNCTIONS           #
@@ -101,13 +102,18 @@ IsThisiPadSharedMode() {
 	fi
 }
 
-
 #ColorCodes
-Red=`tput setaf 1`
-Green=`tput setaf 2`
-Yellow=`tput setaf 3`
-Blue=`tput setaf 4`
-Magenta=`tput setaf 5`
-Cyan=`tput setaf 6`
-White=`tput setaf 7`
-reset=`tput sgr0`
+
+#Make sure TERM variable is set.
+[[ ${TERM}=="" ]] && TPUTTERM='-Txterm-256color' \
+                  || TPUTTERM=''
+
+#Define colors
+Red=`tput ${TPUTTERM} setaf 1`
+Green=`tput ${TPUTTERM} setaf 2`
+Yellow=`tput ${TPUTTERM} setaf 3`
+Blue=`tput ${TPUTTERM} setaf 4`
+Magenta=`tput ${TPUTTERM} setaf 5`
+Cyan=`tput ${TPUTTERM} setaf 6`
+White=`tput ${TPUTTERM} setaf 7`
+reset=`tput ${TPUTTERM} sgr0`

@@ -58,6 +58,8 @@ if [ ! -f "$BAGCLI_WORKDIR/config" ] ; then
 	else
 		echo "Creating Local MOSBasic folder..."
 		mkdir "$LOCALCONF/MOSBasic/"
+		#NEED A LINE HERE TO CHANGE THE DIR OWNERSHIP TO THE PERSON RUNNING THE SCRIPT
+		#NOT ROOT
 	fi
 	
 	
