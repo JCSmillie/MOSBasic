@@ -159,18 +159,28 @@ else
 fi
 
 
+
 #######################################
 # Do we have cache'd data about iPads
 #######################################
 #First Make sure we have what we need
 if [ ! -s "$TEMPOUTPUTFILE_MERGEDIOS" ]; then
 	cli_log "$TEMPOUTPUTFILE_MERGEDIOS is missing.  Must grab NOW."
-	"$BAGCLI_WORKDIR/commands/mosdatadump-iOS.sh"
+	GETIOSDATA="YES"
+	#"$BAGCLI_WORKDIR/commands/mosdatadump-iOS.sh"
+	
+#Is the command we are about to run one that is going to pull its own data?
+elif [ "$1" = "whoislost" ] || [ "$1" = "lostmodeon" ] || [ "$1" = "lostmodeoff" ] || [ "$1" = "lostmodestatus" ] || [ "$1" = "annoy" ]; then
+	cli_log "Skipping Local Data check because $1 pulls its own data..."
 
 #If our data is older than 24hr then update it.
 elif [ `find "$TEMPOUTPUTFILE_MERGEDIOS" -mmin +1440 | egrep '.*'` ]; then
 	cli_log "$TEMPOUTPUTFILE_MERGEDIOS is older than a day.  Updating."
-	"$BAGCLI_WORKDIR/commands/mosdatadump-iOS.sh"
+	#"$BAGCLI_WORKDIR/commands/mosdatadump-iOS.sh"
+	GETIOSDATA="YES"
+
+else
+	GETIOSDATA="NO"
 fi
 
 #######################################
@@ -178,11 +188,38 @@ fi
 #######################################
 if [ ! -s "$TEMPOUTPUTFILE_Users" ]; then
 	cli_log "$TEMPOUTPUTFILE_Users is missing.   Must grab NOW."
-	"$BAGCLI_WORKDIR/commands/mosdatadump-USERS.sh"
+	GETUSERDATA="YES"
+	#"$BAGCLI_WORKDIR/commands/mosdatadump-USERS.sh"
+	
+#Is the command we are about to run one that is going to pull its own data?
+elif [ "$1" = "whoislost" ] || [ "$1" = "lostmodeon" ] || [ "$1" = "lostmodeoff" ] || [ "$1" = "lostmodestatus" ] || [ "$1" = "annoy" ]; then
+	cli_log "Skipping Local Data check because $1 pulls its own data..."
+		
 #If our data is older than 24hr then update it.
 elif [ `find "$TEMPOUTPUTFILE_Users" -mmin +1440 | egrep '.*'` ]; then
 	cli_log "$TEMPOUTPUTFILE_Users is older than a day.  Updating."
+	#"$BAGCLI_WORKDIR/commands/mosdatadump-USERS.sh"
+	GETUSERDATA="YES"
+
+else
+	GETUSERDATA="NO"
+fi
+
+if [ "$GETUSERDATA" = "YES" ] && [ "$GETUSERDATA" = "YES" ]; then
+	cli_log "Doing iosdump and userdump in parallel."
+	"$BAGCLI_WORKDIR/commands/mosdatadump-iOS.sh" &
+	P1=$!
+	"$BAGCLI_WORKDIR/commands/mosdatadump-USERS.sh" &
+	P2=$!
+	wait $P1 $P2
+
+elif  [ "$GETUSERDATA" = "YES" ]; then
+	cli_log "Doing User dump only."
 	"$BAGCLI_WORKDIR/commands/mosdatadump-USERS.sh"
+
+elif [ "$GETIOSDATA" = "YES" ]; then
+		cli_log "Doing iOS dump only."
+	"$BAGCLI_WORKDIR/commands/mosdatadump-iOS.sh"
 fi
 
 
