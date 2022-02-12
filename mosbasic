@@ -75,10 +75,9 @@ Commands:
   ioswipe --mass <FILE>		Give file with multiple tags.  One per line.  All will 
             			be Limbo'd and wiped.  If an individual tag can't be found
 		    		it will be skipped and logged.  <<PLANNED NOT YET READY>>
-  iosdump			Dump info for all iOS devices from Mosyle
-  				to local reference files.
-  userdump			Dump info for all Users in Mosyle to local
-				reference files.
+  iosdump			Dump info for all iOS devices from Mosyle to local reference files.
+  macdump			Dump info for all MacOS devices from Mosyle to local reference files.				
+  userdump			Dump info for all Users in Mosyle to local reference files.
   iosassign			Info will be looked up and then device will be assigned.  <<REQUIRES USERLOOKUP MODULE>>
   iosassign --scan		Scan multiple devices  Tag first then assignment tag.  When done 
   				hit enter to give a blank.  Info will be looked up and then device will
@@ -229,6 +228,9 @@ fi
 # echo "Variable 2-> $2"
 
 case "$1" in
+macdump)
+	"$BAGCLI_WORKDIR/commands/mosdatadump-Mac.sh"
+	;; 
 iosdump)
 	"$BAGCLI_WORKDIR/commands/mosdatadump-iOS.sh"
 	;; 
@@ -263,5 +265,7 @@ whoislost)
     cli_help
     ;;
 esac
+
+
 
 

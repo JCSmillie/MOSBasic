@@ -53,6 +53,12 @@ ParseIt_ios() {
 	LASTCHECKIN=$(python -c "import datetime; print(datetime.datetime.fromtimestamp(int("$LASTCHECKIN")).strftime('%Y-%m-%d %I:%M:%S %p'))")
 }
 
+ParseIt_group() {
+	GRPID=$(echo "$line" | cut -f 1 -d$'\t')
+	GRPNAME=$(echo "$line" | cut -f 2 -d$'\t')
+	GRPNUMOFMEMBS=$(echo "$line" | cut -f 3 -d$'\t')
+}
+
 SerialFromTag() {
 	#Search through our known serials
 	SERIALIS=$(cat "$TEMPOUTPUTFILE_MERGEDIOS" | cut -d$'\t' -f 2-5,7-9 | grep "$TAG_GIVEN" | cut -d$'\t' -f 1 )
