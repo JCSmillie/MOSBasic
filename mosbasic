@@ -86,6 +86,8 @@ Commands:
   				per line.  All will be assigned properly.  <<PLANNED NOT YET READY>> <<REQUIRES USERLOOKUP MODULE>>
   			
   info <ASSET TAG/USERID/SERIAL>	Look up device assignment data by reference point  <ASSET TAG/USERID/SERIAL>		
+  listgroups --mac		Display list of all current Mac Device Groups in Mosyle
+  listgroups --ios		Display list of all current iOS Device Groups in Mosyle
 "
   exit 1
 }
@@ -261,6 +263,12 @@ lostmodestatus)
 whoislost)
 	"$BAGCLI_WORKDIR/commands/lostmodefun.sh" "--whoislost"
 	;;
+listgroups)
+	"$BAGCLI_WORKDIR/commands//groupsquery.sh" "$2"
+	;;
+whoislost)
+	"$BAGCLI_WORKDIR/commands/lostmodefun.sh" "--whoislost"
+	;;		
   *)
     cli_help
     ;;

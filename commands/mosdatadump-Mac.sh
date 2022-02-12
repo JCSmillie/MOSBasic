@@ -24,10 +24,7 @@ if [ "$MB_DEBUG" = "Y" ]; then
 	echo "Variable 4-> $4"
 fi
 
-echo "$TEMPOUTPUTFILE_MACStu"
-echo "$TEMPOUTPUTFILE_MACLimbo"
-echo "$TEMPOUTPUTFILE_MACShared"
-echo "$TEMPOUTPUTFILE_MERGEDMAC"
+
 ################################
 #            DO WORK           #
 ################################

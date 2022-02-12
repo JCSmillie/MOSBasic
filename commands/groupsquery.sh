@@ -96,14 +96,6 @@ listgroupsmacos() {
 		echo "$GRPID / $GRPNAME / $GRPNUMOFMEMBS"
 	done
 }
-rm -Rf $TEMPOUTPUTFILE
-
-listgroupsios
-
-rm -Rf $TEMPOUTPUTFILE
-
-listgroupsmacos
-
 
 
 # #Make sure we were given criteria to do a look up
@@ -194,3 +186,27 @@ listgroupsmacos
 # exit 1
 #
 
+
+#############################
+#          Do Work          #
+#############################
+#Clear the temp file
+rm -Rf $TEMPOUTPUTFILE
+#First parse the Tag unless this is blanket whos lost query
+if [ -z "$1" ]; then
+	cli_log "So what do you want me to do here?  Come'on man!"
+	exit 1
+fi
+
+
+#Now take our argument and move forward.
+if [ "$1" = "--mac" ]; then
+	listgroupsmacos
+
+elif [ "$1" = "--ios" ]; then
+	listgroupsios
+
+else
+	cli_log "Bad arguments given <$1> .  This command only takes --ios and --mac.  Try again."
+	exit 1
+fi
