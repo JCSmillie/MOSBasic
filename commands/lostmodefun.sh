@@ -145,7 +145,7 @@ CheckLostMode() {
 		echo "($UDID) / ($LASTBEAT) / ($TAGS) / ($LOSTMODE) / ($LONGITUDE) / ($LATITUDE)"
 		
 		
-		LASTBEATDATE=$(python -c "import datetime; print(datetime.datetime.fromtimestamp(int("$LASTBEAT")).strftime('%Y-%m-%d %I:%M:%S %p'))")
+		LASTBEATDATE=$($PYTHON2USE -c "import datetime; print(datetime.datetime.fromtimestamp(int("$LASTBEAT")).strftime('%Y-%m-%d %I:%M:%S %p'))")
 		
 		#Figure out how many hours ago last beat was
 		current_time=$(date +%s)
@@ -244,7 +244,7 @@ WHOISLOST() {
 		LOSTMODELMQ=$(echo "$DataFromLostModeQuery" |  cut -f 4 -d$'\t' )
 		
 		##Take Epoch time and convert to a date
-		LASTCHECKINLMQ=$(python -c "import datetime; print(datetime.datetime.fromtimestamp(int("$LASTBEATLMQ")).strftime('%Y-%m-%d %I:%M:%S %p'))")
+		LASTCHECKINLMQ=$($PYTHON2USE -c "import datetime; print(datetime.datetime.fromtimestamp(int("$LASTBEATLMQ")).strftime('%Y-%m-%d %I:%M:%S %p'))")
 		
 
 		
@@ -315,7 +315,7 @@ WHOISLOST() {
 		LOSTMODELMQ=$(echo "$DataFromLostModeQuery" |  cut -f 4 -d$'\t' )
 		
 		#Take Epoch time and convert to hours
-		LASTCHECKINLMQ=$(python -c "import datetime; print(datetime.datetime.fromtimestamp(int("$LASTBEATLMQ")).strftime('%Y-%m-%d %I:%M:%S %p'))")
+		LASTCHECKINLMQ=$($PYTHON2USE -c "import datetime; print(datetime.datetime.fromtimestamp(int("$LASTBEATLMQ")).strftime('%Y-%m-%d %I:%M:%S %p'))")
 
 		#Now query our cache'd info to fill in the blanks.
 		UDID2Lookup=$(cat "$TEMPOUTPUTFILE_MERGEDIOS" | grep "$UDID2LookupLMQ")
