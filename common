@@ -50,7 +50,7 @@ ParseIt_ios() {
 	NAME=$(echo "$line" | cut -f 9 -d$'\t')
 	
 	#Take Epoch time and convert to hours
-	LASTCHECKIN=$(python -c "import datetime; print(datetime.datetime.fromtimestamp(int("$LASTCHECKIN")).strftime('%Y-%m-%d %I:%M:%S %p'))")
+	LASTCHECKIN=$($PYTHON2USE -c "import datetime; print(datetime.datetime.fromtimestamp(int("$LASTCHECKIN")).strftime('%Y-%m-%d %I:%M:%S %p'))")
 }
 
 SerialFromTag() {

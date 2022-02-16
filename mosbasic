@@ -159,6 +159,11 @@ else
 fi
 
 
+##Check for Python
+if [ ! -x "$PYTHON2USE" ]; then
+	echo "Could not find an executable for python3.  Please check $BAGCLI_WORKDIR/config"
+	exit 1
+fi
 
 #######################################
 # Do we have cache'd data about iPads
