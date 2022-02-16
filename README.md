@@ -1,3 +1,6 @@
+**NOTE IF YOU HAD THIS INSTALLED BEFORE 2/16/22 YOU MUST DELETE YOUR CONFIG FILE AND RUN THE "Run me First" script again.  This will ensure you have support for new features for dumping Mac data, groups, and proper python support.**
+
+
 # MOSBasic
 
 Easy to use command line tools for interacting with MOSYLE MDM.  In places I also will interact with IncidentIQ ticket system for data.  I'm going to try to run my inventory check module so anyone could easily write their own module for the ticket system they use.  Will post a note about that in the wiki later when we get there.  This command was built for daily use at Gateway School District so we could easily maniplulate devices without having to go to the GUI every time.  It is 
