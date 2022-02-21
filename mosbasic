@@ -88,6 +88,13 @@ Commands:
   info <ASSET TAG/USERID/SERIAL>	Look up device assignment data by reference point  <ASSET TAG/USERID/SERIAL>		
   listgroups --mac		Display list of all current Mac Device Groups in Mosyle
   listgroups --ios		Display list of all current iOS Device Groups in Mosyle
+  
+  serialcheck /path/to/textfileofserials.txt </output/place.csv>
+  				This command takes a text file (one serial per line) and outputs
+				what serials also appear in Mosyle from that file.  This is helpful
+				for end of year operations where you want to release a ton of Macs 
+				or iPads.  Send the output to Mosyle support to have those all removed.
+				Output file is optional.
 "
   exit 1
 }
@@ -269,11 +276,14 @@ whoislost)
 	"$BAGCLI_WORKDIR/commands/lostmodefun.sh" "--whoislost"
 	;;
 listgroups)
-	"$BAGCLI_WORKDIR/commands//groupsquery.sh" "$2"
+	"$BAGCLI_WORKDIR/commands/groupsquery.sh" "$2"
 	;;
 whoislost)
 	"$BAGCLI_WORKDIR/commands/lostmodefun.sh" "--whoislost"
-	;;		
+	;;
+serialcheck)
+	"$BAGCLI_WORKDIR/commands/SerialinMosyle.sh" "$2" "$3"
+	;;			
   *)
     cli_help
     ;;
