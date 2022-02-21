@@ -17,50 +17,59 @@ Easy to use command line tools for interacting with MOSYLE MDM.  In places I als
  
  Today if you type the _mosbasic_ command with no argument it tells you it can do the following things:
  ```
-    __  __  ____   _____ ____            _
-   |  \/  |/ __ \ / ____|  _ \          (_)
-   | \  / | |  | | (___ | |_) | __ _ ___ _  ___
-   | |\/| | |  | |\___ \|  _ < / _` / __| |/ __|
-   | |  | | |__| |____) | |_) | (_| \__ \ | (__
-   |_|  |_|\____/|_____/|____/ \__,_|___/_|\___|
+
+   __  __  ____   _____ ____            _
+  |  \/  |/ __ \ / ____|  _ \          (_)
+  | \  / | |  | | (___ | |_) | __ _ ___ _  ___
+  | |\/| | |  | |\___ \|  _ < / _` / __| |/ __|
+  | |  | | |__| |____) | |_) | (_| \__ \ | (__
+  |_|  |_|\____/|_____/|____/ \__,_|___/_|\___|
 
 
 
- mosbasic
- CLI tools for manipulating the Mosyle MDM.
+mosbasic
+CLI tools for manipulating the Mosyle MDM.
 
- Version: 0.1.0
- https:_github.com/JCSmillie/MOSBasic
- Usage: mosbasic [command]
- Commands:
-   lostmodeon			Give single asset tag.  Will enable lost mode with default message.
-   lostmodeoff			Give single asset tag.  Will disable lost mode.
-   annoy         		Give single asset tag.  Will play sound.  If device is not in lost mode
-  				will also enable it.
-   lostmodestatus  		Find out current Lost mode status of device.
-   whoislost			Gives list of all devices currently in lost mode and waitng to be in
-   			  	in lost mode.  Output is color coded and when ran ALL ENABLED DEVICES
- 				are sent the command to play sound.
-   ioswipe			Give single asset tag.  Will Limbo and Wipe that iPad.
-   				**NOTE** Wipe will fail if device is not on Wifi.
-   ioswipe --scan		Scan multiple devices.  When done hit enter to give a blank.
-   				All will be Limbo'd and wiped.  If an individual tag can't be found
- 				it will be skipped and logged.
-   ioswipe --mass <FILE>		Give file with multiple tags.  One per line.  All will
-             			be Limbo'd and wiped.  If an individual tag can't be found
- 		    		it will be skipped and logged.  <<PLANNED NOT YET READY>>
-   iosdump			Dump info for all iOS devices from Mosyle
-   				to local reference files.
-   userdump			Dump info for all Users in Mosyle to local
- 				reference files.
-   iosassign			Info will be looked up and then device will be assigned.  <<REQUIRES USERLOOKUP MODULE>>
-   iosassign --scan		Scan multiple devices  Tag first then assignment tag.  When done
-   				hit enter to give a blank.  Info will be looked up and then device will
- 				be assigned.  <<REQUIRES USERLOOKUP MODULE>>
-   iosassign --mass		Give file with multiple devices in form of ASSET TAG,USERNAME.  One
-   				per line.  All will be assigned properly.  <<PLANNED NOT YET READY>> <<REQUIRES USERLOOKUP MODULE>>
+Version: 0.1.0
+https://github.com/JCSmillie/MOSBasic
+Usage: mosbasic [command]
+Commands:
+  lostmodeon			Give single asset tag.  Will enable lost mode with default message.
+  lostmodeoff			Give single asset tag.  Will disable lost mode.
+  annoy         		Give single asset tag.  Will play sound.  If device is not in lost mode
+ 				will also enable it.
+  lostmodestatus  		Find out current Lost mode status of device.
+  whoislost			Gives list of all devices currently in lost mode and waitng to be in
+  			  	in lost mode.  Output is color coded and when ran ALL ENABLED DEVICES
+				are sent the command to play sound.
+  ioswipe			Give single asset tag.  Will Limbo and Wipe that iPad.
+  				**NOTE** Wipe will fail if device is not on Wifi.
+  ioswipe --scan		Scan multiple devices.  When done hit enter to give a blank.
+  				All will be Limbo'd and wiped.  If an individual tag can't be found
+				it will be skipped and logged.
+  ioswipe --mass <FILE>		Give file with multiple tags.  One per line.  All will
+            			be Limbo'd and wiped.  If an individual tag can't be found
+		    		it will be skipped and logged.  <<PLANNED NOT YET READY>>
+  iosdump			Dump info for all iOS devices from Mosyle to local reference files.
+  macdump			Dump info for all MacOS devices from Mosyle to local reference files.
+  userdump			Dump info for all Users in Mosyle to local reference files.
+  iosassign			Info will be looked up and then device will be assigned.  <<REQUIRES USERLOOKUP MODULE>>
+  iosassign --scan		Scan multiple devices  Tag first then assignment tag.  When done
+  				hit enter to give a blank.  Info will be looked up and then device will
+				be assigned.  <<REQUIRES USERLOOKUP MODULE>>
+  iosassign --mass		Give file with multiple devices in form of ASSET TAG,USERNAME.  One
+  				per line.  All will be assigned properly.  <<PLANNED NOT YET READY>> <<REQUIRES USERLOOKUP MODULE>>
 
-   info <ASSET TAG/USERID/SERIAL>	Look up device assignment data by reference point  <ASSET TAG/USERID/SERIAL>
+  info <ASSET TAG/USERID/SERIAL>	Look up device assignment data by reference point  <ASSET TAG/USERID/SERIAL>
+  listgroups --mac		Display list of all current Mac Device Groups in Mosyle
+  listgroups --ios		Display list of all current iOS Device Groups in Mosyle
+
+  serialcheck /path/to/textfileofserials.txt </output/place.csv>
+  				This command takes a text file (one serial per line) and outputs
+				what serials also appear in Mosyle from that file.  This is helpful
+				for end of year operations where you want to release a ton of Macs
+				or iPads.  Send the output to Mosyle support to have those all removed.
+				Output file is optional.
  ```
  
 How this stuff works will be detailed better in the Wiki but for example if you wanted to enable lost mode on a device you would:
