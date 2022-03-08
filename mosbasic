@@ -20,59 +20,88 @@
 
 IFS=$'\n'
 
+
+
+if [ -h "/usr/local/bin/mosbasic" ]; then
+	BAGCLI_WORKDIR=$(readlink /usr/local/bin/mosbasic)
+	#Remove our command name from the output above
+	BAGCLI_WORKDIR=${BAGCLI_WORKDIR//mosbasic/}
+	
+	export BAGCLI_WORKDIR
+	
+else
+	#Assume the directory we are in is where our files are.
+	export BAGCLI_WORKDIR=$(cd $(dirname $0) && pwd)
+fi
+
 CMDRAN="MOSBASIC"
 
 set -e
-export BAGCLI_WORKDIR=$(cd $(dirname $0) && pwd)
-# shellcheck source=common
+
+#export $(cat "$BAGCLI_WORKDIR/config" | xargs)
+source "$BAGCLI_WORKDIR/config"
+
+ #shellcheck source=common
 . "$BAGCLI_WORKDIR/common"
 
+# echo "Mosyle API Key-> $MOSYLE_API_key"
+# echo "WORKING DIR-> $BAGCLI_WORKDIR"
+
 cli_help() {
-  cli_name=${0##*/}
+  cli_name="mosbasic"
   cli_graffitti
   echo "
 
 $cli_name
 CLI tools for manipulating the Mosyle MDM.
 
-Version: $(cat $BAGCLI_WORKDIR/VERSION)
-https://github.com/JCSmillie/MOSBasic
+Version:${Magenta} $(cat $BAGCLI_WORKDIR/VERSION) ${reset}
+${Yellow}https://github.com/JCSmillie/MOSBasic${reset}
 Usage: $cli_name [command]
 Commands:
-  lostmodeon    Give single asset tag.  Will enable lost mode with default message.
-  lostmodeoff   Give single asset tag.  Will disable lost mode.
-  annoy         Give single asset tag.  Will play sound.  If device is not in lost mode
-                will also enable it. 
-  lostmodestatus  Find out current Lost mode status of device.				
-  ioswipe		Give single asset tag.  Will Limbo and Wipe that iPad.
-  			**NOTE** Wipe will fail if device is not on Wifi.
-  ioswipe --scan	Scan multiple devices.  When done hit enter to give a blank.
-  			All will be Limbo'd and wiped.  If an individual tag can't be found
-			it will be skipped and logged.
-  ioswipe --mass <FILE>	Give file with multiple tags.  One per line.  All will 
-            be Limbo'd and wiped.  If an individual tag can't be found
-		    it will be skipped and logged.  <<PLANNED NOT YET READY>>
-  iosdump		Dump info for all iOS devices from Mosyle
-  			to local reference files.
-  userdump		Dump info for all Users in Mosyle to local
-			reference files.
-  iosassign	Info will be looked up and then device will be assigned.  <<REQUIRES USERLOOKUP MODULE>>
-  iosassign --scan	Scan multiple devices  Tag first then assignment tag.  When done 
-  			hit enter to give a blank.  Info will be looked up and then device will
-			be assigned.  <<REQUIRES USERLOOKUP MODULE>>
-  iosassign --mass	Give file with multiple devices in form of ASSET TAG,USERNAME.  One
+  lostmodeon			Give single asset tag.  Will enable lost mode with default message.
+  lostmodeoff			Give single asset tag.  Will disable lost mode.
+  annoy         		Give single asset tag.  Will play sound.  If device is not in lost mode
+ 				will also enable it. 
+  lostmodestatus  		Find out current Lost mode status of device.	
+  whoislost			Gives list of all devices currently in lost mode and waitng to be in
+  			  	in lost mode.  Output is color coded and when ran ALL ENABLED DEVICES
+				are sent the command to play sound.	
+  ioswipe			Give single asset tag.  Will Limbo and Wipe that iPad.
+  				**NOTE** Wipe will fail if device is not on Wifi.
+  ioswipe --scan		Scan multiple devices.  When done hit enter to give a blank.
+  				All will be Limbo'd and wiped.  If an individual tag can't be found
+				it will be skipped and logged.
+  ioswipe --mass <FILE>		Give file with multiple tags.  One per line.  All will 
+            			be Limbo'd and wiped.  If an individual tag can't be found
+		    		it will be skipped and logged.  <<PLANNED NOT YET READY>>
+  iosdump			Dump info for all iOS devices from Mosyle to local reference files.
+  macdump			Dump info for all MacOS devices from Mosyle to local reference files.				
+  userdump			Dump info for all Users in Mosyle to local reference files.
+  iosassign			Info will be looked up and then device will be assigned.  <<REQUIRES USERLOOKUP MODULE>>
+  iosassign --scan		Scan multiple devices  Tag first then assignment tag.  When done 
+  				hit enter to give a blank.  Info will be looked up and then device will
+				be assigned.  <<REQUIRES USERLOOKUP MODULE>>
+  iosassign --mass		Give file with multiple devices in form of ASSET TAG,USERNAME.  One
   				per line.  All will be assigned properly.  <<PLANNED NOT YET READY>> <<REQUIRES USERLOOKUP MODULE>>
   			
-  info <ASSET TAG/USERID/SERIAL>	Look up device assignment data
-            by reference point  <ASSET TAG/USERID/SERIAL>		
-  *         		Help
+  info <ASSET TAG/USERID/SERIAL>	Look up device assignment data by reference point  <ASSET TAG/USERID/SERIAL>		
+  listgroups --mac		Display list of all current Mac Device Groups in Mosyle
+  listgroups --ios		Display list of all current iOS Device Groups in Mosyle
+  
+  serialcheck /path/to/textfileofserials.txt </output/place.csv>
+  				This command takes a text file (one serial per line) and outputs
+				what serials also appear in Mosyle from that file.  This is helpful
+				for end of year operations where you want to release a ton of Macs 
+				or iPads.  Send the output to Mosyle support to have those all removed.
+				Output file is optional.
 "
   exit 1
 }
 
 [ ! -f "$BAGCLI_WORKDIR/config" ] \
-  && echo "ERROR: No $BAGCLI_WORKDIR/config file found. " \
-  && echo "cp $BAGCLI_WORKDIR/config.template $BAGCLI_WORKDIR/config and adjust." \
+  && echo "ERROR: No $BAGCLI_WORKDIR/config file not found. " \
+  && echo "sudo $BAGCLI_WORKDIR/RUNME1st_CONFIGSCRIPT.sh to setup." \
   && exit 1
 
 ###############################
@@ -111,58 +140,142 @@ fi
 
 #Check for outside module support
 if [ ! -s "$LOCALCONF/MOSBasic/.modules" ]; then
-	echo "Will you be using outside modules to help with lookups of student IDs"
-	echo "or other data?  OPTIONS are: iiq, none, or custom  More info can be found"
-	echo "in the readme.  DEFAULT is none"
-	
-	read GotModules
-	
-	if [ -z "$GotModules" ]; then
-		echo "GotModules=none" > "$LOCALCONF/MOSBasic/.modules"
-	elif [ "$GotModules" = "iiq" ]; then
-		echo "Enabling IncidentIQ support."
-		echo "GotModules=iiq" > "$LOCALCONF/MOSBasic/.modules"
-				
-		if [ ! -s "$LOCALCONF/.incidentIQ" ]; then
-			echo "HEADS UP, no local incidentIQ API info is available."
-			echo "SEE README FOR MORE INFO."
-		else
-			source $LOCALCONF/.incidentIQ
-			IIQAuth=$(echo "Authorization: Bearer $apitoken")
-		fi
-		
-	elif [ "$GotModules" = "other" ]; then
-		echo "This feature is not supported, YET.  Setting to none.."
-		echo "GotModules=none" > "$LOCALCONF/MOSBasic/.modules"
-	else
-		echo "Whatever you typed ($GotModules) I don't know what that is."
-		echo "Epic Fail"
-		exit 1
-	fi
-fi	
-
-#First Make sure we have what we need
-if [ ! -s "$TEMPOUTPUTFILE_MERGEDIOS" ]; then
-	cli_log "$TEMPOUTPUTFILE_MERGEDIOS is missing.  Must grab NOW."
-	"$BAGCLI_WORKDIR/commands/mosdatadump-iOS.sh"
+	sudo "Modules doesn't seem to be setup."
+	echo "sudo $BAGCLI_WORKDIR/RUNME1st_CONFIGSCRIPT.sh to setup."
+	echo "SEE README FOR MORE INFO."
+	exit 1
 fi
 
-if [ ! -s "$TEMPOUTPUTFILE_Users" ]; then
-	cli_log "$TEMPOUTPUTFILE_Users is missing.   Must grab NOW."
-	"$BAGCLI_WORKDIR/commands/mosdatadump-USERS.sh"
+#Sanity check what is listed in the Modules support
+#bracket.
+source 	"$LOCALCONF"/MOSBasic/.modules
+if [ "$GotModules" = "iiq" ]; then
+	if [ ! -s "$LOCALCONF/.incidentIQ" ]; then
+		echo "HEADS UP, no local incidentIQ API info is available."
+		echo "SEE README FOR MORE INFO."
+	else
+		source $LOCALCONF/.incidentIQ
+		IIQAuth=$(echo "Authorization: Bearer $apitoken")
+	fi
+	
+elif [ "$GotModules" = "other" ]; then
+	echo "This feature is not supported, YET.  Setting to none.."
+else
+	echo "Whatever you have in "$LOCALCONF"/MOSBasic/.modules ($GotModules) I don't know what that is."
+	echo "Epic Fail"
 	exit 1
 fi
 
 
+##Check for Python
+if [ ! -x "$PYTHON2USE" ]; then
+	echo "Could not find an executable for python3.  Please check $BAGCLI_WORKDIR/config"
+	exit 1
+fi
+
+#######################################
+# Do we have cache'd data about iPads
+#######################################
+#First Make sure we have what we need
+if [ ! -s "$TEMPOUTPUTFILE_MERGEDIOS" ]; then
+	cli_log "$TEMPOUTPUTFILE_MERGEDIOS is missing.  Must grab NOW."
+	GETIOSDATA="YES"
+	#"$BAGCLI_WORKDIR/commands/mosdatadump-iOS.sh"
+	
+#Is the command we are about to run one that is going to pull its own data?
+elif [ "$1" = "whoislost" ] || [ "$1" = "lostmodeon" ] || [ "$1" = "lostmodeoff" ] || [ "$1" = "lostmodestatus" ] || [ "$1" = "annoy" ]; then
+	cli_log "Skipping Local Data check because $1 pulls its own data..."
+
+#If our data is older than 24hr then update it.
+elif [ `find "$TEMPOUTPUTFILE_MERGEDIOS" -mmin +1440 | egrep '.*'` ]; then
+	cli_log "$TEMPOUTPUTFILE_MERGEDIOS is older than a day.  Updating."
+	#"$BAGCLI_WORKDIR/commands/mosdatadump-iOS.sh"
+	GETIOSDATA="YES"
+
+else
+	GETIOSDATA="NO"
+fi
+
+#######################################
+# Do we have cache'd data about Users
+#######################################
+if [ ! -s "$TEMPOUTPUTFILE_Users" ]; then
+	cli_log "$TEMPOUTPUTFILE_Users is missing.   Must grab NOW."
+	GETUSERDATA="YES"
+	#"$BAGCLI_WORKDIR/commands/mosdatadump-USERS.sh"
+	
+#Is the command we are about to run one that is going to pull its own data?
+elif [ "$1" = "whoislost" ] || [ "$1" = "lostmodeon" ] || [ "$1" = "lostmodeoff" ] || [ "$1" = "lostmodestatus" ] || [ "$1" = "annoy" ]; then
+	cli_log "Skipping Local Data check because $1 pulls its own data..."
+		
+#If our data is older than 24hr then update it.
+elif [ `find "$TEMPOUTPUTFILE_Users" -mmin +1440 | egrep '.*'` ]; then
+	cli_log "$TEMPOUTPUTFILE_Users is older than a day.  Updating."
+	#"$BAGCLI_WORKDIR/commands/mosdatadump-USERS.sh"
+	GETUSERDATA="YES"
+
+else
+	GETUSERDATA="NO"
+fi
+
+#######################################
+# Do we have cache'd data about Macs
+#######################################
+#First Make sure we have what we need
+if [ ! -s "$TEMPOUTPUTFILE_MERGEDMAC" ]; then
+	cli_log "$TEMPOUTPUTFILE_MERGEDMAC is missing.  Must grab NOW."
+	GETMACOSDATA="YES"
+	
+#Is the command we are about to run one that is going to pull its own data?
+elif [ "$1" = "whoislost" ] || [ "$1" = "lostmodeon" ] || [ "$1" = "lostmodeoff" ] || [ "$1" = "lostmodestatus" ] || [ "$1" = "annoy" ]; then
+	cli_log "Skipping Local Data check because $1 pulls its own data..."
+
+#If our data is older than 24hr then update it.
+elif [ `find "$TEMPOUTPUTFILE_MERGEDMAC" -mmin +1440 | egrep '.*'` ]; then
+	cli_log "$TEMPOUTPUTFILE_MERGEDMAC is older than a day.  Updating."
+	GETMACOSDATA="YES"
+
+else
+	GETMACOSDATA="NO"
+fi
 
 
-echo "Variable 1-> $1"
-echo "Variable 2-> $2"
+if [ "$GETUSERDATA" = "YES" ] && [ "$GETUSERDATA" = "YES" ]; then
+	cli_log "Doing iosdump and userdump in parallel."
+	"$BAGCLI_WORKDIR/commands/mosdatadump-iOS.sh" &
+	P1=$!
+	"$BAGCLI_WORKDIR/commands/mosdatadump-USERS.sh" &
+	P2=$!
+	wait $P1 $P2
+
+elif  [ "$GETUSERDATA" = "YES" ]; then
+	cli_log "Doing User dump only."
+	"$BAGCLI_WORKDIR/commands/mosdatadump-USERS.sh"
+
+elif [ "$GETIOSDATA" = "YES" ]; then
+		cli_log "Doing iOS dump only."
+	"$BAGCLI_WORKDIR/commands/mosdatadump-iOS.sh"
+fi
+
+#Nothing spiffy here yet..  I want to do this in parallel too but
+#I'm not sure of the best logic to use.  Maybe we need to figure out
+# who needs updated and then only issue their update commands...  Like
+# Oh this runs?  Ok its P1, this too ok its P2, what about this no then
+#alright we only wait on P1 and P2.  This will do for now though.
+if [ "$GETMACOSDATA" = "YES" ]; then
+	cli_log "Doing MacOS dump."
+	"$BAGCLI_WORKDIR/commands/mosdatadump-Mac.sh"
+fi
+
+
+
+# echo "Variable 1-> $1"
+# echo "Variable 2-> $2"
 
 case "$1" in
-  # deploy|d)
-  #   "$BAGCLI_WORKDIR/commands/deploy" "$2" | tee -ia "$BAGCLI_WORKDIR/logs/deploy_${2}.log"
-  #   ;;
+macdump)
+	"$BAGCLI_WORKDIR/commands/mosdatadump-Mac.sh"
+	;; 
 iosdump)
 	"$BAGCLI_WORKDIR/commands/mosdatadump-iOS.sh"
 	;; 
@@ -190,9 +303,23 @@ annoy)
 lostmodestatus)
 	"$BAGCLI_WORKDIR/commands/lostmodefun.sh" "--status" "$2"				 		
 	;;
+whoislost)
+	"$BAGCLI_WORKDIR/commands/lostmodefun.sh" "--whoislost"
+	;;
+listgroups)
+	"$BAGCLI_WORKDIR/commands/groupsquery.sh" "$2"
+	;;
+whoislost)
+	"$BAGCLI_WORKDIR/commands/lostmodefun.sh" "--whoislost"
+	;;
+serialcheck)
+	"$BAGCLI_WORKDIR/commands/SerialinMosyle.sh" "$2" "$3"
+	;;			
   *)
     cli_help
     ;;
 esac
+
+
 
 

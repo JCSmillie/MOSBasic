@@ -1,18 +1,13 @@
+**NOTE IF YOU HAD THIS INSTALLED BEFORE 2/16/22 YOU MUST DELETE YOUR CONFIG FILE AND RUN THE "Run me First" script again.  This will ensure you have support for new features for dumping Mac data, groups, and proper python support.**
+
+
 # MOSBasic
 
-___  ________ ___________           _      
-|  \/  |  _  /  ___| ___ \         (_)     
-| .  . | | | \ `--.| |_/ / __ _ ___ _  ___ 
-| |\/| | | | |`--. \ ___ \/ _` / __| |/ __|
-| |  | \ \_/ /\__/ / |_/ / (_| \__ \ | (__ 
-\_|  |_/\___/\____/\____/ \__,_|___/_|\___|
-
-
- Easy to use command line tools for interacting with MOSYLE MDM.  In places I also will interact with IncidentIQ ticket system for data.  I'm going to try to run my inventory check module so anyone could easily write their own module for the ticket system they use.  Will post a note about that in the wiki later when we get there.
+Easy to use command line tools for interacting with MOSYLE MDM.  In places I also will interact with IncidentIQ ticket system for data.  I'm going to try to run my inventory check module so anyone could easily write their own module for the ticket system they use.  Will post a note about that in the wiki later when we get there.  This command was built for daily use at Gateway School District so we could easily maniplulate devices without having to go to the GUI every time.  It is 
  
  **NOTE** These commands rely on asset tags for reference.  
  
- My goal here is to try to create some simple command line tools which can let admins quickly do common tasks from the CLI.  Tasks like:
+ My goal here is to try to create some simple command line tools using commands and methods which should always be available on any Mac which can let admins quickly do common tasks from the CLI.  Tasks like:
  * Work with tags (add, remove, remove all)
  * Work with Lost Mode (enable, disable, play sound)
  * Compare assignment of device Mosyle vs. IncidentIQ
@@ -20,63 +15,140 @@ ___  ________ ___________           _
  * Deassign device (send to Limbo) single, masss (scan from the command line,) or by file
  * Wipe device (requires device to have recently checked in)
  
- # Shake N' Bake Script
- Part of this is also a cfgutil (Apple Configurator 2 command line) script which I call Shake N' Bake.  This script does the following:
- * Reset iPad...  Erase iPads which are pairable (by trusted cert) or do full restore.  
- * Reaches out to Mosyle to ensure the device is unassigned, removes lost mode, and clears any back commands waiting to process.
- * Installs Wifi Certificate
- * Setups up iPad through DEP.  If ipad is part of a Shared group then it will finish to that state.  
+ Today if you type the _mosbasic_ command with no argument it tells you it can do the following things:
+ ```
+
+   __  __  ____   _____ ____            _
+  |  \/  |/ __ \ / ____|  _ \          (_)
+  | \  / | |  | | (___ | |_) | __ _ ___ _  ___
+  | |\/| | |  | |\___ \|  _ < / _` / __| |/ __|
+  | |  | | |__| |____) | |_) | (_| \__ \ | (__
+  |_|  |_|\____/|_____/|____/ \__,_|___/_|\___|
+
+
+
+mosbasic
+CLI tools for manipulating the Mosyle MDM.
+
+Version: 0.1.0
+https://github.com/JCSmillie/MOSBasic
+Usage: mosbasic [command]
+Commands:
+  lostmodeon			Give single asset tag.  Will enable lost mode with default message.
+  lostmodeoff			Give single asset tag.  Will disable lost mode.
+  annoy         		Give single asset tag.  Will play sound.  If device is not in lost mode
+ 				will also enable it.
+  lostmodestatus  		Find out current Lost mode status of device.
+  whoislost			Gives list of all devices currently in lost mode and waitng to be in
+  			  	in lost mode.  Output is color coded and when ran ALL ENABLED DEVICES
+				are sent the command to play sound.
+  ioswipe			Give single asset tag.  Will Limbo and Wipe that iPad.
+  				**NOTE** Wipe will fail if device is not on Wifi.
+  ioswipe --scan		Scan multiple devices.  When done hit enter to give a blank.
+  				All will be Limbo'd and wiped.  If an individual tag can't be found
+				it will be skipped and logged.
+  ioswipe --mass <FILE>		Give file with multiple tags.  One per line.  All will
+            			be Limbo'd and wiped.  If an individual tag can't be found
+		    		it will be skipped and logged.  <<PLANNED NOT YET READY>>
+  iosdump			Dump info for all iOS devices from Mosyle to local reference files.
+  macdump			Dump info for all MacOS devices from Mosyle to local reference files.
+  userdump			Dump info for all Users in Mosyle to local reference files.
+  iosassign			Info will be looked up and then device will be assigned.  <<REQUIRES USERLOOKUP MODULE>>
+  iosassign --scan		Scan multiple devices  Tag first then assignment tag.  When done
+  				hit enter to give a blank.  Info will be looked up and then device will
+				be assigned.  <<REQUIRES USERLOOKUP MODULE>>
+  iosassign --mass		Give file with multiple devices in form of ASSET TAG,USERNAME.  One
+  				per line.  All will be assigned properly.  <<PLANNED NOT YET READY>> <<REQUIRES USERLOOKUP MODULE>>
+
+  info <ASSET TAG/USERID/SERIAL>	Look up device assignment data by reference point  <ASSET TAG/USERID/SERIAL>
+  listgroups --mac		Display list of all current Mac Device Groups in Mosyle
+  listgroups --ios		Display list of all current iOS Device Groups in Mosyle
+
+  serialcheck /path/to/textfileofserials.txt </output/place.csv>
+  				This command takes a text file (one serial per line) and outputs
+				what serials also appear in Mosyle from that file.  This is helpful
+				for end of year operations where you want to release a ton of Macs
+				or iPads.  Send the output to Mosyle support to have those all removed.
+				Output file is optional.
+ ```
  
- Right now I use Shake N' Bake for day to day turning of devices from students who've gone so they are back in a hand out state.  
+How this stuff works will be detailed better in the Wiki but for example if you wanted to enable lost mode on a device you would:
+ ```
+    mosbasic lostmodeon 23692
+ ```
+At this point the tag would be queried against our cache'd data to get the UDID and then that UDID would be sent to the MoyleAPI to put the device in lost mode followed by playing a sound.  So now with the iPad in lost mode we can ask for more info:
+ ```
+    mosbasic lostmodestatus 23692
+ ```
+ Serial number is grabbed from our cached query data and then we ask the MosyleAPI about just this unit for more info and get:
+ ```
+	--------------------------------------------------
+	UDID=000000000000abcdabcd00000000000
+	DeviceSerialNumber=DMPXXXXX4JF8J
+	TAGS=MSMSPool
+	ASSET TAG=23692
+	ENROLLMENT_TYPE=
+	USERID=
+	ASSIGNED TO=
+    
+	Last Seen (EPOCH)=1636578430
+	Last Seen (Date)=2021-11-10 04:07:10 PM
+	Last Seen (Hours Ago)=0
+	Lost Mode Status=ENABLED
+	Location Data=40.4294700623,-79.7585754395
+    
+	GO TO THIS LINK TO SEE LOST IPAD LOCATION-> https://maps.google.com/?q=40.4294700623,-79.7585754395
+	--------------------------------------------------
+ ```
+If lost mode is enabled and location data is available we get it back and provide a hyper link to the location on Google Maps.  Now this iPad in the example is a Shared iPad so somet data is not noted, but you can see that had it been normally assigned we would have something there.
+
+From here we can make the iPad play sound again:
+
+    mosbasic annoy 23692
  
- **NOTE** As of today 9/26/2021 the Big Sur version of cfgutil has a flaw that it can't wipe iPads that are not pairable.  These devices must be booted into factory restore mode so it can work on them.  This has been reported to Apple and hoping for a fix soon.
+Or we can disable lost mode:
+
+    mosbasic lostmodeoff 23692
  
- ## Why Shake N' Bake vs by hand
- By hand I have to:
- * Open up Mosyle website to disable lost mode if its enabled, clear back commands, and send device to Limbo.  IF the device is still on Wifi it will wipe at this point.  Otherwise we now need to factory mode the device and then use the Apple Configurator 2 GUI to wipe the device.
- * Manually take the iPad through setup screens to join a network
- * Finish tapping through.
+The above example is just dealing with lost devices, but mosbasic can do more.  See the wiki.
  
- Nothing wrong with the above method.. but when I want to do a dozen of these things the script lets me set it, go do something else, and when I think about this again they are ready to go.
  
- ## Configuration
- To get started you need to use the //mosbasic// to setup the line.  MOSBasic command will prompt you through the setup process of:
+## Configuration
+ To get started you need to use the _RUNME1st_CONFIGSCRIPT.sh_ to setup.  _RUNME1st_CONFIGSCRIPT.sh_ command will prompt you through the setup process of:
  * Save your Mosyle API key (to have a MosyleAPI key you must be a premium customer) to ~/.mosyleapikey
  * Detect where you have saved the github.
- * Link the MOSYLEBasic command file to either your ~/.bashrc or ~/.zshrc
- * Enable IncidentIQ dependancies.
- * Setup Data gather script to run regularly and cache a copy of all of your devices assigned in Mosyle locally for quick access.
- 
- 
- 
- 
- ### A side note MOS
- Its great that MOS makes me think of two things I love working on:
+ * Link the _mosbasic_ command to _/usr/local/bin/mosbasic_
+ * Enable IncidentIQ dependancies id desired.
+
+Now run the _mosbasic_ command.  It will ensure everything else is in place and run a query for the first time to get a cache of your iOS devices and User accounts for local query.  This will happen any time these cached queries are not found in /tmp or the queried files are older than a day.
+
+### A side note MOS
+Its great that MOS makes me think of two things I love working on:
  * MOSyle
- * [MOS](https://en.wikipedia.org/wiki/MOS_Technology), Commodore's chip foundry out in West Chester, PA
+ * [MOS Technology](https:_en.wikipedia.org/wiki/MOS_Technology), Commodore's chip foundry out in West Chester, PA
 
 
-# Setup
-To setup MOSBasic you need to do the following things:
-  *Copy config.template to config
-  *Edit config and change whats necessary.  For most people you will just change the LOCALCONF variable.
-  *Run the mosbasic command.  It will detect and fix from there.
+
   
   
   
 ## Module Support
-MOSBasic supports external modules for lookup support.  When you run SETUP you will be asked if you want support for external modules.  Today the only supported options are: iiq, other, and none.
-  *iiq-> IndcidentIQ support.  This also requires $LOCALCONF/.incidentIQ to exist.  You must create this file by hand.
-  *other-> <<NOT SUPPORTED TODAY BUT WILL BE>>
-  *none-> Do not use modules.  This will cripple some features of MOSBasic like assigning iPads unless you are inputting USERNAME and SERIAL.  If you are inputting student ID number or anything else you will need these look ups to do cross references.
+MOSBasic supports external modules for lookup support.  When you run _RUNME1st_CONFIGSCRIPT.sh_ you will be asked if you want support for external modules.  Today the only supported options are: iiq, other, and none.
+  * iiq-> IndcidentIQ support.  This also requires $LOCALCONF/.incidentIQ to exist.  You must create this file by hand.
+  * other-> _NOT SUPPORTED TODAY BUT WILL BE_
+  * none-> Do not use modules.  This will cripple some features of MOSBasic like assigning iPads unless you are inputting USERNAME and SERIAL.  If you are inputting student ID number or anything else you will need these look ups to do cross references.
   
   
 ### IIQ File Setup
 The IIQ file must be setup as so:
+ ```
 apitoken="<<<YOUR KEY FROM INCIDENTIQ>>>"   
 siteid="<<<YYOUR SITE ID FROM INCIDENT IQ>>>"
 baseurl="<<<YYOUR BASE URL FROM INCIDENT IQ>>>"
-	
-All of the above should be listed in $LOCALCONF/.incidentIQ
+ ```	
+All of the above should be listed in ~/.incidentIQ
+
+# Disclaimer
+While all of this stuff is used on a daily bases at Gateway School District in our persuit to best support the students there is always a chance for a bug to be found that doesn't effect me.  I'm not a master coder by any means but know enough to get myself into trouble... so don't be surprised if there is a better way to do things I'm not using.  As far as I'm aware there is nothing malacious in my code.  It only works on files created by itself and shouldn't hurt anything.  That being said end responsibility I take none and as my favorite AppleSE always said "Mileage may very" but I hope this does work for you.
  
  

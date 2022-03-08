@@ -11,6 +11,7 @@
 #
 # This file is dedicated to functions which could be called
 # across the board through out all commands.
+
 #
 ################################
 #          FUNCTIONS           #
@@ -25,12 +26,15 @@ cli_log() {
 }
 
 cli_graffitti() {
+	echo "${Cyan}"
 	echo '   __  __  ____   _____ ____            _       '
 	echo '  |  \/  |/ __ \ / ____|  _ \          (_)      '
 	echo '  | \  / | |  | | (___ | |_) | __ _ ___ _  ___  '
 	echo '  | |\/| | |  | |\___ \|  _ < / _` / __| |/ __| '
 	echo '  | |  | | |__| |____) | |_) | (_| \__ \ | (__  '
 	echo '  |_|  |_|\____/|_____/|____/ \__,_|___/_|\___| '
+	echo "${reset}"
+	
 
 }
 
@@ -46,7 +50,28 @@ ParseIt_ios() {
 	NAME=$(echo "$line" | cut -f 9 -d$'\t')
 	
 	#Take Epoch time and convert to hours
-	LASTCHECKIN=$(python -c "import datetime; print(datetime.datetime.fromtimestamp(int("$LASTCHECKIN")).strftime('%Y-%m-%d %I:%M:%S %p'))")
+	LASTCHECKIN=$($PYTHON2USE -c "import datetime; print(datetime.datetime.fromtimestamp(int("$LASTCHECKIN")).strftime('%Y-%m-%d %I:%M:%S %p'))")
+}
+
+ParseIt_MacOS() {
+	UDID=$(echo "$line" | cut -f 1 -d$'\t')
+	DeviceSerialNumber=$(echo "$line" | cut -f 2 -d$'\t')
+	CURRENTNAME=$(echo "$line" | cut -f 3 -d$'\t')
+	TAGS=$(echo "$line" | cut -f 4 -d$'\t')
+	ASSETTAG=$(echo "$line" | cut -f 5 -d$'\t')
+	LASTCHECKIN=$(echo "$line" | cut -f 6 -d$'\t')
+	ENROLLMENT_TYPE=$(echo "$line" | cut -f 8 -d$'\t')
+	USERID=$(echo "$line" | cut -f 9 -d$'\t')
+	NAME=$(echo "$line" | cut -f 10 -d$'\t')
+	
+	#Take Epoch time and convert to hours
+	LASTCHECKIN=$($PYTHON2USE -c "import datetime; print(datetime.datetime.fromtimestamp(int("$LASTCHECKIN")).strftime('%Y-%m-%d %I:%M:%S %p'))")
+}
+
+ParseIt_group() {
+	GRPID=$(echo "$line" | cut -f 1 -d$'\t')
+	GRPNAME=$(echo "$line" | cut -f 2 -d$'\t')
+	GRPNUMOFMEMBS=$(echo "$line" | cut -f 3 -d$'\t')
 }
 
 SerialFromTag() {
@@ -59,18 +84,6 @@ SerialFromTag() {
 		
 		line="$SERIALIS"
 		ParseIt_ios
-		
-		# echo "${Red}--------------------------------------------------${reset}"
-		# echo "${Blue}UDID=${Green}$UDID${reset}"
-		# echo "${Blue}DeviceSerialNumber=${Green}$DeviceSerialNumber${reset}"
-		# echo "${Blue}CURRENTNAME=${Green}$CURRENTNAME${reset}"
-		# echo "${Blue}TAGS=${Green}$TAGS${reset}"
-		# echo "${Blue}ASSET TAG=${Green}$ASSETTAG${reset}"
-		# echo "${Blue}LASTCHECKIN=${Green}$LASTCHECKIN${reset}"
-		# echo "${Blue}ENROLLMENT_TYPE=${Green}$ENROLLMENT_TYPE${reset}"
-		# echo "${Blue}USERID=${Green}$USERID${reset}"
-		# echo "${Blue}ASSIGNED TO=${Green}$NAME${reset}"
-		# echo "${Red}--------------------------------------------------${reset}"
 		
 		RETURNSERIAL="$DeviceSerialNumber"
 		#echo "DEBUG--> $RETURNSERIAL"
@@ -98,13 +111,18 @@ IsThisiPadSharedMode() {
 	fi
 }
 
-
 #ColorCodes
-Red=`tput setaf 1`
-Green=`tput setaf 2`
-Yellow=`tput setaf 3`
-Blue=`tput setaf 4`
-Magenta=`tput setaf 5`
-Cyan=`tput setaf 6`
-White=`tput setaf 7`
-reset=`tput sgr0`
+
+#Make sure TERM variable is set.
+[[ ${TERM}=="" ]] && TPUTTERM='-Txterm-256color' \
+                  || TPUTTERM=''
+
+#Define colors
+Red=`tput ${TPUTTERM} setaf 1`
+Green=`tput ${TPUTTERM} setaf 2`
+Yellow=`tput ${TPUTTERM} setaf 3`
+Blue=`tput ${TPUTTERM} setaf 4`
+Magenta=`tput ${TPUTTERM} setaf 5`
+Cyan=`tput ${TPUTTERM} setaf 6`
+White=`tput ${TPUTTERM} setaf 7`
+reset=`tput ${TPUTTERM} sgr0`
