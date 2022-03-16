@@ -46,7 +46,7 @@ THECOUNT=0
 while true; do
 	let "THECOUNT=$THECOUNT+1"
 	THEPAGE="$THECOUNT"
-	content="{\"accessToken\":\"$APIKey\",\"options\":{\"os\":\"mac\",\"specific_columns\":\"deviceudid,serial_number,device_name,tags,asset_tag,userid,date_app_info\",\"page\":$THEPAGE}}"
+	content="{\"accessToken\":\"$APIKey\",\"options\":{\"os\":\"mac\",\"specific_columns\":\"deviceudid,serial_number,device_name,tags,asset_tag,userid,enrollment_type,username,date_app_info\",\"page\":$THEPAGE}}"
 	output=$(curl -s -k -X POST -d 'content='$content 'https://managerapi.mosyle.com/v2/listdevices') >> $LOG
 
 
