@@ -63,9 +63,16 @@ while true; do
 	cli_log "Page $THEPAGE data."
 	echo "-----------------------"
 
+	#If we are debug enabled dump raw to a file for
+	#troubleshooting later.
+	if [ "$MB_DEBUG" = "Y" ]; then
+		echo "$output" >> /tmp/MOSBasicRAW.txt
+	fi
+
+
 	#Now take the JSON data we received and parse it into tab
 	#delimited output.
-	#echo "$output" >> /tmp/MOSBasicRAW.txt
+	
 
 	#Right from the git go exclude any results which are for General (Limbo) iPads, Shared iPads, Staff iPads, or Teacher iPads.
 	#This creates the list of student iPads
@@ -75,9 +82,9 @@ while true; do
 	echo "$output"| awk 'BEGIN{FS=",";RS="},{"}{print $0}' | grep -v GENERAL | grep -v SHARED |grep -v Student | grep serial_number |  perl -pe 's/.*"deviceudid":"?(.*?)"?,"serial_number":"(.*?)","device_name":"?(.*?)"?,"tags":"?(.*?)"?,"asset_tag":"?(.*?)"?,"date_app_info":"?(.*?)","enrollment_type":"?(.*?)","userid":"?(.*?)","username":"?(.*?)","usertype":"?(.*?)",*.*/\1\t\2\t\3\t\4\t\5\t\6\t\7\t\8\t\9/' >> "$TEMPOUTPUTFILE_Teachers"
 
 	#A file with all the Shared Mode iPAds in it
-	echo "$output"| awk 'BEGIN{FS=",";RS="},{"}{print $0}' | grep SHARED | grep serial_number |  perl -pe 's/.*"deviceudid":"?(.*?)"?,"serial_number":"(.*?)","device_name":"?(.*?)"?,"tags":"?(.*?)"?,"asset_tag":"?(.*?)"?,"date_app_info":"?(.*?)","enrollment_type":"?(.*?)",*.*/\1\t\2\t\3\t\4\t\5\t\6/' >> "$TEMPOUTPUTFILE_Shared"
+	echo "$output"| awk 'BEGIN{FS=",";RS="},{"}{print $0}' | grep SHARED | grep serial_number |  perl -pe 's/.*"deviceudid":"?(.*?)"?,"serial_number":"(.*?)","device_name":"?(.*?)"?,"tags":"?(.*?)"?,"asset_tag":"?(.*?)"?,"date_app_info":"?(.*?)"?,"enrollment_type":"?(.*?)",*.*/\1\t\2\t\3\t\4\t\5\t\6/' >> "$TEMPOUTPUTFILE_Shared"
 	#Finally a file with all the Limbo devices
-	echo "$output"| awk 'BEGIN{FS=",";RS="},{"}{print $0}' | grep GENERAL | grep serial_number |  perl -pe 's/.*"deviceudid":"?(.*?)"?,"serial_number":"(.*?)","device_name":"?(.*?)"?,"tags":"?(.*?)"?,"asset_tag":"?(.*?)"?,"date_app_info":"?(.*?)","enrollment_type":"?(.*?)",*.*/\1\t\2\t\3\t\4\t\5\t\6/' >> "$TEMPOUTPUTFILE_Limbo"
+	echo "$output"| awk 'BEGIN{FS=",";RS="},{"}{print $0}' | grep GENERAL | grep serial_number |  perl -pe 's/.*"deviceudid":"?(.*?)"?,"serial_number":"(.*?)","device_name":"?(.*?)"?,"tags":"?(.*?)"?,"asset_tag":"?(.*?)"?,"date_app_info":"?(.*?)"?,"enrollment_type":"?(.*?)",*.*/\1\t\2\t\3\t\4\t\5\t\6/' >> "$TEMPOUTPUTFILE_Limbo"
 
 
 done
