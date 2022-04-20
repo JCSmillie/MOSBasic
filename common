@@ -49,8 +49,12 @@ ParseIt_ios() {
 	USERID=$(echo "$line" | cut -f 8 -d$'\t')
 	NAME=$(echo "$line" | cut -f 9 -d$'\t')
 	
-	#Take Epoch time and convert to hours
-	LASTCHECKIN=$($PYTHON2USE -c "import datetime; print(datetime.datetime.fromtimestamp(int("$LASTCHECKIN")).strftime('%Y-%m-%d %I:%M:%S %p'))")
+	if [ "$LASTCHECKIN" = "null" ]; then
+		LASTCHECKIN="NO-DATA"
+	else
+		#Take Epoch time and convert to hours
+		LASTCHECKIN=$($PYTHON2USE -c "import datetime; print(datetime.datetime.fromtimestamp(int("$LASTCHECKIN")).strftime('%Y-%m-%d %I:%M:%S %p'))")
+	fi
 }
 
 ParseIt_MacOS() {
@@ -64,8 +68,12 @@ ParseIt_MacOS() {
 	USERID=$(echo "$line" | cut -f 9 -d$'\t')
 	NAME=$(echo "$line" | cut -f 10 -d$'\t')
 	
-	#Take Epoch time and convert to hours
-	LASTCHECKIN=$($PYTHON2USE -c "import datetime; print(datetime.datetime.fromtimestamp(int("$LASTCHECKIN")).strftime('%Y-%m-%d %I:%M:%S %p'))")
+	if [ "$LASTCHECKIN" = "null" ]; then
+		LASTCHECKIN="NO-DATA"
+	else
+		#Take Epoch time and convert to hours
+		LASTCHECKIN=$($PYTHON2USE -c "import datetime; print(datetime.datetime.fromtimestamp(int("$LASTCHECKIN")).strftime('%Y-%m-%d %I:%M:%S %p'))")
+	fi
 }
 
 ParseIt_group() {

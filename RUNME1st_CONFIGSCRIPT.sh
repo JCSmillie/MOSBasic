@@ -61,11 +61,11 @@ if [ ! -f "$BAGCLI_WORKDIR/config" ] ; then
 		echo "edit the $BAGCLI_WORKDIR/config file.  Look for the line PYTHON2USE= and list your"
 		echo "python of choice."
 		
-		echo "Could not find Munki installed python.  As of MacOS 12.3 built in python binaries" >> $BAGCLI_WORKDIR/config
-		echo "no longer exist.  You must install your own python interpreter.  We auto detect" >> $BAGCLI_WORKDIR/config
-		echo "if Munki's python is installed.  I don't look for anything else right now.  Please" >> $BAGCLI_WORKDIR/config
-		echo "edit the $BAGCLI_WORKDIR/config file.  Look for the line PYTHON2USE= and list your" >> $BAGCLI_WORKDIR/config
-		echo "python of choice." >> $BAGCLI_WORKDIR/config
+		echo "#Could not find Munki installed python.  As of MacOS 12.3 built in python binaries" >> $BAGCLI_WORKDIR/config
+		echo "#no longer exist.  You must install your own python interpreter.  We auto detect" >> $BAGCLI_WORKDIR/config
+		echo "#if Munki's python is installed.  I don't look for anything else right now.  Please" >> $BAGCLI_WORKDIR/config
+		echo "#edit the $BAGCLI_WORKDIR/config file.  Look for the line PYTHON2USE= and list your" >> $BAGCLI_WORKDIR/config
+		echo "#python of choice." >> $BAGCLI_WORKDIR/config
 		
 		echo "#Python version since as of 12.3 we no longer have python to lean on by default install" >> $BAGCLI_WORKDIR/config
 		echo "PYTHON2USE=/put/python3_link_here" >> $BAGCLI_WORKDIR/config
