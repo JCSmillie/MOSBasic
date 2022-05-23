@@ -64,9 +64,9 @@ ParseIt_MacOS() {
 	TAGS=$(echo "$line" | cut -f 4 -d$'\t')
 	ASSETTAG=$(echo "$line" | cut -f 5 -d$'\t')
 	LASTCHECKIN=$(echo "$line" | cut -f 6 -d$'\t')
-	ENROLLMENT_TYPE=$(echo "$line" | cut -f 8 -d$'\t')
-	USERID=$(echo "$line" | cut -f 9 -d$'\t')
-	NAME=$(echo "$line" | cut -f 10 -d$'\t')
+	ENROLLMENT_TYPE=$(echo "$line" | cut -f 7 -d$'\t')
+	USERID=$(echo "$line" | cut -f 8 -d$'\t')
+	NAME=$(echo "$line" | cut -f 9 -d$'\t')
 	
 	if [ "$LASTCHECKIN" = "null" ]; then
 		LASTCHECKIN="NO-DATA"
