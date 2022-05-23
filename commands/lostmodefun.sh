@@ -62,8 +62,6 @@ EnableLostMode() {
 }
 
 PlayLostSound() {
-
-	
 	content="{\"accessToken\":\"$APIKey\",\"elements\":[{\"devices\":\"$UDID\",\"operation\":\"play_sound\"}]}"
 	APIOUTPUT=$(curl -s -k -X POST -d 'content='$content 'https://managerapi.mosyle.com/v2/lostmode')
 
@@ -103,6 +101,32 @@ DisableLostMode(){
 		echo "Command yeilded Unknown Status ($APIOUTPUT)"
 	fi
 }
+
+LocateDevice() {
+	content="{\"accessToken\":\"$APIKey\",\"elements\":[{\"devices\":\"$UDID\",\"operation\":\"request_location\"}]}"
+	APIOUTPUT=$(curl -s -k -X POST -d 'content='$content 'https://managerapi.mosyle.com/v2/lostmode')
+
+	###DEBUG SHOW STRING SENT TO MOSYLE
+	#echo "curl -s -k -X POST -d 'content='$content 'https://managerapi.mosyle.com/v2/lostmode'"
+
+	CMDStatus=$(echo "$APIOUTPUT" | cut -d ":" -f 3 | cut -d "," -f 1 | tr -d '"')
+	echo "$APIOUTPUT"
+	echo "$CMDStatus"
+	
+	if [ "$CMDStatus" = "LOSTMODE_NOTENABLED" ]; then
+		echo "API Says iPad is not currently in Lost Mode.  Enabling."
+		
+		#call enable Lost Mode Routine.
+		EnableLostMode
+		
+	elif [ "$CMDStatus" = "COMMAND_SENT" ]; then
+		echo "Command was Successful!"
+		
+	else
+		echo "Command yeilded Unknown Status ($APIOUTPUT)"
+	fi
+}
+
 
 CheckLostMode() {
 	#Build Query.  Just asking for current data on last beat, lostmode status, and location data if we can get it.
@@ -388,6 +412,8 @@ elif [ "$1" = "--status" ]; then
 	DisplayCheckdLostModeData
 elif [ "$1" = "--whoislost" ]; then
 	WHOISLOST
+elif [ "$1" = "--LocateiPad" ]; then
+	LocateDevice	
 else
 	cli_log "Bad arguments given <$1/$2> Try again."
 	exit 1

@@ -63,7 +63,8 @@ Commands:
   lostmodeoff			Give single asset tag.  Will disable lost mode.
   annoy         		Give single asset tag.  Will play sound.  If device is not in lost mode
  				will also enable it. 
-  lostmodestatus  		Find out current Lost mode status of device.	
+  lostmodestatus  		Find out current Lost mode status of device.
+  locate				Give single asset tag.  Sends MDM command to get location data.	
   whoislost			Gives list of all devices currently in lost mode and waitng to be in
   			  	in lost mode.  Output is color coded and when ran ALL ENABLED DEVICES
 				are sent the command to play sound.	
@@ -299,6 +300,9 @@ lostmodeoff)
 	;;	 
 annoy)
 	"$BAGCLI_WORKDIR/commands/lostmodefun.sh" "--sound" "$2"
+	;;
+locate)
+	"$BAGCLI_WORKDIR/commands/lostmodefun.sh" "--LocateiPad" "$2"
 	;;
 lostmodestatus)
 	"$BAGCLI_WORKDIR/commands/lostmodefun.sh" "--status" "$2"				 		
