@@ -65,19 +65,17 @@ while true; do
 	mv -f /tmp/MOSBasicRAW-iOS-TEMPSPOT.txt /tmp/MOSBasicRAW-iOS-Page$THEPAGE.txt
 	
 	#Call our python json to csv routine.  Output will be tab delimited so we can maintain our "tags" together.
-	$PYTHON2USE $BAGCLI_WORKDIR/modules/json2csv.py /tmp/MOSBasicRAW-iOS-Page$THEPAGE.txt "$TEMPOUTPUTFILE_MERGEDIOS"
+	$PYTHON2USE $BAGCLI_WORKDIR/modules/json2csv.py devices /tmp/MOSBasicRAW-iOS-Page$THEPAGE.txt "$TEMPOUTPUTFILE_MERGEDIOS"
 done
 
-# #Build file of all this data now that we've sorted it out and parsed it.
-# #we still need the single/individual files for legacy support of other
-# #scripts but going forward the merge'd file will be the way to go.
-# cat "$TEMPOUTPUTFILE_Stu" > "$TEMPOUTPUTFILE_MERGEDIOS"
-# cat "$TEMPOUTPUTFILE_Teachers" >> "$TEMPOUTPUTFILE_MERGEDIOS"
-# cat "$TEMPOUTPUTFILE_Limbo" >> "$TEMPOUTPUTFILE_MERGEDIOS"
-# cat "$TEMPOUTPUTFILE_Shared" >> "$TEMPOUTPUTFILE_MERGEDIOS"
-
+# # #Build file of all this data now that we've sorted it out and parsed it.
+# # #we still need the single/individual files for legacy support of other
+# # #scripts but going forward the merge'd file will be the way to go.  
+# NOTE these files only create if you set the LEGACYFILES variable in your config
+# as I'm the only one who I think has scripts using them I didn't add this to the config
+# as it will eventually be phased out - JCS 5/24/22
 if [ "$LEGACYFILES" = "Y" ]; then
-	cli_log "Legacy Files support is enabled.  Creating legacy files for Student, Teacher, Limbo, and Shared."
+	cli_log "iOS CLIENTS-> Legacy Files support is enabled.  Creating legacy files for Student, Teacher, Limbo, and Shared."
 	cat  "$TEMPOUTPUTFILE_MERGEDIOS" | grep "Student" > "$TEMPOUTPUTFILE_Stu"
 	cat  "$TEMPOUTPUTFILE_MERGEDIOS" | grep "Teacher" > "$TEMPOUTPUTFILE_Teachers"
 	cat  "$TEMPOUTPUTFILE_MERGEDIOS" | grep "Staff" >> "$TEMPOUTPUTFILE_Teachers"
@@ -94,5 +92,5 @@ if [ ! "$MB_DEBUG" = "Y" ]; then
 	#Unless we are debugging then we need to cleanup after ourselves
 	rm -f /tmp/MOSBasicRAW-iOS-*.txt
 else
-	cli_log "DEBUG IS ENABLED.  NOT CLEANING UP REMAINING FILES!!!!"
+	cli_log "iOS CLIENTS-> DEBUG IS ENABLED.  NOT CLEANING UP REMAINING FILES!!!!"
 fi

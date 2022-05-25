@@ -64,7 +64,7 @@ Commands:
   annoy         		Give single asset tag.  Will play sound.  If device is not in lost mode
  				will also enable it. 
   lostmodestatus  		Find out current Lost mode status of device.
-  locate				Give single asset tag.  Sends MDM command to get location data.	
+  locate			Give single asset tag.  Sends MDM command to get location data.	
   whoislost			Gives list of all devices currently in lost mode and waitng to be in
   			  	in lost mode.  Output is color coded and when ran ALL ENABLED DEVICES
 				are sent the command to play sound.	
@@ -79,6 +79,7 @@ Commands:
   iosdump			Dump info for all iOS devices from Mosyle to local reference files.
   macdump			Dump info for all MacOS devices from Mosyle to local reference files.				
   userdump			Dump info for all Users in Mosyle to local reference files.
+  forcedatadump			Force dump all data (Mac, iOS, & Users) regardless of current cache state.
   iosassign			Info will be looked up and then device will be assigned.  <<REQUIRES USERLOOKUP MODULE>>
   iosassign --scan		Scan multiple devices  Tag first then assignment tag.  When done 
   				hit enter to give a blank.  Info will be looked up and then device will
@@ -99,6 +100,19 @@ Commands:
 "
   exit 1
 }
+
+#Function to dump all data since we will call this more than once.
+ForceMassDump() {
+	cli_log "Doing iOS Dump, MacOS Dump, and User Dump in parallel."
+	"$BAGCLI_WORKDIR/commands/mosdatadump-iOS.sh" &
+	P1=$!
+	"$BAGCLI_WORKDIR/commands/mosdatadump-USERS.sh" &
+	P2=$!
+	"$BAGCLI_WORKDIR/commands/mosdatadump-Mac.sh" &
+	P3=$!
+	wait $P1 $P2 $P3
+}
+
 
 [ ! -f "$BAGCLI_WORKDIR/config" ] \
   && echo "ERROR: No $BAGCLI_WORKDIR/config file not found. " \
@@ -184,7 +198,7 @@ if [ ! -s "$TEMPOUTPUTFILE_MERGEDIOS" ]; then
 	#"$BAGCLI_WORKDIR/commands/mosdatadump-iOS.sh"
 	
 #Is the command we are about to run one that is going to pull its own data?
-elif [ "$1" = "whoislost" ] || [ "$1" = "lostmodeon" ] || [ "$1" = "lostmodeoff" ] || [ "$1" = "lostmodestatus" ] || [ "$1" = "annoy" ]; then
+elif [ "$1" = "whoislost" ] || [ "$1" = "lostmodeon" ] || [ "$1" = "lostmodeoff" ] || [ "$1" = "lostmodestatus" ] ; then
 	cli_log "Skipping Local Data check because $1 pulls its own data..."
 
 #If our data is older than 24hr then update it.
@@ -202,7 +216,7 @@ fi
 #######################################
 if [ ! -s "$TEMPOUTPUTFILE_Users" ]; then
 	cli_log "$TEMPOUTPUTFILE_Users is missing.   Must grab NOW."
-	GETUSERDATA="YES"
+	GETIOSDATA="YES"
 	#"$BAGCLI_WORKDIR/commands/mosdatadump-USERS.sh"
 	
 #Is the command we are about to run one that is going to pull its own data?
@@ -240,39 +254,53 @@ else
 	GETMACOSDATA="NO"
 fi
 
+#Based on the above logic do dumps.
+# We Need all 3 (Mac, iOS, & USER)
+if [ "$GETIOSDATA" = "YES" ] && [ "$GETUSERDATA" = "YES" ] && [ "$GETMACOSDATA" = "YES" ]; then
+	#Call Mass dump function
+	ForceMassDump
 
-if [ "$GETUSERDATA" = "YES" ] && [ "$GETUSERDATA" = "YES" ]; then
-	cli_log "Doing iosdump and userdump in parallel."
+#We only need iOS and User	
+elif [ "$GETIOSDATA" = "YES" ] && [ "$GETUSERDATA" = "YES" ]; then
+	cli_log "Doing iOS Dump and User Dump in parallel."
 	"$BAGCLI_WORKDIR/commands/mosdatadump-iOS.sh" &
 	P1=$!
 	"$BAGCLI_WORKDIR/commands/mosdatadump-USERS.sh" &
 	P2=$!
 	wait $P1 $P2
 
-elif  [ "$GETUSERDATA" = "YES" ]; then
-	cli_log "Doing User dump only."
-	"$BAGCLI_WORKDIR/commands/mosdatadump-USERS.sh"
+#We only need User and Mac	
+elif [ "$GETUSERDATA" = "YES" ] && [ "$GETMACOSDATA" = "YES" ]; then
+	cli_log "Doing MacOS Dump and User Dump in parallel."
+	"$BAGCLI_WORKDIR/commands/mosdatadump-USERS.sh" &
+	P1=$!
+	"$BAGCLI_WORKDIR/commands/mosdatadump-Mac.sh" &
+	P2=$!
+	wait $P1 $P2
+	
+#We only Need iOS and Mac
+elif [ "$GETIOSDATA" = "YES" ] && [ "$GETMACOSDATA" = "YES" ]; then
+	cli_log "Doing iOS Dump and MacOS Dump in parallel."
+	"$BAGCLI_WORKDIR/commands/mosdatadump-iOS.sh" &
+	P1=$!
+	"$BAGCLI_WORKDIR/commands/mosdatadump-Mac.sh" &
+	P2=$!
+	wait $P1 $P2	
 
+#Cases for we only need one or the other but no combos
+elif  [ "$GETUSERDATA" = "YES" ]; then
+	cli_log "Doing User Dump only."
+	"$BAGCLI_WORKDIR/commands/mosdatadump-USERS.sh"
 elif [ "$GETIOSDATA" = "YES" ]; then
 		cli_log "Doing iOS dump only."
 	"$BAGCLI_WORKDIR/commands/mosdatadump-iOS.sh"
-fi
-
-#Nothing spiffy here yet..  I want to do this in parallel too but
-#I'm not sure of the best logic to use.  Maybe we need to figure out
-# who needs updated and then only issue their update commands...  Like
-# Oh this runs?  Ok its P1, this too ok its P2, what about this no then
-#alright we only wait on P1 and P2.  This will do for now though.
-if [ "$GETMACOSDATA" = "YES" ]; then
-	cli_log "Doing MacOS dump."
+elif [ "$GETMACOSDATA" = "YES" ]; then
+	cli_log "Doing MacOS Dump"
 	"$BAGCLI_WORKDIR/commands/mosdatadump-Mac.sh"
 fi
 
-
-
-# echo "Variable 1-> $1"
-# echo "Variable 2-> $2"
-
+#### Now lets look at what options were fed at the time the command
+#### was called and act appropriately.
 case "$1" in
 macdump)
 	"$BAGCLI_WORKDIR/commands/mosdatadump-Mac.sh"
@@ -283,6 +311,9 @@ iosdump)
 userdump)
 	"$BAGCLI_WORKDIR/commands/mosdatadump-USERS.sh"
 	;; 
+forcedatadump)
+	ForceMassDump
+	;;	
 info)
 	"$BAGCLI_WORKDIR/commands/getinfo.sh" "$2"
 	;;

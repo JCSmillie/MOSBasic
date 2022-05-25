@@ -9,16 +9,18 @@ import csv
 import sys
 
 # Read the command-line argument passed to the interpreter when invoking the script
-JSON2Convert = sys.argv[1]
-WriteCSVHere = sys.argv[2]
+DataSubHeader = sys.argv[1]
+JSON2Convert = sys.argv[2]
+WriteCSVHere = sys.argv[3]
  
 # Opening JSON file and loading the data
 # into the variable data
 with open(JSON2Convert, "r") as json_file:
     data = json.load(json_file)
  
-devicestocsv = data['devices']
  
+devicestocsv = data[DataSubHeader] 
+
 # now we will open a file for writing
 data_file = open(WriteCSVHere, 'a')
  

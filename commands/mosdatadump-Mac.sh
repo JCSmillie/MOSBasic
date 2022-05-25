@@ -67,9 +67,8 @@ while true; do
 	mv -f /tmp/MOSBasicRAW-Mac-TEMPSPOT.txt /tmp/MOSBasicRAW-Mac-Page$THEPAGE.txt
 	
 	#Call our python json to csv routine.  Output will be tab delimited so we can maintain our "tags" together.
-	$PYTHON2USE $BAGCLI_WORKDIR/modules/json2csv.py /tmp/MOSBasicRAW-Mac-Page$THEPAGE.txt "$TEMPOUTPUTFILE_MERGEDMAC"
+	$PYTHON2USE $BAGCLI_WORKDIR/modules/json2csv.py devices /tmp/MOSBasicRAW-Mac-Page$THEPAGE.txt "$TEMPOUTPUTFILE_MERGEDMAC"
 done
-
 
 # # #Build file of all this data now that we've sorted it out and parsed it.
 # # #we still need the single/individual files for legacy support of other
@@ -78,7 +77,7 @@ done
 # as I'm the only one who I think has scripts using them I didn't add this to the config
 # as it will eventually be phased out - JCS 5/24/22
 if [ "$LEGACYFILES" = "Y" ]; then
-	cli_log "Legacy Files support is enabled.  Creating legacy files for Student, Teacher, Limbo, and Shared."
+	cli_log "MAC CLIENTS-> Legacy Files support is enabled.  Creating legacy files for Student, Teacher, Limbo, and Shared."
 	cat "$TEMPOUTPUTFILE_MERGEDMAC" | grep "Student" > "$TEMPOUTPUTFILE_MACStu"
 	cat "$TEMPOUTPUTFILE_MERGEDMAC" | grep "Teacher" > "$TEMPOUTPUTFILE_MACTeachers"
 	cat "$TEMPOUTPUTFILE_MERGEDMAC" | grep "Staff" >> "$TEMPOUTPUTFILE_MACTeachers"
@@ -89,10 +88,9 @@ fi
 
 #At this point I would run a follow up script to used the data we parsed above. All data above ends up 
 #in an csv style sheet so its easy to use the "cut" command to parse that data.
-
 if [ ! "$MB_DEBUG" = "Y" ]; then
 	#Unless we are debugging then we need to cleanup after ourselves
 	rm -f /tmp/MOSBasicRAW-Mac-*.txt
 else
-	cli_log "DEBUG IS ENABLED.  NOT CLEANING UP REMAINING FILES!!!!"
+	cli_log "MAC CLIENTS-> DEBUG IS ENABLED.  NOT CLEANING UP REMAINING FILES!!!!"
 fi
