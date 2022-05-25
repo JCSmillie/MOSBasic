@@ -51,10 +51,10 @@ while true; do
 	
 	##This has been changed from running inside a variable to file output because there are some characers which mess the old
 	#way up.  By downloading straight to file we avoid all that nonsense. -JCS 5/23/2022
-	curl -s -k -X POST -d 'content='$content 'https://managerapi.mosyle.com/v2/listdevices' -o /tmp/MOSBasicRAW-Page$THEPAGE.txt
+	curl -s -k -X POST -d 'content='$content 'https://managerapi.mosyle.com/v2/listdevices' -o /tmp/MOSBasicRAW-Mac-Page$THEPAGE.txt
 
 	#Detect we just loaded a page with no content and stop.
-	LASTPAGE=$(cat "/tmp/MOSBasicRAW-Page$THEPAGE.txt" | grep DEVICES_NOTFOUND)
+	LASTPAGE=$(cat "/tmp/MOSBasicRAW-Mac-Page$THEPAGE.txt" | grep DEVICES_NOTFOUND)
 	if [ -n "$LASTPAGE" ]; then
 		let "THECOUNT=$THECOUNT-1"
 		cli_log "MAC CLIENTS-> Yo we are at the end of the list (Last good page was $THECOUNT)"
@@ -63,15 +63,11 @@ while true; do
 
 	#Preprocess the file.  We need to remove {"status":"OK","response": so can do operations with our python json to csv converter.  Yes
 	#I know this is still janky but hay I'm getting there.
-	cat /tmp/MOSBasicRAW-Page$THEPAGE.txt  | cut -d ':' -f 3- | sed 's/.$//' > /tmp/MOSBasicRAW-TEMPSPOT.txt
-	mv -f /tmp/MOSBasicRAW-TEMPSPOT.txt /tmp/MOSBasicRAW-Page$THEPAGE.txt
-
-	# #Now take the JSON data we received and parse it into tab
-	# #delimited output.
-	# curl -X POST https://data.page/api/getcsv -F email=jsmillie@gatewayk12.org -F json=@/tmp/MOSBasicRAW-Page$THEPAGE.txt -o /tmp/MOSBasicCSV-Page$THEPAGE.txt
+	cat /tmp/MOSBasicRAW-Mac-Page$THEPAGE.txt  | cut -d ':' -f 3- | sed 's/.$//' > /tmp/MOSBasicRAW-Mac-TEMPSPOT.txt
+	mv -f /tmp/MOSBasicRAW-Mac-TEMPSPOT.txt /tmp/MOSBasicRAW-Mac-Page$THEPAGE.txt
 	
 	#Call our python json to csv routine.  Output will be tab delimited so we can maintain our "tags" together.
-	$PYTHON2USE $BAGCLI_WORKDIR/modules/json2csv.py /tmp/MOSBasicRAW-Page$THEPAGE.txt "$TEMPOUTPUTFILE_MERGEDMAC"
+	$PYTHON2USE $BAGCLI_WORKDIR/modules/json2csv.py /tmp/MOSBasicRAW-Mac-Page$THEPAGE.txt "$TEMPOUTPUTFILE_MERGEDMAC"
 done
 
 
@@ -96,7 +92,7 @@ fi
 
 if [ ! "$MB_DEBUG" = "Y" ]; then
 	#Unless we are debugging then we need to cleanup after ourselves
-	rm -f /tmp/MOSBasicRAW*.txt
+	rm -f /tmp/MOSBasicRAW-Mac-*.txt
 else
 	cli_log "DEBUG IS ENABLED.  NOT CLEANING UP REMAINING FILES!!!!"
 fi
