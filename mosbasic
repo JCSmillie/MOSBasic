@@ -216,7 +216,7 @@ fi
 #######################################
 if [ ! -s "$TEMPOUTPUTFILE_Users" ]; then
 	cli_log "$TEMPOUTPUTFILE_Users is missing.   Must grab NOW."
-	GETIOSDATA="YES"
+	GETUSERDATA="YES"
 	#"$BAGCLI_WORKDIR/commands/mosdatadump-USERS.sh"
 	
 #Is the command we are about to run one that is going to pull its own data?
