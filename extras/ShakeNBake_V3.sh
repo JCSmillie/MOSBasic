@@ -4,14 +4,23 @@
 ###################
 # Utilize cfgutil and leverage Mosyle MDM Api to mass process
 # ipads.  Process also relies on MOSBasic for some data files
-# as well as configurations.  
+# as well as configurations.  -- JCS Summer 22'
 ############
-###PROFILE TO BE USED ON LOANER DEVICES
+#
+###PROFILE TO BE USED ON LOANER DEVICES - This has to be a wifi profile which cna get on to 
+###a provisioning network.  If your not doing Shared iPads this can be ignored.
 LOANERWIFIPROFILE="/Users/Shared/ShakeNBake/Profiles/GSD-Loaner-Wifi.mobileconfig"
-###PROFILE TO BE USED ON LIMBO DEVICES
+###PROFILE TO BE USED ON LIMBO DEVICES - This has to be a wifi profile which cna get on to 
+###a provisioning network.
 LIMBOWIFIPROFILE="/Users/Shared/ShakeNBake/Profiles/AppleStoreWifi7Days.mobileconfig"
+
+#Location for log output
 LOGLOCATION="/Users/Shared/ShakeNBake/Logs"
+#Location for Markerfile storage.  These are files SNB creates
+#along the way to keep track of where it is at in the process.
 TMPLOCATION="/Users/Shared/ShakeNBake/MarkerFilez"
+#This option is for use with LoanerMonitor.sh... for the public
+#version it should be ignored.
 EXTRACFGS="/Users/Shared/ShakeNBake/Configz"
 
 #This file is for local options like enable debug and setting prep Mode
@@ -42,6 +51,13 @@ GENERALLOG="$LOGLOCATION/ShakeNBake.log"
 BAGCLI_WORKDIR=$(readlink /usr/local/bin/mosbasic)
 #Remove our command name from the output above
 BAGCLI_WORKDIR=${BAGCLI_WORKDIR//mosbasic/}
+
+#Make sure we have a location on MOSBasic commands.
+if [ -z "$BAGCLI_WORKDIR" ]; then
+	echo "You don't appear to have MOSBasic fully installed.  FAIL"
+	exit 1
+fi
+
 
 export BAGCLI_WORKDIR
 source "$BAGCLI_WORKDIR/config"
