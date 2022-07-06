@@ -119,6 +119,33 @@ IsThisiPadSharedMode() {
 	fi
 }
 
+####################################################
+# Check for our data file of Apple updates.  If we don't
+# have it or its older than 6hrs pull it again.
+####################################################
+GetAppleUpdateData(){
+	if [ ! -s "/tmp/data.json" ]; then
+		echo "Data file is missing.  Must create."
+
+		#This command will dump all of the Apple page which details which version of
+		#software runs on devices.  File is ordered newest OS on top.
+		curl 'https://gdmf.apple.com/v2/pmv' | /usr/local/munki/munki-python -m json.tool > /tmp/data.json
+		
+	elif [ `find "/tmp/data.json" -mmin +360 | egrep '.*'` ]; then
+		echo "Data file is out of date.  Must grab new data."
+
+		#This command will dump all of the Apple page which details which version of
+		#software runs on devices.  File is ordered newest OS on top.
+		curl 'https://gdmf.apple.com/v2/pmv' | /usr/local/munki/munki-python -m json.tool > /tmp/data.json
+		
+	else
+		echo "Data file is found and appears new enough.  Continuing."
+	fi
+}
+
+
+
+
 #ColorCodes
 
 #Make sure TERM variable is set.
