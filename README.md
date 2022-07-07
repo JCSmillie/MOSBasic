@@ -145,6 +145,11 @@ baseurl="<<<YYOUR BASE URL FROM INCIDENT IQ>>>"
  ```	
 All of the above should be listed in ~/.incidentIQ
 
+## Extras Folder
+In this folder you will find scripts that rely on MOSBasic to do other functions. 
+ - ShakeNBake_V3.sh <-This script is run with CFGUTIL (cfgutil exec -a ShakeNBake_V3.sh) to process iPads that are plugged into the Mac running the script.  It will try to use either local trust or MDM Erase to wipe the iPad, then make sure it has latest iPadOS, install a wifi profile, and push the iPad to DEP to finish.  More information can be seen in my PSU MacAdmins 2022 presentation.  
+
+
 # Disclaimer
 While all of this stuff is used on a daily bases at Gateway School District in our persuit to best support the students there is always a chance for a bug to be found that doesn't effect me.  I'm not a master coder by any means but know enough to get myself into trouble... so don't be surprised if there is a better way to do things I'm not using.  As far as I'm aware there is nothing malacious in my code.  It only works on files created by itself and shouldn't hurt anything.  That being said end responsibility I take none and as my favorite AppleSE always said "Mileage may very" but I hope this does work for you.
  
