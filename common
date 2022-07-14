@@ -125,31 +125,78 @@ IsThisiPadSharedMode() {
 ####################################################
 GetAppleUpdateData(){
 	if [ ! -s "/tmp/data.json" ]; then
-		echo "Data file is missing.  Must create."
+		log_line "Data file is missing.  Must create."
 
 		#This command will dump all of the Apple page which details which version of
 		#software runs on devices.  File is ordered newest OS on top.
 		curl 'https://gdmf.apple.com/v2/pmv' | /usr/local/munki/munki-python -m json.tool > /tmp/data.json
 		
 	elif [ `find "/tmp/data.json" -mmin +360 | egrep '.*'` ]; then
-		echo "Data file is out of date.  Must grab new data."
+		log_line "Data file is out of date.  Must grab new data."
 
 		#This command will dump all of the Apple page which details which version of
 		#software runs on devices.  File is ordered newest OS on top.
-		curl 'https://gdmf.apple.com/v2/pmv' | /usr/local/munki/munki-python -m json.tool > /tmp/data.json
+		curl  -S -s -o 'https://gdmf.apple.com/v2/pmv' | /usr/local/munki/munki-python -m json.tool > /tmp/data.json
 		
 	else
-		echo "Data file is found and appears new enough.  Continuing."
+		log_line "Data file is found and appears new enough.  Continuing."
 	fi
 }
 
+CheckBuildVersion() {
+	#This chunk of code is all new.  Back in April 22' an AppleSE inquired about how do I know a device needs
+	#updated or note.  Originally I had a manual table listed of build numbers.  This table had to be updated
+	#every time a new version comes out though.  Instead now we ask Apple for a list of all device types and
+	#what version of iPadOS they should have.  Ask the iPad what firmware it has, compare, and act.  
+	
+	#Make sure we have a data file from Apple about currently available iOS/iPadOS versions.
+	#NOTE-> This function comes from MOSBasic/Common
+	GetAppleUpdateData
+	
+	#User CFGUTIL to figure out the Model (by deviceType ID) and current
+	#version of iPadOS running.
+	deviceType=$(bash -c "/usr/local/bin/cfgutil --ecid "$ECID" get deviceType" 2</dev/null)
+	firmwareVersion=$(bash -c "/usr/local/bin/cfgutil --ecid "$ECID" get firmwareVersion" 2</dev/null)
 
+	if [ "$DEBUG" = "Y" ]; then
+		echo "We are looking at a device with type ($deviceType) running firmware version ($firmwareVersion)"
+	fi
+
+	#Cat the fie of Apple update data.  Use AWK to print out everything until we hit the device we
+	#have.  Now AWK again to find out waht the latest version attributed is.  Use cut to get us down to just
+	#a variable.
+	AwkWithDeviceVariable=$(echo "{print} /$deviceType/ {exit}")
+	GetOSVersion=$(cat /tmp/data.json | awk "$AwkWithDeviceVariable" | grep ProductVersion | tail -1 | cut -d ':' -f 2 | cut -d '"' -f 2)
+
+	#Test data we got back.
+	if [ -z "$GetOSVersion" ]; then
+		echo "Lookup of supported iOS/iPadOS didn't work.  Cant check update status."
+	elif [ "$DEBUG" = "Y" ]; then
+		echo "Apple updates site says $deviceType should be running $GetOSVersion"
+	fi
+
+	autoload is-at-least
+
+	#If versions match we can mobe on
+	if [ "$firmwareVersion" = "$GetOSVersion" ]; then
+		echo "iPad is running latest available ($firmwareVersion.)  No update necessary."
+		WIPEIT="FALSE"
+
+	elif is-at-least "$firmwareVersion" "$GetOSVersion"; then
+		echo "This iPad needs updated. OS installed ($firmwareVersion) is older then what is should be ($GetOSVersion)"
+		WIPEIT="TRUE"
+		
+	else
+		echo "Couldn't get a lock on what we should do ($firmwareVersion/$GetOSVersion) so no update will be called for."
+		WIPEIT="FALSE"
+	fi
+}
 
 
 #ColorCodes
 
 #Make sure TERM variable is set.
-[[ ${TERM}=="" ]] && TPUTTERM='-Txterm-256color' \
+[[ ${TERM}="" ]] && TPUTTERM='-Txterm-256color' \
                   || TPUTTERM=''
 
 #Define colors
