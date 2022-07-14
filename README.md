@@ -1,6 +1,3 @@
-**NOTE IF YOU HAD THIS INSTALLED BEFORE 2/16/22 YOU MUST DELETE YOUR CONFIG FILE AND RUN THE "Run me First" script again.  This will ensure you have support for new features for dumping Mac data, groups, and proper python support.**
-
-
 # MOSBasic
 
 Easy to use command line tools for interacting with MOSYLE MDM.  In places I also will interact with IncidentIQ ticket system for data.  I'm going to try to run my inventory check module so anyone could easily write their own module for the ticket system they use.  Will post a note about that in the wiki later when we get there.  This command was built for daily use at Gateway School District so we could easily maniplulate devices without having to go to the GUI every time.  It is 
@@ -147,6 +144,13 @@ siteid="<<<YYOUR SITE ID FROM INCIDENT IQ>>>"
 baseurl="<<<YYOUR BASE URL FROM INCIDENT IQ>>>"
  ```	
 All of the above should be listed in ~/.incidentIQ
+
+## Extras Folder
+In this folder you will find scripts that rely on MOSBasic to do other functions. 
+ - ShakeNBake_V3.sh <-This script is run with CFGUTIL (cfgutil exec -a ShakeNBake_V3.sh) to process iPads that are plugged into the Mac running the script.  It will try to use either local trust or MDM Erase to wipe the iPad, then make sure it has latest iPadOS, install a wifi profile, and push the iPad to DEP to finish.  More information can be seen in my PSU MacAdmins 2022 presentation.  
+ 
+ I use **autoload is-at-least** in ShakeNBake to do compares on what Apple says a device should use and what the device has.  When cfgutil executes ShakeNBake though it doesn't call the Autoload command... It doesn't know what it is.  I know this has something to do with how cfgutil loads scripts and their support files but haven't put my finger on a good fix.  In the short term when launching ShakeNBake use this line instead-> `cfgutil exec -a 'zsh -c "/Users/Shared/ShakeNBake/ShakeNBake_V3.sh"'`  This will insure that all the shell files get loaded.  Also There is something weird with Ventura Beta (as of 7/14/22) and multiple iPads (more than 4) on a single bus.  I've seen this with my Thundersync unit.  Needs more testing and I'll report it.  For now run only in Monterey if you can.
+
 
 # Disclaimer
 While all of this stuff is used on a daily bases at Gateway School District in our persuit to best support the students there is always a chance for a bug to be found that doesn't effect me.  I'm not a master coder by any means but know enough to get myself into trouble... so don't be surprised if there is a better way to do things I'm not using.  As far as I'm aware there is nothing malacious in my code.  It only works on files created by itself and shouldn't hurt anything.  That being said end responsibility I take none and as my favorite AppleSE always said "Mileage may very" but I hope this does work for you.
