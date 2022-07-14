@@ -148,6 +148,8 @@ All of the above should be listed in ~/.incidentIQ
 ## Extras Folder
 In this folder you will find scripts that rely on MOSBasic to do other functions. 
  - ShakeNBake_V3.sh <-This script is run with CFGUTIL (cfgutil exec -a ShakeNBake_V3.sh) to process iPads that are plugged into the Mac running the script.  It will try to use either local trust or MDM Erase to wipe the iPad, then make sure it has latest iPadOS, install a wifi profile, and push the iPad to DEP to finish.  More information can be seen in my PSU MacAdmins 2022 presentation.  
+ 
+ I use **autoload is-at-least** in ShakeNBake to do compares on what Apple says a device should use and what the device has.  When cfgutil executes ShakeNBake though it doesn't call the Autoload command... It doesn't know what it is.  I know this has something to do with how cfgutil loads scripts and their support files but haven't put my finger on a good fix.  In the short term when launching ShakeNBake use this line instead-> `cfgutil exec -a 'zsh -c "/Users/Shared/ShakeNBake/ShakeNBake_V3.sh"'`  This will insure that all the shell files get loaded.  Also There is something weird with Ventura Beta (as of 7/14/22) and multiple iPads (more than 4) on a single bus.  I've seen this with my Thundersync unit.  Needs more testing and I'll report it.  For now run only in Monterey if you can.
 
 
 # Disclaimer
