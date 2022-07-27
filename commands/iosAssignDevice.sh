@@ -110,6 +110,14 @@ if [ "$1" = "--scan" ]; then
 # and $2 equaling where to find a file.  File would be asset tag per line.
 elif [ "$1" = "--mass" ]; then
 		echo "MASS ABILITY IS NOT YET READY..  Fail.. for now."
+		
+		if [ ! -s "$2" ]; then
+			echo "${Red}File given ($2) doesn't exist.  EPIC FAIL${reset}"
+			exit 1
+		else
+			echo "File given MUST be in format <tag>,<StudentID>.  Assuming you know what your doing!"
+			cat "$2" > /tmp/Scan2Assign.txt
+		fi
 
 #This Routine is for doing a single asset tag.
 #Pull all serials from file and parse to get UDiD numbers.

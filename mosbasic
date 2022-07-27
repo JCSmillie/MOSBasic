@@ -85,7 +85,7 @@ Commands:
   				hit enter to give a blank.  Info will be looked up and then device will
 				be assigned.  <<REQUIRES USERLOOKUP MODULE>>
   iosassign --mass		Give file with multiple devices in form of ASSET TAG,USERNAME.  One
-  				per line.  All will be assigned properly.  <<PLANNED NOT YET READY>> <<REQUIRES USERLOOKUP MODULE>>
+  				per line.  All will be assigned properly. <<REQUIRES USERLOOKUP MODULE>>
   			
   info <ASSET TAG/USERID/SERIAL>	Look up device assignment data by reference point  <ASSET TAG/USERID/SERIAL>		
   listgroups --mac		Display list of all current Mac Device Groups in Mosyle
