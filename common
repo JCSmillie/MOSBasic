@@ -87,8 +87,16 @@ SerialFromTag() {
 	SERIALIS=$(cat "$TEMPOUTPUTFILE_MERGEDIOS" | cut -d$'\t' -f 2-5,7-9 | grep "$TAG_GIVEN" | cut -d$'\t' -f 1 )
 	SERIALIS=$(cat "$TEMPOUTPUTFILE_MERGEDIOS" | grep "$SERIALIS")
 	
+	HowManyReturns=$(echo "$SERIALIS" | wc -l)
+	HowManyReturns="${HowManyReturns//[[:space:]]/}"
+	
+	#Check to see how many serial numbers came back.  More than 1 we have a problem.
+	if [ "$HowManyReturns" -gt 1 ]; then
+		cli_log "Attempted to find serial for #$TAG_GIVEN and got too many serials back!"
+		RETURNSERIAL="TOOMANYSERIALS"
+	
 	#echo "DEBUG--> $SERIALIS"
-	if [ ! -z "$SERIALIS" ]; then
+	elif [ ! -z "$SERIALIS" ]; then
 		
 		line="$SERIALIS"
 		ParseIt_ios

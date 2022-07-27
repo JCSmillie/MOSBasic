@@ -156,6 +156,7 @@ cat "/tmp/Scan2Assign.txt" | while read line; do
 		break
 	fi
 	
+	echo "DEBUG-> This is where we check if iPAd is Shared Mode"
 	#Call function to see if iPad is shared.  If it is we can't assign it.
 	IsThisiPadSharedMode
 	
@@ -168,19 +169,28 @@ cat "/tmp/Scan2Assign.txt" | while read line; do
 		break
 		
 	else
+		
+		echo "DEBUG-> This is where we make sure the user exists"
 		USERLOOKUP $USERNAME_GIVEN
 		
 		USERNAME_GIVEN="$Username"
 	fi		
 	
+	echo "DEBUG-> This is where we try to get the tag from the Serial #"
 	SerialFromTag
-
+	
+	
+	#Check to see if a return code came back of EPICFAIL from the SerialFromTag function (found in common)
 	if [ "$RETURNSERIAL" = "EPICFAIL" ]; then
 		echo "${Red}Cant find $TAG_GIVEN in cached Mosyle data.  EPIC FAIL${reset}"
 		echo "${Red}Skipping $TAG_GIVEN.  EPIC FAIL${reset}"
 		
 	elif [ -z "$USERNAME_GIVEN" ]; then
 		cli_log "Could not find user in lookup routine.  Skipping."
+	
+	#Check to see if a return code came back of TOOMANYSERIALS from the SerialFromTag function (found in common)	
+	elif [ "$RETURNSERIAL" = "TOOMANYSERIALS" ]; then
+		echo "${Red}Skipping $TAG_GIVEN/$USERNAME_GIVEN.  Bad Serial Lookup.  EPIC FAIL${reset}"
 	else
 		cli_log "Asset tag $TAG_GIVEN is $RETURNSERIAL which will be assigned to $FirstName $LastName ($USERNAME_GIVEN) at $LocationName"
 		echo "$TAG_GIVEN to $FirstName $LastName ($USERNAME_GIVEN) at $LocationName" >> /tmp/Scan2Assign_ExtraInfo.txt
@@ -188,41 +198,53 @@ cat "/tmp/Scan2Assign.txt" | while read line; do
 	fi
 done
 
-
-
- echo "Proceeding to Assign the following:"
- echo "------------------------------------------"
- cat /tmp/Scan2Assign_ExtraInfo.txt
-
-echo "Are you sure <Y/N>"
-
-read shouldwedoit
-
-if [ "$shouldwedoit" = "Y" ]; then
-	echo "DOIN IT!"
-	
-	
-	exec 3< /tmp/Scan2Assign_Serialz.txt
-	
-	until [ $done ]
-	do
-	    read <&3 myline
-	    if [ $? != 0 ]; then
-	        done=1
-	        continue
-	    fi
-
-
-		RETURNSERIAL=$(echo "$myline" | cut -f1 -d',' | sed 's/[[:space:]]//g')
-		USERNAME_GIVEN=$(echo "$myline" | cut -f2 -d',' | sed 's/[[:space:]]//g')
-		TAG_GIVEN=$(echo "$myline" | cut -f3 -d',' | sed 's/[[:space:]]//g')
-
-
-		cli_log "Assigning $TAG_GIVEN ($RETURNSERIAL) to $USERNAME_GIVEN"
-		AssigniPad
-	done	
-	
-else
-	echo "Its ok... we all get cold feet sometimes...."
+#Make sure our data file is not empty.  If it is quit.
+if [ ! -s /tmp/Scan2Assign_ExtraInfo.txt ]; then
+	echo "No data present to assign.  Doing nothing."
 	exit 1
+else
+	
+	
+	echo "Proceeding to Assign the following:"
+	echo "------------------------------------------"
+	cat /tmp/Scan2Assign_ExtraInfo.txt
+
+	echo "Are you sure <Y/N>"
+
+	read shouldwedoit
+
+	if [ "$shouldwedoit" = "Y" ]; then
+		echo "DOIN IT!"
+		
+		#Make sure our assignment file is not empty.  If it is skip.
+		if [ ! -s tmp/Scan2Assign_Serialz.txt ]; then
+			echo "No Assign data present to assign.  Doing nothing."
+			exit 1
+			
+		else
+			exec 3< /tmp/Scan2Assign_Serialz.txt
+
+			until [ $done ]
+			do
+			    read <&3 myline
+			    if [ $? != 0 ]; then
+			        done=1
+			        continue
+			    fi
+
+
+				RETURNSERIAL=$(echo "$myline" | cut -f1 -d',' | sed 's/[[:space:]]//g')
+				USERNAME_GIVEN=$(echo "$myline" | cut -f2 -d',' | sed 's/[[:space:]]//g')
+				TAG_GIVEN=$(echo "$myline" | cut -f3 -d',' | sed 's/[[:space:]]//g')
+
+
+				cli_log "Assigning $TAG_GIVEN ($RETURNSERIAL) to $USERNAME_GIVEN"
+				AssigniPad
+			done
+		fi
+
+	else
+		echo "Its ok... we all get cold feet sometimes...."
+		exit 1
+	fi
 fi
