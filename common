@@ -137,7 +137,7 @@ GetAppleUpdateData(){
 
 		#This command will dump all of the Apple page which details which version of
 		#software runs on devices.  File is ordered newest OS on top.
-		curl 'https://gdmf.apple.com/v2/pmv' | /usr/local/munki/munki-python -m json.tool > /tmp/data.json
+		curl  -S -s "https://gdmf.apple.com/v2/pmv" | /usr/local/munki/munki-python -m json.tool > /tmp/data.json
 		
 	elif [ `find "/tmp/data.json" -mmin +360 | egrep '.*'` ]; then
 		log_line "Data file is out of date.  Must grab new data."

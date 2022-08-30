@@ -157,34 +157,34 @@ cat "/tmp/Scan2Assign.txt" | while read line; do
 	TAG_GIVEN=$(echo "$line"| cut -d "," -f 1 )
 	USERNAME_GIVEN=$(echo "$line"| cut -d "," -f 2 )
 	
-	echo "DEBUG-> This is where we lookup $TAG_GIVEN"
+	#echo "DEBUG-> This is where we lookup $TAG_GIVEN"
 	
 	if [ -z "$TAG_GIVEN" ]; then
-		echo "DEBUG-> Blank tag <$TAG_GIVEN> scanned.  Skipping."
+		echo "${White}Blank tag <$TAG_GIVEN> scanned.  Skipping.{reset}"
 		break
 	fi
 	
-	echo "DEBUG-> This is where we check if iPAd is Shared Mode"
+	#echo "DEBUG-> This is where we check if iPAd is Shared Mode"
 	#Call function to see if iPad is shared.  If it is we can't assign it.
 	IsThisiPadSharedMode
 	
 	if [ "$ISSHARED" = "TRUE" ]; then
-		cli_log "$ASSETTAG is a Shared iPad.  Cannot be assigned.  Skipping."
+		cli_log "${White}$ASSETTAG is a Shared iPad.  Cannot be assigned.  Skipping.{reset}"
 		break
 		
 	elif [ -z "$USERNAME_GIVEN" ]; then
-		cli_log "I didn't get a username for $TAG_GIVEN.  Skipping."
+		cli_log "${White}I didn't get a username for $TAG_GIVEN.  Skipping.{reset}"
 		break
 		
 	else
 		
-		echo "DEBUG-> This is where we make sure the user exists"
+		#echo "DEBUG-> This is where we make sure the user exists"
 		USERLOOKUP $USERNAME_GIVEN
 		
 		USERNAME_GIVEN="$Username"
 	fi		
 	
-	echo "DEBUG-> This is where we try to get the tag from the Serial #"
+	#echo "DEBUG-> This is where we try to get the tag from the Serial #"
 	SerialFromTag
 	
 	
@@ -194,7 +194,7 @@ cat "/tmp/Scan2Assign.txt" | while read line; do
 		echo "${Red}Skipping $TAG_GIVEN.  EPIC FAIL${reset}"
 		
 	elif [ -z "$USERNAME_GIVEN" ]; then
-		cli_log "Could not find user in lookup routine.  Skipping."
+		cli_log "${Red}Could not find user in lookup routine.  Skipping.${reset}"
 	
 	#Check to see if a return code came back of TOOMANYSERIALS from the SerialFromTag function (found in common)	
 	elif [ "$RETURNSERIAL" = "TOOMANYSERIALS" ]; then
@@ -225,8 +225,8 @@ else
 		echo "DOIN IT!"
 		
 		#Make sure our assignment file is not empty.  If it is skip.
-		if [ ! -s tmp/Scan2Assign_Serialz.txt ]; then
-			echo "No Assign data present to assign.  Doing nothing."
+		if [ ! -s /tmp/Scan2Assign_Serialz.txt ]; then
+			cli_log "No Assign data present to assign.  Doing nothing."
 			exit 1
 			
 		else
