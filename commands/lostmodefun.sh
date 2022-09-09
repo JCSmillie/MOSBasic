@@ -66,11 +66,11 @@ PlayLostSound() {
 	APIOUTPUT=$(curl -s -k -X POST -d 'content='$content 'https://managerapi.mosyle.com/v2/lostmode')
 
 	###DEBUG SHOW STRING SENT TO MOSYLE
-	#echo "curl -s -k -X POST -d 'content='$content 'https://managerapi.mosyle.com/v2/lostmode'"
+	echo "curl -s -k -X POST -d 'content='$content 'https://managerapi.mosyle.com/v2/lostmode'"
 
 	CMDStatus=$(echo "$APIOUTPUT" | cut -d ":" -f 3 | cut -d "," -f 1 | tr -d '"')
 	
-	#echo "$CMDStatus"
+	echo "$CMDStatus"
 	
 	if [ "$CMDStatus" = "LOSTMODE_NOTENABLED" ]; then
 		echo "API Says iPad is not currently in Lost Mode.  Enabling."
@@ -110,8 +110,6 @@ LocateDevice() {
 	#echo "curl -s -k -X POST -d 'content='$content 'https://managerapi.mosyle.com/v2/lostmode'"
 
 	CMDStatus=$(echo "$APIOUTPUT" | cut -d ":" -f 3 | cut -d "," -f 1 | tr -d '"')
-	echo "$APIOUTPUT"
-	echo "$CMDStatus"
 	
 	if [ "$CMDStatus" = "LOSTMODE_NOTENABLED" ]; then
 		echo "API Says iPad is not currently in Lost Mode.  Enabling."
@@ -132,42 +130,48 @@ CheckLostMode() {
 	#Build Query.  Just asking for current data on last beat, lostmode status, and location data if we can get it.
 	content="{\"accessToken\":\"$APIKey\",\"options\":{\"os\":\"ios\",\"serial_numbers\":[\"$DeviceSerialNumber\"],\"specific_columns\":\"deviceudid,date_last_beat,tags,lostmode_status,longitude,latitude\"}}"
 
-	output=$(curl -s -k -X POST -d 'content='$content 'https://managerapi.mosyle.com/v2/listdevices')
+	APIOUTPUT=$(curl -s -k -X POST -d 'content='$content 'https://managerapi.mosyle.com/v2/listdevices')
 
-	# echo "What we asked for-->> $content"
-	# echo "Output->> $output"
-
-	if echo "$output" | grep "DEVICES_NOTFOUND"; then
+	if echo "$APIOUTPUT" | grep "DEVICES_NOTFOUND"; then
 		log_line "Mosyle doesn't know $DeviceSerialNumber.  Epic Fail."
 		UDID="NOTFOUND"
 
 	#If device is ENABLED	
-	elif echo "$output" | grep "ENABLED"; then 
+	elif echo "$APIOUTPUT" | grep "ENABLED"; then 
 		#echo "Lost Mode is enabled."
 		#Parse what was returned.
-		WHATWEGOTBACK=$(echo "$output"| awk 'BEGIN{FS=",";RS="},{"}{print $0}' | perl -pe 's/.*"deviceudid":"?(.*?)"?,"date_last_beat":"?(.*?)"?,"tags":"(.*?)","lostmode_status":"?(.*?)"?,"longitude":"?(.*?)","latitude":"?(.*?)",*.*/\1\t\2\t\3\t\4\t\5\t\6/' | cut -d ']' -f 1)
-		echo "LOST ENABLED--> $WHATWEGOTBACK"
+		JSON=$(echo "$APIOUTPUT" | /usr/local/munki/munki-python -m json.tool)		
+		
+		if [ "$MB_DEBUG" = "Y" ]; then
+			echo "LOST ENABLED--> $JSON"
+		fi
+		
 		unset UDID
 		
 	else
 		#Only enabled state gives us more than we need.  All other states we can go with bare minimum
-		WHATWEGOTBACK=$(echo "$output"| awk 'BEGIN{FS=",";RS="},{"}{print $0}' | perl -pe 's/.*"deviceudid":"?(.*?)"?,"date_last_beat":"?(.*?)"?,"tags":"(.*?)","lostmode_status":"?(.*?)",*.*/\1\t\2\t\3\t\4/' | cut -d ']' -f 1)
-		echo "ALL OTHER STATUSES--> $WHATWEGOTBACK"
+		JSON=$(echo "$APIOUTPUT" | /usr/local/munki/munki-python -m json.tool)
+		if [ "$MB_DEBUG" = "Y" ]; then
+			echo "ALL OTHER STATUSES--> $JSON"
+		fi
+		
 		unset UDID
 
 	fi
 
 	if [ ! "$UDID" = "NOTFOUND" ]; then
 		#Cut that up to variables.
-		UDID=$(echo "$WHATWEGOTBACK" |  cut -f 1 -d$'\t' )
-		LASTBEAT=$(echo "$WHATWEGOTBACK" |  cut -f 2 -d$'\t' )
-		TAGS=$(echo "$WHATWEGOTBACK" | cut -f 3 -d$'\t')
-		LOSTMODE=$(echo "$WHATWEGOTBACK" |  cut -f 4 -d$'\t' )
-		LONGITUDE=$(echo "$WHATWEGOTBACK" |  cut -f 5 -d$'\t' )
-		LATITUDE=$(echo "$WHATWEGOTBACK" |  cut -f 6 -d$'\t' )
+
+		UDID=$(echo "$JSON" |  grep deviceudid | tail -1 | cut -d ':' -f 2 | cut -d '"' -f 2 )
+		LASTBEAT=$(echo "$JSON" |  grep date_last_beat | tail -1 | cut -d ':' -f 2 | cut -d '"' -f 2)
+		TAGS=$(echo "$JSON" | grep tags | tail -1 | cut -d ':' -f 2 | cut -d '"' -f 2)
+		LOSTMODE=$(echo "$JSON" | grep lostmode_status | tail -1 | cut -d ':' -f 2 | cut -d '"' -f 2)
+		LONGITUDE=$(echo "$JSON" | grep longitude | tail -1 | cut -d ':' -f 2 | cut -d '"' -f 2)
+		LATITUDE=$(echo "$JSON" | grep latitude | tail -1 | cut -d ':' -f 2 | cut -d '"' -f 2)
 		
-		echo "($UDID) / ($LASTBEAT) / ($TAGS) / ($LOSTMODE) / ($LONGITUDE) / ($LATITUDE)"
-		
+		if [ "$MB_DEBUG" = "Y" ]; then
+			echo "($UDID) / ($LASTBEAT) / ($TAGS) / ($LOSTMODE) / ($LONGITUDE) / ($LATITUDE)"
+		fi
 		
 		LASTBEATDATE=$($PYTHON2USE -c "import datetime; print(datetime.datetime.fromtimestamp(int("$LASTBEAT")).strftime('%Y-%m-%d %I:%M:%S %p'))")
 		
@@ -227,20 +231,20 @@ WHOISLOST() {
 		let "THECOUNT=$THECOUNT+1"
 		THEPAGE="$THECOUNT"
 		content="{\"accessToken\":\"$APIKey\",\"options\":{\"os\":\"ios\",\"specific_columns\":\"deviceudid,date_last_beat,tags,lostmode_status\",\"page\":$THEPAGE}}"
-		output=$(curl -s -k -X POST -d 'content='$content 'https://managerapi.mosyle.com/v2/listdevices') >> $LOG
+		APIOUTPUT=$(curl -s -k -X POST -d 'content='$content 'https://managerapi.mosyle.com/v2/listdevices') >> $LOG
 
 		#echo "$content"
 
 
 		#Detect we just loaded a page with no content and stop.
-		LASTPAGE=$(echo $output | grep DEVICES_NOTFOUND)
+		LASTPAGE=$(echo $APIOUTPUT | grep DEVICES_NOTFOUND)
 		if [ -n "$LASTPAGE" ]; then
 			let "THECOUNT=$THECOUNT-1"
 			cli_log "Yo we are at the end of the list (Last good page was $THECOUNT)"
 			break
 		fi
 
-		FAILURE=$(echo $output | grep INVALID_JSON)
+		FAILURE=$(echo $APIOUTPUT | grep INVALID_JSON)
 		if [ -n "$FAILURE" ]; then
 			cli_log "I sent bad code to Mosyle.."
 			cli_log "Content-> $content"
@@ -252,9 +256,9 @@ WHOISLOST() {
 		echo "-----------------------"
 		#Now take the JSON data we received and parse it into tab
 		#delimited output.
-		echo "$output"| awk 'BEGIN{FS=",";RS="},{"}{print $0}' | grep ENABLED | perl -pe 's/.*"deviceudid":"?(.*?)"?,"date_last_beat":"?(.*?)"?,"tags":"(.*?)","lostmode_status":"?(.*?)",*.*/\1\t\2\t\3\t\4/' | cut -d ']' -f 1  >> /tmp/.enabled.lost_ish.txt
-		echo "$output"| awk 'BEGIN{FS=",";RS="},{"}{print $0}' | grep PENDINGTOENABLE | perl -pe 's/.*"deviceudid":"?(.*?)"?,"date_last_beat":"?(.*?)"?,"tags":"(.*?)","lostmode_status":"?(.*?)",*.*/\1\t\2\t\3\t\4/' | cut -d ']' -f 1  >> /tmp/.pending2enable.lost_ish.txt
-		echo "$output"| awk 'BEGIN{FS=",";RS="},{"}{print $0}' | grep PENDINGTODISABLE | perl -pe 's/.*"deviceudid":"?(.*?)"?,"date_last_beat":"?(.*?)"?,"tags":"(.*?)","lostmode_status":"?(.*?)",*.*/\1\t\2\t\3\t\4/' | cut -d ']' -f 1  >> /tmp/.pending2disable.lost_ish.txt
+		echo "$APIOUTPUT"| awk 'BEGIN{FS=",";RS="},{"}{print $0}' | grep ENABLED | perl -pe 's/.*"deviceudid":"?(.*?)"?,"date_last_beat":"?(.*?)"?,"tags":"(.*?)","lostmode_status":"?(.*?)",*.*/\1\t\2\t\3\t\4/' | cut -d ']' -f 1  >> /tmp/.enabled.lost_ish.txt
+		echo "$APIOUTPUT"| awk 'BEGIN{FS=",";RS="},{"}{print $0}' | grep PENDINGTOENABLE | perl -pe 's/.*"deviceudid":"?(.*?)"?,"date_last_beat":"?(.*?)"?,"tags":"(.*?)","lostmode_status":"?(.*?)",*.*/\1\t\2\t\3\t\4/' | cut -d ']' -f 1  >> /tmp/.pending2enable.lost_ish.txt
+		echo "$APIOUTPUT"| awk 'BEGIN{FS=",";RS="},{"}{print $0}' | grep PENDINGTODISABLE | perl -pe 's/.*"deviceudid":"?(.*?)"?,"date_last_beat":"?(.*?)"?,"tags":"(.*?)","lostmode_status":"?(.*?)",*.*/\1\t\2\t\3\t\4/' | cut -d ']' -f 1  >> /tmp/.pending2disable.lost_ish.txt
 	done
 
 	#Work the Enabled Pile...
@@ -398,22 +402,53 @@ fi
 
 #Now take our argument and move forward.
 if [ "$1" = "--sound" ]; then
+	if [ "$MB_DEBUG" = "Y" ]; then
+		echo "Content sent-> $content"
+		echo "API OUTPUT-> $APIOUTPUT"
+	fi
 	PlayLostSound
 
 elif [ "$1" = "--enable" ]; then
 	CheckLostMode
+	if [ "$MB_DEBUG" = "Y" ]; then
+		echo "Content sent-> $content"
+		echo "API OUTPUT-> $APIOUTPUT"
+	fi
+	
 	EnableLostMode
+	if [ "$MB_DEBUG" = "Y" ]; then
+		echo "Content sent-> $content"
+		echo "API OUTPUT-> $APIOUTPUT"
+	fi
 	
 elif [ "$1" = "--disable" ]; then
 	DisableLostMode
+	if [ "$MB_DEBUG" = "Y" ]; then
+		echo "Content sent-> $content"
+		echo "API OUTPUT-> $APIOUTPUT"
+	fi
 	
 elif [ "$1" = "--status" ]; then
 	CheckLostMode	
+	if [ "$MB_DEBUG" = "Y" ]; then
+		echo "Content sent-> $content"		
+		echo "API OUTPUT-> $APIOUTPUT"
+	fi
+	
 	DisplayCheckdLostModeData
+	if [ "$MB_DEBUG" = "Y" ]; then
+		echo "Content sent-> $content"
+		echo "API OUTPUT-> $APIOUTPUT"
+	fi
+	
 elif [ "$1" = "--whoislost" ]; then
 	WHOISLOST
 elif [ "$1" = "--LocateiPad" ]; then
-	LocateDevice	
+	LocateDevice
+	if [ "$MB_DEBUG" = "Y" ]; then
+		echo "Content sent-> $content"
+		echo "API OUTPUT-> $APIOUTPUT"
+	fi	
 else
 	cli_log "Bad arguments given <$1/$2> Try again."
 	exit 1
