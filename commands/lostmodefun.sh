@@ -46,8 +46,11 @@ EnableLostMode() {
 	#echo "UDID--> $UDID"
 	MessagetoSend="Please take this device to the main office or call the GatorIT HelpDesk!"
 	phonenumber="Outside-> 412-373-5870 option 4 /  x15108 <-Inside"
+	footnote="Device can also be dropped in Monroeville Public Library's Book Return at any hour!"
 	
-	content="{\"accessToken\":\"$APIKey\",\"elements\":[{\"devices\":\"$UDID\",\"operation\":\"enable\",\"message\":\"$MessagetoSend\",\"phone_number\":\"$phonenumber\"}]}"
+	content="{\"accessToken\":\"$APIKey\",\"elements\":[{\"devices\":\"$UDID\",\"operation\":\"enable\",\"message\":\"$MessagetoSend\",\"phone_number\":\"$phonenumber\",\"footnote\":\"$footnote\"}]}"
+	
+	#content="{\"accessToken\":\"$APIKey\",\"elements\":[{\"devices\":\"$UDID\",\"operation\":\"enable\",\"message\":\"$MessagetoSend\",\"phone_number\":\"$phonenumber\"}]}"
 
 	APIOUTPUT=$(curl  -s -k -X POST -d 'content='$content 'https://managerapi.mosyle.com/v2/lostmode')
 
