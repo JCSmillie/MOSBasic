@@ -215,4 +215,5 @@ Blue=`tput ${TPUTTERM} setaf 4`
 Magenta=`tput ${TPUTTERM} setaf 5`
 Cyan=`tput ${TPUTTERM} setaf 6`
 White=`tput ${TPUTTERM} setaf 7`
+Orange=`tput ${TPUTTERM} setaf 202`
 reset=`tput ${TPUTTERM} sgr0`
