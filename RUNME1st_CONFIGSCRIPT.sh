@@ -1,5 +1,11 @@
 #!/bin/zsh
 
+#Make sure /usr/loca/bin exists.
+if [ ! -h "/usr/local/bin" ]; then
+	echo "/usr/local/bin doesnt exist.  Creating..."
+	mkdir /usr/local/bin
+fi
+
 if [ ! -h "/usr/local/bin/mosbasic" ]; then
 	BAGCLI_WORKDIR=$(cd $(dirname $0) && pwd)
 	echo "Setting up linkage from $BAGCLI_WORKDIR/mosbasic to /usr/local/bin/mosbasic"
@@ -82,8 +88,9 @@ if [ ! -f "$BAGCLI_WORKDIR/config" ] ; then
 	else
 		echo "Creating Local MOSBasic folder..."
 		mkdir "$LOCALCONF/MOSBasic/"
-		#NEED A LINE HERE TO CHANGE THE DIR OWNERSHIP TO THE PERSON RUNNING THE SCRIPT
-		#NOT ROOT
+		#Make sure you own this config dir.
+		chown "$USER" "$LOCALCONF/MOSBasic/"
+
 	fi
 	
 	
