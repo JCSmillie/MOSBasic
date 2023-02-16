@@ -221,7 +221,7 @@ if [ -z "$shouldwedoit" ]; then
 fi
 
 
-if [ "$shouldwedoit" = "Y" ]; then
+if [ "$shouldwedoit" = "Y" ] || [ "$shouldwedoit" = "y" ]; then
 
 	#At this point we are almost ready to do the wipe and limbo
 	if [ ! -z "$LIMBOSetUDiDs" ]; then
