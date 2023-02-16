@@ -32,7 +32,7 @@ GetCurrentInfo-ios(){
 		
 	else
 		if [ "$MB_DEBUG" = "Y" ]; then
-			echo "$output"
+			echo "$output" > "/tmp/$DeviceSerialNumber.GetCurrentInfo-ios.txt"
 		fi
 		
 		MicroParse=$(echo "$output"| awk 'BEGIN{FS=",";RS="},{"}{print $0}' | perl -pe 's/.*"date_last_beat":"?(.*?)"?,"lostmode_status":"(.*?)","last_ip_beat":"?(.*?)"?,"last_lan_ip":"?(.*?)",*.*/\1\t\2\t\3\t\4\t\5/')
@@ -64,7 +64,7 @@ GetCurrentInfo-macos(){
 		
 	else
 		if [ "$MB_DEBUG" = "Y" ]; then
-			echo "$output"
+			echo "$output" > "/tmp/$DeviceSerialNumber.GetCurrentInfo-macos.txt"
 		fi
 		
 		MicroParse=$(echo "$output"| awk 'BEGIN{FS=",";RS="},{"}{print $0}' | perl -pe 's/.*"date_last_beat":"?(.*?)"?,"lostmode_status":"(.*?)","last_ip_beat":"?(.*?)"?,"last_lan_ip":"?(.*?)",*.*/\1\t\2\t\3\t\4\t\5/')
