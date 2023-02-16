@@ -200,6 +200,82 @@ CheckBuildVersion() {
 	fi
 }
 
+GetCurrentInfo-ios(){
+	content="{\"accessToken\":\"$APIKey\",\"options\":{\"os\":\"ios\",\"serial_numbers\":[\"$DeviceSerialNumber\"],\"specific_columns\":\"date_last_beat,lostmode_status,last_ip_beat,last_lan_ip,userid\"}}"
+	output=$(curl -s -k -X POST -d 'content='$content 'https://managerapi.mosyle.com/v2/listdevices') >> $LOG
+	
+	if echo "$output" | grep "DEVICES_NOTFOUND"; then
+		log_line "No updated info available for $DeviceSerialNumber"
+		
+	else
+		if [ "$MB_DEBUG" = "Y" ]; then
+			echo "$output" > "/tmp/$DeviceSerialNumber.GetCurrentInfo-ios.txt"
+		fi
+		
+		#What parse are we using
+		if echo "$output" | grep "userid"; then
+			#iPad is assigned
+			MicroParse=$(echo "$output"| awk 'BEGIN{FS=",";RS="},{"}{print $0}' | perl -pe 's/.*"date_last_beat":"?(.*?)"?,"lostmode_status":"(.*?)","last_ip_beat":"?(.*?)"?,"last_lan_ip":"?(.*?)","userid":"?(.*?)","usertype":"?(.*?)",*.*/\1\t\2\t\3\t\4\t\5\t\6\t\7/')			
+		else
+			#iPad not assigned.  Use this one.
+			MicroParse=$(echo "$output"| awk 'BEGIN{FS=",";RS="},{"}{print $0}' | perl -pe 's/.*"date_last_beat":"?(.*?)"?,"lostmode_status":"(.*?)","last_ip_beat":"?(.*?)"?,"last_lan_ip":"?(.*?)",*.*/\1\t\2\t\3\t\4\t\5/')
+		fi
+
+		LASTCHECKIN=$(echo "$MicroParse" |  cut -f 1 -d$'\t' )
+		LOSTMODESTATUS=$(echo "$MicroParse" |  cut -f 2 -d$'\t' )
+		LAST_IP_BEAT=$(echo "$MicroParse" |  cut -f 3 -d$'\t' )
+		LAST_LAN_IP=$(echo "$MicroParse" |  cut -f 4 -d$'\t' )
+		USERID=$(echo "$MicroParse" |  cut -f 5 -d$'\t' )
+		
+		#If device is unassigned then set the USERID to be UNASSIGNED
+		if [ ! -n "$USERID" ]; then
+			USERID="UNASSIGNED"
+		fi
+		
+		if [ "$LASTCHECKIN" = "null" ]; then
+			LASTCHECKIN="NO-DATA"
+		else
+			#Take Epoch time and convert to hours
+			LASTCHECKIN=$($PYTHON2USE -c "import datetime; print(datetime.datetime.fromtimestamp(int("$LASTCHECKIN")).strftime('%Y-%m-%d %I:%M:%S %p'))")
+		fi
+		
+		
+
+	fi
+
+}
+
+GetCurrentInfo-macos(){
+	content="{\"accessToken\":\"$APIKey\",\"options\":{\"os\":\"mac\",\"serial_numbers\":[\"$DeviceSerialNumber\"],\"specific_columns\":\"date_last_beat,lostmode_status,last_ip_beat,last_lan_ip\"}}"
+	output=$(curl -s -k -X POST -d 'content='$content 'https://managerapi.mosyle.com/v2/listdevices') >> $LOG
+	
+	if echo "$output" | grep "DEVICES_NOTFOUND"; then
+		log_line "No updated info available for $DeviceSerialNumber"
+		
+	else
+		if [ "$MB_DEBUG" = "Y" ]; then
+			echo "$output" > "/tmp/$DeviceSerialNumber.GetCurrentInfo-macos.txt"
+		fi
+		
+		MicroParse=$(echo "$output"| awk 'BEGIN{FS=",";RS="},{"}{print $0}' | perl -pe 's/.*"date_last_beat":"?(.*?)"?,"lostmode_status":"(.*?)","last_ip_beat":"?(.*?)"?,"last_lan_ip":"?(.*?)",*.*/\1\t\2\t\3\t\4\t\5/')
+
+		LASTCHECKIN=$(echo "$MicroParse" |  cut -f 1 -d$'\t' )
+		LOSTMODESTATUS=$(echo "$MicroParse" |  cut -f 2 -d$'\t' )
+		LAST_IP_BEAT=$(echo "$MicroParse" |  cut -f 3 -d$'\t' )
+		LAST_LAN_IP=$(echo "$MicroParse" |  cut -f 4 -d$'\t' )
+		
+		if [ "$LASTCHECKIN" = "null" ]; then
+			LASTCHECKIN="NO-DATA"
+		else
+			#Take Epoch time and convert to hours
+			LASTCHECKIN=$($PYTHON2USE -c "import datetime; print(datetime.datetime.fromtimestamp(int("$LASTCHECKIN")).strftime('%Y-%m-%d %I:%M:%S %p'))")
+		fi
+		
+		
+
+	fi
+
+}
 
 #ColorCodes
 
