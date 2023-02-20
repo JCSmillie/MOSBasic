@@ -38,10 +38,11 @@ SorterOfiPadz() {
 	
 	#if Shared we only want to wipe
 	if [ "$ISSHARED" = "TRUE" ]; then
-		
 		cli_log "$ASSETTAG is a Shared iPad.  Cant send to Limbo."
-	
-		#Otherwise Wipe and Limbo.
+	    exit 1
+	else
+		
+		#Otherwise send to Limbo.
 		#if this is our first entry just fill the variable
 		if [ -z "$LIMBOSetUDiDs" ]; then
 			LIMBOSetUDiDs="$UDID"
@@ -74,8 +75,7 @@ if [ "$RETURNSERIAL" = "EPICFAIL" ]; then
 	exit 1
 
 else
-	echo "Asset tag $TAG_GIVEN is $RETURNSERIAL."
-	echo "$RETURNSERIAL" >> /tmp/Scand2Wipe_Serialz.txt		
+	echo "Asset tag $TAG_GIVEN is $RETURNSERIAL."	
 	
 	#Call Sorter function to seperate out the Shared iPads from regular iPads
 	#before we act.  Shared iPads should NEVER be limbo'd before wiping.
