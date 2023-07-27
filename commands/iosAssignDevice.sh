@@ -13,6 +13,9 @@
 source "$BAGCLI_WORKDIR/config"
 source "$BAGCLI_WORKDIR/common"
 
+#Load IIQ Functions
+source "$BAGCLI_WORKDIR/modules/incidentiq.sh"
+
 IFS=$'\n'
 
 
@@ -43,7 +46,7 @@ AssigniPad() {
 	#DEBUGGING
 	#echo "CMD Status--> $CMDStatus"
 	#echo "APIOUTPUT---> $APIOUTPUT"
-
+	
 	if [ "$CMDStatus" = "DEVICES_NOTFOUND" ]; then
 		cli_log "Device not found in Mosyle.  Can't Assign!"
 
@@ -186,6 +189,13 @@ cat "/tmp/Scan2Assign.txt" | while read line; do
 	
 	#echo "DEBUG-> This is where we try to get the tag from the Serial #"
 	SerialFromTag
+	
+	#If checking Mosyle did nothing for us then lets ask IIQ.
+	if [ "$RETURNSERIAL" = "EPICFAIL" ] || [ "$RETURNSERIAL" = "TOOMANYSERIALS" ]; then
+		cli_log "Trying to get serial for $TAG_GIVEN from IIQ."
+		GetSerialFromTag "$TAG_GIVEN"
+	fi
+		
 	
 	
 	#Check to see if a return code came back of EPICFAIL from the SerialFromTag function (found in common)

@@ -53,7 +53,26 @@ USERLOOKUP() {
 }
 
 
+GetSerialFromTag() {
+	Tag2Lookup="$1"
 
+	Auth=$(echo "Authorization: Bearer $apitoken")
+	Query="$baseurl/assets/assettag/search/{$Tag2Lookup}?\$s=1000"
+
+	InitialQuery=$(curl -s -k -H "$siteid" -H "$Auth" -H "Client: ApiClient" -X GET "$Query")
+	
+	DeviceSerial=$(echo "$InitialQuery" | grep 'SerialNumber\":\ \"' | cut -d ':' -f 2 | cut -d ',' -f 1 | tr -d \")
+	
+	if [ -z "$DeviceSerial" ]; then
+		RETURNSERIAL="EPICFAIL"
+		cli_log "IIQ doesnt know Tag2Lookup!"
+		
+	else
+		RETURNSERIAL="$DeviceSerial"
+	fi
+	
+		
+}
 
 DEVICELOOKUP() {
 	echo "Sorry this feature is not ready yet!"
