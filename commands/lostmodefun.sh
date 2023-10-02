@@ -52,7 +52,7 @@ EnableLostMode() {
 	
 	#content="{\"accessToken\":\"$APIKey\",\"elements\":[{\"devices\":\"$UDID\",\"operation\":\"enable\",\"message\":\"$MessagetoSend\",\"phone_number\":\"$phonenumber\"}]}"
 
-	APIOUTPUT=$(curl  -s -k -X POST -d 'content='$content 'https://managerapi.mosyle.com/v2/lostmode')
+	APIOUTPUT=$(curl  -s -k -X POST -d $content 'https://managerapi.mosyle.com/v2/lostmode')
 
 	CMDStatus=$(echo "$APIOUTPUT" | cut -d ":" -f 3 | cut -d "," -f 1 | tr -d '"')
 
@@ -66,10 +66,10 @@ EnableLostMode() {
 
 PlayLostSound() {
 	content="{\"accessToken\":\"$APIKey\",\"elements\":[{\"devices\":\"$UDID\",\"operation\":\"play_sound\"}]}"
-	APIOUTPUT=$(curl -s -k -X POST -d 'content='$content 'https://managerapi.mosyle.com/v2/lostmode')
+	APIOUTPUT=$(curl -s -k -X POST -d $content 'https://managerapi.mosyle.com/v2/lostmode')
 
 	###DEBUG SHOW STRING SENT TO MOSYLE
-	echo "curl -s -k -X POST -d 'content='$content 'https://managerapi.mosyle.com/v2/lostmode'"
+	echo "curl -s -k -X POST -d $content 'https://managerapi.mosyle.com/v2/lostmode'"
 
 	CMDStatus=$(echo "$APIOUTPUT" | cut -d ":" -f 3 | cut -d "," -f 1 | tr -d '"')
 	
@@ -92,7 +92,7 @@ PlayLostSound() {
 DisableLostMode(){
 	# ParseIt
 	content="{\"accessToken\":\"$APIKey\",\"elements\":[{\"devices\":\"$UDID\",\"operation\":\"disable\"}]}"
-	APIOUTPUT=$(curl  -s -k -X POST -d 'content='$content 'https://managerapi.mosyle.com/v2/lostmode')
+	APIOUTPUT=$(curl  -s -k -X POST -d $content 'https://managerapi.mosyle.com/v2/lostmode')
 	
 	CMDStatus=$(echo "$APIOUTPUT" | cut -d ":" -f 3 | cut -d "," -f 1 | tr -d '"')
 	
@@ -107,10 +107,10 @@ DisableLostMode(){
 
 LocateDevice() {
 	content="{\"accessToken\":\"$APIKey\",\"elements\":[{\"devices\":\"$UDID\",\"operation\":\"request_location\"}]}"
-	APIOUTPUT=$(curl -s -k -X POST -d 'content='$content 'https://managerapi.mosyle.com/v2/lostmode')
+	APIOUTPUT=$(curl -s -k -X POST -d $content 'https://managerapi.mosyle.com/v2/lostmode')
 
 	###DEBUG SHOW STRING SENT TO MOSYLE
-	#echo "curl -s -k -X POST -d 'content='$content 'https://managerapi.mosyle.com/v2/lostmode'"
+	#echo "curl -s -k -X POST -d $content 'https://managerapi.mosyle.com/v2/lostmode'"
 
 	CMDStatus=$(echo "$APIOUTPUT" | cut -d ":" -f 3 | cut -d "," -f 1 | tr -d '"')
 	
@@ -133,7 +133,7 @@ CheckLostMode() {
 	#Build Query.  Just asking for current data on last beat, lostmode status, and location data if we can get it.
 	content="{\"accessToken\":\"$APIKey\",\"options\":{\"os\":\"ios\",\"serial_numbers\":[\"$DeviceSerialNumber\"],\"specific_columns\":\"deviceudid,date_last_beat,tags,lostmode_status,longitude,latitude\"}}"
 
-	APIOUTPUT=$(curl -s -k -X POST -d 'content='$content 'https://managerapi.mosyle.com/v2/listdevices')
+	APIOUTPUT=$(curl -s -k -X POST -d $content 'https://managerapi.mosyle.com/v2/listdevices')
 
 	if echo "$APIOUTPUT" | grep "DEVICES_NOTFOUND"; then
 		log_line "Mosyle doesn't know $DeviceSerialNumber.  Epic Fail."
@@ -234,7 +234,7 @@ WHOISLOST() {
 		let "THECOUNT=$THECOUNT+1"
 		THEPAGE="$THECOUNT"
 		content="{\"accessToken\":\"$APIKey\",\"options\":{\"os\":\"ios\",\"specific_columns\":\"deviceudid,date_last_beat,tags,lostmode_status\",\"page\":$THEPAGE}}"
-		APIOUTPUT=$(curl -s -k -X POST -d 'content='$content 'https://managerapi.mosyle.com/v2/listdevices') >> $LOG
+		APIOUTPUT=$(curl -s -k -X POST -d $content 'https://managerapi.mosyle.com/v2/listdevices') >> $LOG
 
 		#echo "$content"
 

@@ -106,7 +106,7 @@ if [ "$shouldwedoit" = "Y" ] || [ "$shouldwedoit" = "y" ]; then
 			echo "Making it So #1."
 			#Call out to Mosyle MDM to submit list of UDIDs which need Limbo'd
 			content="{\"accessToken\":\"$APIKey\",\"elements\":[{\"devices\":\"$LIMBOSetUDiDs\",\"operation\":\"change_to_limbo\"}]}"
-			curl  -s -k -X POST -d 'content='$content 'https://managerapi.mosyle.com/v2/bulkops'
+			curl  -s -k -X POST -d $content 'https://managerapi.mosyle.com/v2/bulkops'
 
 	else
 		#If we are here then we got nothing to work on

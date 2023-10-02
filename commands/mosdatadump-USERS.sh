@@ -42,10 +42,10 @@ while true; do
 	THEPAGE="$THECOUNT"
 	content="{\"accessToken\":\"$APIKey\",\"options\":{\"specific_columns\":[\"id\",\"name\",\"managedappleid\",\"type\"],\"page\":$THEPAGE}}"
 	cli_log "MOSYLE USERS-> Asking MDM for Page $THEPAGE data...."
-	output=$(curl -s -k -X POST -d 'content='$content 'https://managerapi.mosyle.com/v2/listusers') >> $LOG
+	output=$(curl -s -k -X POST -d $content 'https://managerapi.mosyle.com/v2/listusers') >> $LOG
 	##This has been changed from running inside a variable to file output because there are some characers which mess the old
 	#way up.  By downloading straight to file we avoid all that nonsense. -JCS 5/23/2022
-	curl -s -k -X POST -d 'content='$content 'https://managerapi.mosyle.com/v2/listusers' -o /tmp/MOSBasicRAW-Users-Page$THEPAGE.txt
+	curl -s -k -X POST -d $content 'https://managerapi.mosyle.com/v2/listusers' -o /tmp/MOSBasicRAW-Users-Page$THEPAGE.txt
 
 	#Detect we just loaded a page with no content and stop.
 	LASTPAGE=$(cat "/tmp/MOSBasicRAW-Users-Page$THEPAGE.txt" | grep 'users":\[\]')

@@ -230,11 +230,11 @@ if [ "$shouldwedoit" = "Y" ] || [ "$shouldwedoit" = "y" ]; then
 			#Call out to Mosyle MDM to submit list of UDIDs which need Limbo'd
 			content="{\"accessToken\":\"$APIKey\",\"elements\":[{\"devices\":\"$LIMBOSetUDiDs\",\"operation\":\"change_to_limbo\"}]}"
 			#echo "--> $content <--"
-			curl  -s -k -X POST -d 'content='$content 'https://managerapi.mosyle.com/v2/bulkops'
+			curl  -s -k -X POST -d $content 'https://managerapi.mosyle.com/v2/bulkops'
 
 			content="{\"accessToken\":\"$APIKey\",\"elements\":[{\"devices\":\"$LIMBOSetUDiDs\",\"operation\":\"wipe_devices\"}]}"
 			#echo "--> $content <--"
-			curl  -s -k -X POST -d 'content='$content 'https://managerapi.mosyle.com/v2/bulkops'
+			curl  -s -k -X POST -d $content 'https://managerapi.mosyle.com/v2/bulkops'
 
 
 	else
@@ -249,7 +249,7 @@ if [ "$shouldwedoit" = "Y" ] || [ "$shouldwedoit" = "y" ]; then
 			#Call out to Mosyle MDM to submit list of UDIDs which need Wiped
 			content="{\"accessToken\":\"$APIKey\",\"elements\":[{\"devices\":\"$WIPEUDiDs\",\"operation\":\"wipe_devices\"}]}"
 			#echo "--> $content <--"
-			curl  -s -k -X POST -d 'content='$content 'https://managerapi.mosyle.com/v2/bulkops'
+			curl  -s -k -X POST -d $content 'https://managerapi.mosyle.com/v2/bulkops'
 
 	else
 		echo "No UDIDs are in cache for Wipe.  Doing Nothing."

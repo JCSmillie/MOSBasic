@@ -35,11 +35,6 @@ rm -Rf "$TEMPOUTPUTFILE_MACLimbo"
 rm -Rf "$TEMPOUTPUTFILE_MACShared"
 rm -Rf "$TEMPOUTPUTFILE_MERGEDMAC"
 
-#Make Sure Data Storage Directory is ready
-#I'm doing this because sometimes things get wonky and
-#mosbasic will export pages forever...
-
-
 #Initialize the base count variable. This will be
 #used to figure out what page we are on and where
 #we end up.
@@ -51,12 +46,14 @@ while true; do
 	let "THECOUNT=$THECOUNT+1"
 	THEPAGE="$THECOUNT"
 	content="{\"accessToken\":\"$APIKey\",\"options\":{\"os\":\"mac\",\"specific_columns\":\"deviceudid,serial_number,device_name,tags,asset_tag,userid,enrollment_type,username,date_app_info\",\"page\":$THEPAGE}}"
-	#output=$(curl -s -k -X POST -d 'content='$content 'https://managerapi.mosyle.com/v2/listdevices') >> $LOG
+	#output=$(curl -s -k -X POST -d $content 'https://managerapi.mosyle.com/v2/listdevices') >> $LOG
 	cli_log "MAC CLIENTS-> Asking MDM for Page $THEPAGE data...."
+	
+	echo "API---> $content"
 	
 	##This has been changed from running inside a variable to file output because there are some characers which mess the old
 	#way up.  By downloading straight to file we avoid all that nonsense. -JCS 5/23/2022
-	curl -s -k -X POST -d 'content='$content 'https://managerapi.mosyle.com/v2/listdevices' -o /tmp/MOSBasicRAW-Mac-Page$THEPAGE.txt
+	curl -s -k -X POST -d $content 'https://managerapi.mosyle.com/v2/listdevices' -o /tmp/MOSBasicRAW-Mac-Page$THEPAGE.txt
 
 	#Detect we just loaded a page with no content and stop.
 	LASTPAGE=$(cat "/tmp/MOSBasicRAW-Mac-Page$THEPAGE.txt" | grep DEVICES_NOTFOUND)
@@ -73,16 +70,20 @@ while true; do
 		cli_log "MAC CLIENTS-> AccessToken error..."
 		break
 	fi
+	
+	#Are we on more pages then our max (IE something wrong)
+	if [ "$THECOUNT" -gt "$MAXPAGECOUNT" ]; then 
+		cli_log "MAC CLIENTS-> We have hit $THECOUNT pages...  Greater then our max.  Something is wrong."
+		break
+	fi
 
-	cat /tmp/MOSBasicRAW-Mac-Page$THEPAGE.txt
+	#Preprocess the file.  We need to remove {"status":"OK","response": so can do operations with our python json to csv converter.  Yes
+	#I know this is still janky but hay I'm getting there.
+	cat /tmp/MOSBasicRAW-Mac-Page$THEPAGE.txt  | cut -d ':' -f 3- | sed 's/.$//' > /tmp/MOSBasicRAW-Mac-TEMPSPOT.txt
+	mv -f /tmp/MOSBasicRAW-Mac-TEMPSPOT.txt /tmp/MOSBasicRAW-Mac-Page$THEPAGE.txt
 
-	# #Preprocess the file.  We need to remove {"status":"OK","response": so can do operations with our python json to csv converter.  Yes
-	# #I know this is still janky but hay I'm getting there.
-	# cat /tmp/MOSBasicRAW-Mac-Page$THEPAGE.txt  | cut -d ':' -f 3- | sed 's/.$//' > /tmp/MOSBasicRAW-Mac-TEMPSPOT.txt
-	# mv -f /tmp/MOSBasicRAW-Mac-TEMPSPOT.txt /tmp/MOSBasicRAW-Mac-Page$THEPAGE.txt
-	#
-	# #Call our python json to csv routine.  Output will be tab delimited so we can maintain our "tags" together.
-	# $PYTHON2USE $BAGCLI_WORKDIR/modules/json2csv.py devices /tmp/MOSBasicRAW-Mac-Page$THEPAGE.txt "$TEMPOUTPUTFILE_MERGEDMAC"
+	#Call our python json to csv routine.  Output will be tab delimited so we can maintain our "tags" together.
+	$PYTHON2USE $BAGCLI_WORKDIR/modules/json2csv.py devices /tmp/MOSBasicRAW-Mac-Page$THEPAGE.txt "$TEMPOUTPUTFILE_MERGEDMAC"
 done
 
 # # #Build file of all this data now that we've sorted it out and parsed it.

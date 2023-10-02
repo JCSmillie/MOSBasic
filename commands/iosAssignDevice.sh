@@ -39,7 +39,7 @@ rm -Rf /tmp/Scan2Assign_ExtraInfo.txt
 AssigniPad() {
 	#Call out to Mosyle MDM to submit list of UDIDs which need Limbo'd
 	content="{\"accessToken\":\"$APIKey\",\"elements\":[{\"id\":\"$USERNAME_GIVEN\",\"operation\":\"assign_device\",\"serial_number\":\"$RETURNSERIAL\"}]}"
-	APIOUTPUT=$(curl  -s -k -X POST -d 'content='$content 'https://managerapi.mosyle.com/v2/users')
+	APIOUTPUT=$(curl  -s -k -X POST -d $content 'https://managerapi.mosyle.com/v2/users')
 	
 	CMDStatus=$(echo "$APIOUTPUT" | cut -d ":" -f 4 | cut -d "," -f 1 | tr -d '"' | tr -d '}]})')
 

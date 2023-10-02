@@ -407,7 +407,7 @@ PrepareDevice() {
 WipeOTAMosyle() {
 	#Build Query.  Just asking for current data on last beat, lostmode status, and location data if we can get it.
 	content="{\"accessToken\":\"$APIKey\",\"options\":{\"os\":\"ios\",\"serial_numbers\":[\"$DeviceSERIAL\"],\"specific_columns\":\"date_last_beat\"}}"
-	output=$(curl -s -k -X POST -d 'content='$content 'https://managerapi.mosyle.com/v2/listdevices')
+	output=$(curl -s -k -X POST -d $content 'https://managerapi.mosyle.com/v2/listdevices')
 	LASTBEAT=$(echo "$output"| awk 'BEGIN{FS=",";RS="},{"}{print $0}' | perl -pe 's/.*"date_last_beat":"?(.*?)",*.*/\1/' | head -1 )
 
 	#Figure out how many hours ago last beat was
@@ -424,7 +424,7 @@ WipeOTAMosyle() {
 
 		content="{\"accessToken\":\"$APIKey\",\"elements\":[{\"devices\":\"$UDID\",\"operation\":\"wipe_devices\"}]}"
 		log_line "--> $content <--"
-		curl  --silent --output /dev/null -s -k -X POST -d 'content='$content 'https://managerapi.mosyle.com/v2/bulkops'
+		curl  --silent --output /dev/null -s -k -X POST -d $content 'https://managerapi.mosyle.com/v2/bulkops'
 		
 		log_line "WIPE VIA MOSYLE: $ECID / ($UDID) OTA wipe device sent...  All we can do now is hope.  Give it 5..  Doesn't work out"
 		log_line "then Put iPad in DFU or Factory Recovery Mode and try again."
@@ -453,7 +453,7 @@ MosyleTiddyUp() {
 		
 		#Call out to Mosyle MDM to submit list of UDIDs which need Limbo'd
 		content="{\"accessToken\":\"$APIKey\",\"elements\":[{\"devices\":\"$UDID\",\"operation\":\"change_to_limbo\"}]}"
-		APIOUTPUT=$(curl  -s -k -X POST -d 'content='$content 'https://managerapi.mosyle.com/v2/bulkops')
+		APIOUTPUT=$(curl  -s -k -X POST -d $content 'https://managerapi.mosyle.com/v2/bulkops')
 
 		CMDStatus=$(echo "$APIOUTPUT" | cut -d ":" -f 4 | cut -d "," -f 1 | tr -d '"')
 
@@ -470,7 +470,7 @@ MosyleTiddyUp() {
 
 	#lets also tell Mosyle to clear any back commands on the device.
 	content="{\"accessToken\":\"$APIKey\",\"elements\":[{\"devices\":\"$UDID\",\"operation\":\"clear_commands\"}]}"
-	APIOUTPUT=$(curl  -s -k -X POST -d 'content='$content 'https://managerapi.mosyle.com/v2/bulkops')
+	APIOUTPUT=$(curl  -s -k -X POST -d $content 'https://managerapi.mosyle.com/v2/bulkops')
 
 	CMDStatus=$(echo "$APIOUTPUT" | cut -d ":" -f 4 | cut -d "," -f 1 | tr -d '"')
 	log_line "MosyleTiddyUp: Told Mosyle to clear any back commands too for $Refer2MeAs -- RESULT-> $CMDStatus"
@@ -480,7 +480,7 @@ MosyleTiddyUp() {
 	#Often we wipe devices which are returned from kids who have left
 	#the district.  This stops us from doing one more step.
 	content="{\"accessToken\":\"$APIKey\",\"elements\":[{\"devices\":\"$UDID\",\"operation\":\"disable\"}]}"
-	APIOUTPUT=$(curl  -s -k -X POST -d 'content='$content 'https://managerapi.mosyle.com/v2/lostmode')
+	APIOUTPUT=$(curl  -s -k -X POST -d $content 'https://managerapi.mosyle.com/v2/lostmode')
 
 	CMDStatus=$(echo "$APIOUTPUT" | cut -d ":" -f 4 | cut -d "," -f 1 | tr -d '"')
 	log_line "MosyleTiddyUp: Told Mosyle to Remove Lost mode for $Refer2MeAs -- RESULT-> $CMDStatus"
@@ -493,7 +493,7 @@ MosyleTiddyUp() {
 	###with a call to IIQ to see if the device is assigned.
 	# #Remove tags from iPad
 	# content="{\"accessToken\":\"$APIKey\",\"elements\":[{\"serialnumber\":\"$DeviceSERIAL\",\"tags\":\"\"}]}"
-	# APIOUTPUT=$(curl  -s -k -X POST -d 'content='$content 'https://managerapi.mosyle.com/v2/devices')
+	# APIOUTPUT=$(curl  -s -k -X POST -d $content 'https://managerapi.mosyle.com/v2/devices')
 	#
 	# CMDStatus=$(echo "$APIOUTPUT" | cut -d ":" -f 4 | cut -d "," -f 1 | tr -d '"')
 	# log_line "GATHERDATA: Told Mosyle to Remove tags for $Refer2MeAs -- RESULT-> $CMDStatus"

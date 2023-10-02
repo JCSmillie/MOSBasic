@@ -117,7 +117,7 @@ IsThisiPadSharedMode() {
 	content="{\"accessToken\":\"$APIKey\",\"options\":{\"os\":\"ios\",\"serial_numbers\":[\"$DeviceSerialNumber\"],\"specific_columns\":\"deviceudid,serial_number,enrollment_type\"}}"
 
 	#Do the Query
-	output=$(curl -s -k -X POST -d 'content='$content 'https://managerapi.mosyle.com/v2/listdevices')
+	output=$(curl -s -k -X POST -d $content 'https://managerapi.mosyle.com/v2/listdevices')
 
 	if echo "$output" | grep SHARED; then
 		echo "This is a Shared iPad."
@@ -202,7 +202,7 @@ CheckBuildVersion() {
 
 GetCurrentInfo-ios(){
 	content="{\"accessToken\":\"$APIKey\",\"options\":{\"os\":\"ios\",\"serial_numbers\":[\"$DeviceSerialNumber\"],\"specific_columns\":\"date_last_beat,lostmode_status,last_ip_beat,last_lan_ip,userid\"}}"
-	output=$(curl -s -k -X POST -d 'content='$content 'https://managerapi.mosyle.com/v2/listdevices') >> $LOG
+	output=$(curl -s -k -X POST -d $content 'https://managerapi.mosyle.com/v2/listdevices') >> $LOG
 	
 	if echo "$output" | grep "DEVICES_NOTFOUND"; then
 		log_line "No updated info available for $DeviceSerialNumber"
@@ -244,7 +244,7 @@ GetCurrentInfo-ios(){
 
 GetCurrentInfo-macos(){
 	content="{\"accessToken\":\"$APIKey\",\"options\":{\"os\":\"mac\",\"serial_numbers\":[\"$DeviceSerialNumber\"],\"specific_columns\":\"date_last_beat,lostmode_status,last_ip_beat,last_lan_ip\"}}"
-	output=$(curl -s -k -X POST -d 'content='$content 'https://managerapi.mosyle.com/v2/listdevices') >> $LOG
+	output=$(curl -s -k -X POST -d $content 'https://managerapi.mosyle.com/v2/listdevices') >> $LOG
 	
 	if echo "$output" | grep "DEVICES_NOTFOUND"; then
 		log_line "No updated info available for $DeviceSerialNumber"

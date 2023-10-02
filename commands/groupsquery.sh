@@ -35,7 +35,7 @@ listgroupsios() {
 		let "THECOUNT=$THECOUNT+1"
 		THEPAGE="$THECOUNT"
 		content="{\"accessToken\":\"$APIKey\",\"options\":{\"os\":\"ios\",\"page\":$THEPAGE}}"
-		output=$(curl -s -k -X POST -d 'content='$content 'https://managerapi.mosyle.com/v2/listdevicegroups') >> $LOG
+		output=$(curl -s -k -X POST -d $content 'https://managerapi.mosyle.com/v2/listdevicegroups') >> $LOG
 	
 		#Detect we just loaded a page with no content and stop.
 		LASTPAGE=$(echo $output | grep '"groups":\[\]')
@@ -69,7 +69,7 @@ listgroupsmacos() {
 		let "THECOUNT=$THECOUNT+1"
 		THEPAGE="$THECOUNT"
 		content="{\"accessToken\":\"$APIKey\",\"options\":{\"os\":\"mac\",\"page\":$THEPAGE}}"
-		output=$(curl -s -k -X POST -d 'content='$content 'https://managerapi.mosyle.com/v2/listdevicegroups') >> $LOG
+		output=$(curl -s -k -X POST -d $content 'https://managerapi.mosyle.com/v2/listdevicegroups') >> $LOG
 	
 		#Detect we just loaded a page with no content and stop.
 		LASTPAGE=$(echo $output | grep '"groups":\[\]')
