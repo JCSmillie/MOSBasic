@@ -49,7 +49,7 @@ while true; do
 	#output=$(curl -s -k -X POST -d $content 'https://managerapi.mosyle.com/v2/listdevices') >> $LOG
 	cli_log "MAC CLIENTS-> Asking MDM for Page $THEPAGE data...."
 	
-	echo "API---> $content"
+	#echo "API---> $content"
 	
 	##This has been changed from running inside a variable to file output because there are some characers which mess the old
 	#way up.  By downloading straight to file we avoid all that nonsense. -JCS 5/23/2022
