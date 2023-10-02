@@ -59,6 +59,20 @@ while true; do
 		break
 	fi
 
+	#TokenFailures
+	LASTPAGE=$(cat "/tmp/MOSBasicRAW-Mac-Page$THEPAGE.txt" | grep 'accessToken Required')
+	if [ -n "$LASTPAGE" ]; then
+		let "THECOUNT=$THECOUNT-1"
+		cli_log "MAC CLIENTS-> AccessToken error..."
+		break
+	fi
+	
+	#Are we on more pages then our max (IE something wrong)
+	if [ "$THECOUNT" -gt "$MAXPAGECOUNT" ]; then 
+		cli_log "MAC CLIENTS-> We have hit $THECOUNT pages...  Greater then our max.  Something is wrong."
+		break
+	fi
+
 	#Preprocess the file.  We need to remove {"status":"OK","response": so can do operations with our python json to csv converter.  Yes
 	#I know this is still janky but hay I'm getting there.
 	cat /tmp/MOSBasicRAW-iOS-Page$THEPAGE.txt  | cut -d ':' -f 3- | sed 's/.$//' > /tmp/MOSBasicRAW-iOS-TEMPSPOT.txt

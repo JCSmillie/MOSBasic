@@ -123,6 +123,14 @@ ForceMassDump() {
 ###############################
 #   Check Condtions to work   #
 ###############################
+#Findout out our max page setting.  If blank then set to default.
+if [ -z "$MAXPAGECOUNT" ]; then
+	MAXPAGECOUNT=666
+	cli_log "Max Page Count is set to $MAXPAGECOUNT"
+else
+	cli_log "Max Page Count is set to $MAXPAGECOUNT"
+fi
+
 # #See if we know who ran this otherwise note it as Console did it
 if [ -z "$RUNNING_USER" ]; then
 	RUNNING_USER="<<Console>>"
@@ -234,71 +242,71 @@ else
 	GETUSERDATA="NO"
 fi
 
-#######################################
-# Do we have cache'd data about Macs
-#######################################
-#First Make sure we have what we need
-if [ ! -s "$TEMPOUTPUTFILE_MERGEDMAC" ]; then
-	cli_log "$TEMPOUTPUTFILE_MERGEDMAC is missing.  Must grab NOW."
-	GETMACOSDATA="YES"
-	
-#Is the command we are about to run one that is going to pull its own data?
-elif [ "$1" = "whoislost" ] || [ "$1" = "lostmodeon" ] || [ "$1" = "lostmodeoff" ] || [ "$1" = "lostmodestatus" ] || [ "$1" = "annoy" ]; then
-	cli_log "Skipping Local Data check because $1 pulls its own data..."
-
-#If our data is older than 24hr then update it.
-elif [ `find "$TEMPOUTPUTFILE_MERGEDMAC" -mmin +1440 | egrep '.*'` ]; then
-	cli_log "$TEMPOUTPUTFILE_MERGEDMAC is older than a day.  Updating."
-	GETMACOSDATA="YES"
-
-else
-	GETMACOSDATA="NO"
-fi
-
-#Based on the above logic do dumps.
-# We Need all 3 (Mac, iOS, & USER)
-if [ "$GETIOSDATA" = "YES" ] && [ "$GETUSERDATA" = "YES" ] && [ "$GETMACOSDATA" = "YES" ]; then
-	#Call Mass dump function
-	ForceMassDump
-
-#We only need iOS and User	
-elif [ "$GETIOSDATA" = "YES" ] && [ "$GETUSERDATA" = "YES" ]; then
-	cli_log "Doing iOS Dump and User Dump in parallel."
-	"$BAGCLI_WORKDIR/commands/mosdatadump-iOS.sh" &
-	P1=$!
-	"$BAGCLI_WORKDIR/commands/mosdatadump-USERS.sh" &
-	P2=$!
-	wait $P1 $P2
-
-#We only need User and Mac	
-elif [ "$GETUSERDATA" = "YES" ] && [ "$GETMACOSDATA" = "YES" ]; then
-	cli_log "Doing MacOS Dump and User Dump in parallel."
-	"$BAGCLI_WORKDIR/commands/mosdatadump-USERS.sh" &
-	P1=$!
-	"$BAGCLI_WORKDIR/commands/mosdatadump-Mac.sh" &
-	P2=$!
-	wait $P1 $P2
-	
-#We only Need iOS and Mac
-elif [ "$GETIOSDATA" = "YES" ] && [ "$GETMACOSDATA" = "YES" ]; then
-	cli_log "Doing iOS Dump and MacOS Dump in parallel."
-	"$BAGCLI_WORKDIR/commands/mosdatadump-iOS.sh" &
-	P1=$!
-	"$BAGCLI_WORKDIR/commands/mosdatadump-Mac.sh" &
-	P2=$!
-	wait $P1 $P2	
-
-#Cases for we only need one or the other but no combos
-elif  [ "$GETUSERDATA" = "YES" ]; then
-	cli_log "Doing User Dump only."
-	"$BAGCLI_WORKDIR/commands/mosdatadump-USERS.sh"
-elif [ "$GETIOSDATA" = "YES" ]; then
-		cli_log "Doing iOS dump only."
-	"$BAGCLI_WORKDIR/commands/mosdatadump-iOS.sh"
-elif [ "$GETMACOSDATA" = "YES" ]; then
-	cli_log "Doing MacOS Dump"
-	"$BAGCLI_WORKDIR/commands/mosdatadump-Mac.sh"
-fi
+# #######################################
+# # Do we have cache'd data about Macs
+# #######################################
+# #First Make sure we have what we need
+# if [ ! -s "$TEMPOUTPUTFILE_MERGEDMAC" ]; then
+# 	cli_log "$TEMPOUTPUTFILE_MERGEDMAC is missing.  Must grab NOW."
+# 	GETMACOSDATA="YES"
+#
+# #Is the command we are about to run one that is going to pull its own data?
+# elif [ "$1" = "whoislost" ] || [ "$1" = "lostmodeon" ] || [ "$1" = "lostmodeoff" ] || [ "$1" = "lostmodestatus" ] || [ "$1" = "annoy" ]; then
+# 	cli_log "Skipping Local Data check because $1 pulls its own data..."
+#
+# #If our data is older than 24hr then update it.
+# elif [ `find "$TEMPOUTPUTFILE_MERGEDMAC" -mmin +1440 | egrep '.*'` ]; then
+# 	cli_log "$TEMPOUTPUTFILE_MERGEDMAC is older than a day.  Updating."
+# 	GETMACOSDATA="YES"
+#
+# else
+# 	GETMACOSDATA="NO"
+# fi
+#
+# #Based on the above logic do dumps.
+# # We Need all 3 (Mac, iOS, & USER)
+# if [ "$GETIOSDATA" = "YES" ] && [ "$GETUSERDATA" = "YES" ] && [ "$GETMACOSDATA" = "YES" ]; then
+# 	#Call Mass dump function
+# 	ForceMassDump
+#
+# #We only need iOS and User
+# elif [ "$GETIOSDATA" = "YES" ] && [ "$GETUSERDATA" = "YES" ]; then
+# 	cli_log "Doing iOS Dump and User Dump in parallel."
+# 	"$BAGCLI_WORKDIR/commands/mosdatadump-iOS.sh" &
+# 	P1=$!
+# 	"$BAGCLI_WORKDIR/commands/mosdatadump-USERS.sh" &
+# 	P2=$!
+# 	wait $P1 $P2
+#
+# #We only need User and Mac
+# elif [ "$GETUSERDATA" = "YES" ] && [ "$GETMACOSDATA" = "YES" ]; then
+# 	cli_log "Doing MacOS Dump and User Dump in parallel."
+# 	"$BAGCLI_WORKDIR/commands/mosdatadump-USERS.sh" &
+# 	P1=$!
+# 	"$BAGCLI_WORKDIR/commands/mosdatadump-Mac.sh" &
+# 	P2=$!
+# 	wait $P1 $P2
+#
+# #We only Need iOS and Mac
+# elif [ "$GETIOSDATA" = "YES" ] && [ "$GETMACOSDATA" = "YES" ]; then
+# 	cli_log "Doing iOS Dump and MacOS Dump in parallel."
+# 	"$BAGCLI_WORKDIR/commands/mosdatadump-iOS.sh" &
+# 	P1=$!
+# 	"$BAGCLI_WORKDIR/commands/mosdatadump-Mac.sh" &
+# 	P2=$!
+# 	wait $P1 $P2
+#
+# #Cases for we only need one or the other but no combos
+# elif  [ "$GETUSERDATA" = "YES" ]; then
+# 	cli_log "Doing User Dump only."
+# 	"$BAGCLI_WORKDIR/commands/mosdatadump-USERS.sh"
+# elif [ "$GETIOSDATA" = "YES" ]; then
+# 		cli_log "Doing iOS dump only."
+# 	"$BAGCLI_WORKDIR/commands/mosdatadump-iOS.sh"
+# elif [ "$GETMACOSDATA" = "YES" ]; then
+# 	cli_log "Doing MacOS Dump"
+# 	"$BAGCLI_WORKDIR/commands/mosdatadump-Mac.sh"
+# fi
 
 #### Now lets look at what options were fed at the time the command
 #### was called and act appropriately.
