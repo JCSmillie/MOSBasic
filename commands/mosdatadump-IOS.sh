@@ -56,19 +56,18 @@ rm -Rf "$TEMPOUTPUTFILE_MERGEDIOS"
 #we end up.
 THECOUNT=0
 
+#Before starting to grab data lets grab the Bearer Token
+GetBearerToken
+
 # Connect to Mosyle API multiple times (for each page) so we
 # get all of the available data.
 while true; do
 	let "THECOUNT=$THECOUNT+1"
 	THEPAGE="$THECOUNT"
-	#content="{\"Authorization\":\"Basic $AuthToken\",\"accessToken\":\"$APIKey\",\"options\":{\"os\":\"ios\",\"specific_columns\":\"deviceudid,serial_number,device_name,tags,asset_tag,userid,enrollment_type,username,date_app_info\",\"page\":$THEPAGE}}"
+
 	cli_log "iOS CLIENTS-> Asking MDM for Page $THEPAGE data...."
 
-	##This has been changed from running inside a variable to file output because there are some characers which mess the old
-	#way up.  By downloading straight to file we avoid all that nonsense. -JCS 5/23/2022
-	#curl -s -k -X POST -d $content 'https://managerapi.mosyle.com/v2/listdevices' -o /tmp/MOSBasicRAW-iOS-Page$THEPAGE.txt
-
-	GetBearerToken
+	#This is a new CURL call with JSON data - JCS 11/8/23
 	curl --location 'https://managerapi.mosyle.com/v2/listdevices' \
 		--header 'content-type: application/json' \
 		--header "Authorization: Bearer $AuthToken" \

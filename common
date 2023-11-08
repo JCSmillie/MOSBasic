@@ -130,13 +130,34 @@ SerialFromTag() {
 
 }
 
+#Format for an iPad Data Dump of JSON
+Generate_JSON_SharediPadPostData() {
+cat <<EOF
+	{"accessToken": "$MOSYLE_API_key",
+	"options": {
+		"os": "ios",
+		"serial_numbers": "$DeviceSerialNumber",
+		"page": "$THEPAGE",
+		"specific_columns": "deviceudid,serial_number,enrollment_type"
+	}
+}
+EOF
+}
+
 #Ask Mosyle if a specific serial # is a Shared Mode iPad
 IsThisiPadSharedMode() {
-	#Our query.  We are asking for a specific serial # and only asking back for UDID, Serial and enrollment type
-	content="{\"accessToken\":\"$APIKey\",\"options\":{\"os\":\"ios\",\"serial_numbers\":[\"$DeviceSerialNumber\"],\"specific_columns\":\"deviceudid,serial_number,enrollment_type\"}}"
+	GetBearerToken
+	# #Our query.  We are asking for a specific serial # and only asking back for UDID, Serial and enrollment type
+	# content="{\"accessToken\":\"$APIKey\",\"options\":{\"os\":\"ios\",\"serial_numbers\":[\"$DeviceSerialNumber\"],\"specific_columns\":\"deviceudid,serial_number,enrollment_type\"}}"
+	#
+	# #Do the Query
+	# output=$(curl -s -k -X POST -d $content 'https://managerapi.mosyle.com/v2/listdevices')
 
-	#Do the Query
-	output=$(curl -s -k -X POST -d $content 'https://managerapi.mosyle.com/v2/listdevices')
+	#This is a new CURL call with JSON data - JCS 11/8/23
+	output=$(curl --location 'https://managerapi.mosyle.com/v2/listdevices' \
+		--header 'content-type: application/json' \
+		--header "Authorization: Bearer $AuthToken" \
+		--data "$(Generate_JSON_IOSDUMPPostData)") >> $LOG
 
 	if echo "$output" | grep SHARED; then
 		echo "This is a Shared iPad."
@@ -219,9 +240,31 @@ CheckBuildVersion() {
 	fi
 }
 
+#Format for an iPad Data Dump of JSON
+Generate_JSON_IOSDUMPPostData() {
+cat <<EOF
+	{"accessToken": "$MOSYLE_API_key",
+	"options": {
+		"os": "ios",
+		"serial_numbers": "$DeviceSerialNumber",
+		"page": "$THEPAGE",
+		"specific_columns": "date_last_beat,lostmode_status,last_ip_beat,last_lan_ip,userid"
+	}
+}
+EOF
+}
+
 GetCurrentInfo-ios(){
-	content="{\"accessToken\":\"$APIKey\",\"options\":{\"os\":\"ios\",\"serial_numbers\":[\"$DeviceSerialNumber\"],\"specific_columns\":\"date_last_beat,lostmode_status,last_ip_beat,last_lan_ip,userid\"}}"
-	output=$(curl -s -k -X POST -d $content 'https://managerapi.mosyle.com/v2/listdevices') >> $LOG
+	GetBearerToken
+	# content="{\"accessToken\":\"$APIKey\",\"options\":{\"os\":\"ios\",\"serial_numbers\":[\"$DeviceSerialNumber\"],\"specific_columns\":\"date_last_beat,lostmode_status,last_ip_beat,last_lan_ip,userid\"}}"
+	# output=$(curl -s -k -X POST -d $content 'https://managerapi.mosyle.com/v2/listdevices') >> $LOG
+	
+	
+	#This is a new CURL call with JSON data - JCS 11/8/23
+	output=$(curl --location 'https://managerapi.mosyle.com/v2/listdevices' \
+		--header 'content-type: application/json' \
+		--header "Authorization: Bearer $AuthToken" \
+		--data "$(Generate_JSON_IOSDUMPPostData)") >> $LOG
 	
 	if echo "$output" | grep "DEVICES_NOTFOUND"; then
 		log_line "No updated info available for $DeviceSerialNumber"
@@ -261,9 +304,28 @@ GetCurrentInfo-ios(){
 
 }
 
+Generate_JSON_MacOSDUMPPostData() {
+cat <<EOF
+	{"accessToken": "$MOSYLE_API_key",
+	"options": {
+		"os": "mac",
+		"serial_numbers": "$DeviceSerialNumber",
+		"page": "$THEPAGE",
+		"specific_columns": "date_last_beat,lostmode_status,last_ip_beat,last_lan_ip,userid"
+	}
+}
+EOF
+}
 GetCurrentInfo-macos(){
-	content="{\"accessToken\":\"$APIKey\",\"options\":{\"os\":\"mac\",\"serial_numbers\":[\"$DeviceSerialNumber\"],\"specific_columns\":\"date_last_beat,lostmode_status,last_ip_beat,last_lan_ip\"}}"
-	output=$(curl -s -k -X POST -d $content 'https://managerapi.mosyle.com/v2/listdevices') >> $LOG
+	GetBearerToken
+	# content="{\"accessToken\":\"$APIKey\",\"options\":{\"os\":\"mac\",\"serial_numbers\":[\"$DeviceSerialNumber\"],\"specific_columns\":\"date_last_beat,lostmode_status,last_ip_beat,last_lan_ip\"}}"
+	# output=$(curl -s -k -X POST -d $content 'https://managerapi.mosyle.com/v2/listdevices') >> $LOG
+
+	#This is a new CURL call with JSON data - JCS 11/8/23
+	output=$(curl --location 'https://managerapi.mosyle.com/v2/listdevices' \
+		--header 'content-type: application/json' \
+		--header "Authorization: Bearer $AuthToken" \
+		--data "$(Generate_JSON_MacOSDUMPPostData)") >> $LOG
 	
 	if echo "$output" | grep "DEVICES_NOTFOUND"; then
 		log_line "No updated info available for $DeviceSerialNumber"

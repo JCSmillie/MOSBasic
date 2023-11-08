@@ -128,12 +128,30 @@ LocateDevice() {
 	fi
 }
 
+Generate_JSON_LostmodeCheck() {
+cat <<EOF
+	{"accessToken": "$MOSYLE_API_key",
+	"options": {
+		"os": "ios",
+		"serial_numbers": "$DeviceSerialNumber",
+		"specific_columns": "deviceudid,date_last_beat,tags,lostmode_status,longitude,latitude"
+	}
+}
+EOF
+}
 
 CheckLostMode() {
-	#Build Query.  Just asking for current data on last beat, lostmode status, and location data if we can get it.
-	content="{\"accessToken\":\"$APIKey\",\"options\":{\"os\":\"ios\",\"serial_numbers\":[\"$DeviceSerialNumber\"],\"specific_columns\":\"deviceudid,date_last_beat,tags,lostmode_status,longitude,latitude\"}}"
+	# #Build Query.  Just asking for current data on last beat, lostmode status, and location data if we can get it.
+	# content="{\"accessToken\":\"$APIKey\",\"options\":{\"os\":\"ios\",\"serial_numbers\":[\"$DeviceSerialNumber\"],\"specific_columns\":\"deviceudid,date_last_beat,tags,lostmode_status,longitude,latitude\"}}"
+	#
+	# APIOUTPUT=$(curl -s -k -X POST -d $content 'https://managerapi.mosyle.com/v2/listdevices')
 
-	APIOUTPUT=$(curl -s -k -X POST -d $content 'https://managerapi.mosyle.com/v2/listdevices')
+	APIOUTPUT=$(curl --location 'https://managerapi.mosyle.com/v2/listdevices' \
+		--header 'content-type: application/json' \
+		--header "Authorization: Bearer $AuthToken" \
+		--data "$(Generate_JSON_LostmodeCheck)")
+	echo "$APIOUTPUT"
+
 
 	if echo "$APIOUTPUT" | grep "DEVICES_NOTFOUND"; then
 		log_line "Mosyle doesn't know $DeviceSerialNumber.  Epic Fail."
@@ -391,6 +409,9 @@ WHOISLOST() {
 #############################
 #          Do Work          #
 #############################
+#Before we can do anything we need to make sure we have a Bearer Token
+GetBearerToken
+
 #First parse the Tag unless this is blanket whos lost query
 if [ -z "$2" ] && [ ! "$1" = "--whoislost" ]; then
 	cli_log "Need an asset tag to act on.  Come'on man!"
