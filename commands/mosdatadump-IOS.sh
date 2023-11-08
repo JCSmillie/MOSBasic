@@ -24,6 +24,23 @@ if [ "$MB_DEBUG" = "Y" ]; then
 	echo "Variable 4-> $4"
 fi
 
+#################################
+#            Functions          #
+#################################
+#Format for an iPad Data Dump of JSON
+Generate_JSON_IOSDUMPPostData() {
+cat <<EOF
+	{"accessToken": "$MOSYLE_API_key",
+	"options": {
+		"os": "ios",
+		"page": "$THEPAGE",
+		"specific_columns": "deviceudid,serial_number,device_name,tags,asset_tag,userid,enrollment_type,username,date_app_info"
+	}
+}
+EOF
+}
+
+
 ################################
 #            DO WORK           #
 ################################
@@ -44,12 +61,20 @@ THECOUNT=0
 while true; do
 	let "THECOUNT=$THECOUNT+1"
 	THEPAGE="$THECOUNT"
-	content="{\"accessToken\":\"$APIKey\",\"options\":{\"os\":\"ios\",\"specific_columns\":\"deviceudid,serial_number,device_name,tags,asset_tag,userid,enrollment_type,username,date_app_info\",\"page\":$THEPAGE}}"
+	#content="{\"Authorization\":\"Basic $AuthToken\",\"accessToken\":\"$APIKey\",\"options\":{\"os\":\"ios\",\"specific_columns\":\"deviceudid,serial_number,device_name,tags,asset_tag,userid,enrollment_type,username,date_app_info\",\"page\":$THEPAGE}}"
 	cli_log "iOS CLIENTS-> Asking MDM for Page $THEPAGE data...."
 
 	##This has been changed from running inside a variable to file output because there are some characers which mess the old
 	#way up.  By downloading straight to file we avoid all that nonsense. -JCS 5/23/2022
-	curl -s -k -X POST -d $content 'https://managerapi.mosyle.com/v2/listdevices' -o /tmp/MOSBasicRAW-iOS-Page$THEPAGE.txt
+	#curl -s -k -X POST -d $content 'https://managerapi.mosyle.com/v2/listdevices' -o /tmp/MOSBasicRAW-iOS-Page$THEPAGE.txt
+
+	GetBearerToken
+	curl --location 'https://managerapi.mosyle.com/v2/listdevices' \
+		--header 'content-type: application/json' \
+		--header "Authorization: Bearer $AuthToken" \
+		--data "$(Generate_JSON_IOSDUMPPostData)" -o /tmp/MOSBasicRAW-iOS-Page$THEPAGE.txt
+
+
 
 	#Detect we just loaded a page with no content and stop.
 	LASTPAGE=$(cat "/tmp/MOSBasicRAW-iOS-Page$THEPAGE.txt" | grep DEVICES_NOTFOUND)

@@ -39,6 +39,16 @@ cli_graffitti() {
 }
 
 ParseIt_ios() {
+	#If "line" varible isnt filled then assume we gave
+	#data when the command was ran from the $1 variable.
+	if [ -z "$line" ]; then
+		line="$1"
+		
+	elif [ -z "$line" ] && [ -z "$1" ]; then
+		log_line "No data given.  Can't parse!"
+		exit
+	fi
+	
 	UDID=$(echo "$line" | cut -f 1 -d$'\t')
 	DeviceSerialNumber=$(echo "$line" | cut -f 2 -d$'\t')
 	CURRENTNAME=$(echo "$line" | cut -f 3 -d$'\t')
@@ -58,6 +68,15 @@ ParseIt_ios() {
 }
 
 ParseIt_MacOS() {
+	#If "line" varible isnt filled then assume we gave
+	#data when the command was ran from the $1 variable.
+	if [ -z "$line" ]; then
+		line="$1"
+		
+	elif [ -z "$line" ] && [ -z "$1" ]; then
+		log_line "No data given.  Can't parse!"
+		exit
+	fi
 	UDID=$(echo "$line" | cut -f 1 -d$'\t')
 	DeviceSerialNumber=$(echo "$line" | cut -f 2 -d$'\t')
 	CURRENTNAME=$(echo "$line" | cut -f 3 -d$'\t')
@@ -273,6 +292,40 @@ GetCurrentInfo-macos(){
 	fi
 
 }
+
+#This function and the next were added to support Bearer tokens
+#in Mosyle.
+Generate_JSON_PostData() {
+cat <<EOF
+	{"accessToken": "$MOSYLE_API_key",
+	"email": "$MOSYLE_API_Username",
+	"password": "$MOSYLE_API_Password" }
+EOF
+}
+
+GetBearerToken() {
+	#Using JSON Post data from above try to get BearerToken
+	GrabToken=$(curl --include --location 'https://managerapi.mosyle.com/v2/login' \
+	--header 'Content-Type: application/json' \
+	--data-raw "$(Generate_JSON_PostData)")
+	
+	AuthToken=$(echo "$GrabToken" | grep Authorization | cut -d ' ' -f 3 )
+
+	#Make sure we got data back and if so store it.
+	if [ -z "$AuthToken" ]; then
+		echo "No token given by Mostle.  FAIL."
+	
+	else
+		echo "Token Given.  Storing.."
+		#Strip any Spaces in the Token
+		AuthToken="${AuthToken//[[:space:]]/}"
+		#Drop the token to file.  Its good for 24hrs
+		#so maybe down the road we can reuse it.
+		echo "$AuthToken" > /tmp/.MosyleAPI_BearToken
+	fi
+}
+
+
 
 #ColorCodes
 

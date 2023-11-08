@@ -23,7 +23,21 @@ if [ "$MB_DEBUG" = "Y" ]; then
 	echo "Variable 4-> $4"
 fi
 
-
+#################################
+#            Functions          #
+#################################
+#Format for an iPad Data Dump of JSON
+Generate_JSON_UserDUMPPostData() {
+cat <<EOF
+	{"accessToken": "$MOSYLE_API_key",
+	"options": {
+		"os": "ios",
+		"page": "$THEPAGE",
+		"specific_columns": "id,name,managedappleid,type"
+	}
+}
+EOF
+}
 ################################
 #            DO WORK           #
 ################################
@@ -35,17 +49,22 @@ rm -Rf "$TEMPOUTPUTFILE_Users"
 #we end up.
 THECOUNT=0
 
+#Before starting to grab data lets grab the Bearer Token
+GetBearerToken
+
 # Connect to Mosyle API multiple times (for each page) so we
 # get all of the available data.
 while true; do
 	let "THECOUNT=$THECOUNT+1"
 	THEPAGE="$THECOUNT"
-	content="{\"accessToken\":\"$APIKey\",\"options\":{\"specific_columns\":[\"id\",\"name\",\"managedappleid\",\"type\"],\"page\":$THEPAGE}}"
+
 	cli_log "MOSYLE USERS-> Asking MDM for Page $THEPAGE data...."
-	output=$(curl -s -k -X POST -d $content 'https://managerapi.mosyle.com/v2/listusers') >> $LOG
-	##This has been changed from running inside a variable to file output because there are some characers which mess the old
-	#way up.  By downloading straight to file we avoid all that nonsense. -JCS 5/23/2022
-	curl -s -k -X POST -d $content 'https://managerapi.mosyle.com/v2/listusers' -o /tmp/MOSBasicRAW-Users-Page$THEPAGE.txt
+
+	#This is a new CURL call with JSON data - JCS 11/8/23
+	curl --location 'https://managerapi.mosyle.com/v2/listusers' \
+		--header 'content-type: application/json' \
+		--header "Authorization: Bearer $AuthToken" \
+		--data "$(Generate_JSON_UserDUMPPostData)" -o /tmp/MOSBasicRAW-Users-Page$THEPAGE.txt
 
 	#Detect we just loaded a page with no content and stop.
 	LASTPAGE=$(cat "/tmp/MOSBasicRAW-Users-Page$THEPAGE.txt" | grep 'users":\[\]')

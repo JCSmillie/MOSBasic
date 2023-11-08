@@ -24,6 +24,22 @@ if [ "$MB_DEBUG" = "Y" ]; then
 	echo "Variable 4-> $4"
 fi
 
+#################################
+#            Functions          #
+#################################
+#Format for an iPad Data Dump of JSON
+Generate_JSON_MacOSDUMPPostData() {
+cat <<EOF
+	{"accessToken": "$MOSYLE_API_key",
+	"options": {
+		"os": "mac",
+		"page": "$THEPAGE",
+		"specific_columns": "deviceudid,serial_number,device_name,tags,asset_tag,userid,enrollment_type,username,date_app_info"
+	}
+}
+EOF
+}
+
 
 ################################
 #            DO WORK           #
@@ -40,20 +56,27 @@ rm -Rf "$TEMPOUTPUTFILE_MERGEDMAC"
 #we end up.
 THECOUNT=0
 
+#Before starting to grab data lets grab the Bearer Token
+GetBearerToken
+
 # Connect to Mosyle API multiple times (for each page) so we
 # get all of the available data.
 while true; do
 	let "THECOUNT=$THECOUNT+1"
 	THEPAGE="$THECOUNT"
-	content="{\"accessToken\":\"$APIKey\",\"options\":{\"os\":\"mac\",\"specific_columns\":\"deviceudid,serial_number,device_name,tags,asset_tag,userid,enrollment_type,username,date_app_info\",\"page\":$THEPAGE}}"
-	#output=$(curl -s -k -X POST -d $content 'https://managerapi.mosyle.com/v2/listdevices') >> $LOG
+
 	cli_log "MAC CLIENTS-> Asking MDM for Page $THEPAGE data...."
 	
 	#echo "API---> $content"
 	
 	##This has been changed from running inside a variable to file output because there are some characers which mess the old
 	#way up.  By downloading straight to file we avoid all that nonsense. -JCS 5/23/2022
-	curl -s -k -X POST -d $content 'https://managerapi.mosyle.com/v2/listdevices' -o /tmp/MOSBasicRAW-Mac-Page$THEPAGE.txt
+	#This is a new CURL call with JSON data - JCS 11/8/23
+	curl --location 'https://managerapi.mosyle.com/v2/listdevices' \
+		--header 'content-type: application/json' \
+		--header "Authorization: Bearer $AuthToken" \
+		--data "$(Generate_JSON_MacOSDUMPPostData)" -o /tmp/MOSBasicRAW-Mac-Page$THEPAGE.txt
+
 
 	#Detect we just loaded a page with no content and stop.
 	LASTPAGE=$(cat "/tmp/MOSBasicRAW-Mac-Page$THEPAGE.txt" | grep DEVICES_NOTFOUND)

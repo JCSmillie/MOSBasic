@@ -197,28 +197,28 @@ if [ ! -x "$PYTHON2USE" ]; then
 	exit 1
 fi
 
-#######################################
-# Do we have cache'd data about iPads
-#######################################
-#First Make sure we have what we need
-if [ ! -s "$TEMPOUTPUTFILE_MERGEDIOS" ]; then
-	cli_log "$TEMPOUTPUTFILE_MERGEDIOS is missing.  Must grab NOW."
-	GETIOSDATA="YES"
-	#"$BAGCLI_WORKDIR/commands/mosdatadump-iOS.sh"
-	
-#Is the command we are about to run one that is going to pull its own data?
-elif [ "$1" = "whoislost" ] || [ "$1" = "lostmodeon" ] || [ "$1" = "lostmodeoff" ] || [ "$1" = "lostmodestatus" ] ; then
-	cli_log "Skipping Local Data check because $1 pulls its own data..."
-
-#If our data is older than 24hr then update it.
-elif [ `find "$TEMPOUTPUTFILE_MERGEDIOS" -mmin +1440 | egrep '.*'` ]; then
-	cli_log "$TEMPOUTPUTFILE_MERGEDIOS is older than a day.  Updating."
-	#"$BAGCLI_WORKDIR/commands/mosdatadump-iOS.sh"
-	GETIOSDATA="YES"
-
-else
-	GETIOSDATA="NO"
-fi
+# #######################################
+# # Do we have cache'd data about iPads
+# #######################################
+# #First Make sure we have what we need
+# if [ ! -s "$TEMPOUTPUTFILE_MERGEDIOS" ]; then
+# 	cli_log "$TEMPOUTPUTFILE_MERGEDIOS is missing.  Must grab NOW."
+# 	GETIOSDATA="YES"
+# 	#"$BAGCLI_WORKDIR/commands/mosdatadump-iOS.sh"
+#
+# #Is the command we are about to run one that is going to pull its own data?
+# elif [ "$1" = "whoislost" ] || [ "$1" = "lostmodeon" ] || [ "$1" = "lostmodeoff" ] || [ "$1" = "lostmodestatus" ] ; then
+# 	cli_log "Skipping Local Data check because $1 pulls its own data..."
+#
+# #If our data is older than 24hr then update it.
+# elif [ `find "$TEMPOUTPUTFILE_MERGEDIOS" -mmin +1440 | egrep '.*'` ]; then
+# 	cli_log "$TEMPOUTPUTFILE_MERGEDIOS is older than a day.  Updating."
+# 	#"$BAGCLI_WORKDIR/commands/mosdatadump-iOS.sh"
+# 	GETIOSDATA="YES"
+#
+# else
+# 	GETIOSDATA="NO"
+# fi
 
 #######################################
 # Do we have cache'd data about Users
