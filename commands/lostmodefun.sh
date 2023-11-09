@@ -29,6 +29,21 @@ fi
 #############################
 #        Functions          #
 #############################
+#Format for an iPad Data Dump of JSON
+Generate_JSON_LostModeOperations() {
+cat <<EOF
+	{"accessToken": "$MOSYLE_API_key",
+	"elements": [ {
+        "operation": "$OPERATION2PERFORM",
+    	"devices": "$DEVICES2BULKON",
+		"message": "$LOSTMODEMessagetoSend",
+		"phone_number": "$LOSTMODEphonenumber",
+		"footnote": "$LOSTMODEfootnote"
+	} ]
+}
+EOF
+}
+
 EnableLostMode() {
 	#Run Parsing Routine to get fields from tab delimited data
 	# ParseIt
@@ -43,37 +58,51 @@ EnableLostMode() {
 		echo "${Red}Device hasn't checked into MDM in over a day..  Milage may very on this attempt....${reset}"	
 	fi	
 	
-	#echo "UDID--> $UDID"
-	MessagetoSend="Please take this device to the main office or call the GatorIT HelpDesk!"
-	phonenumber="Outside-> 412-373-5870 option 4 /  x15108 <-Inside"
-	footnote="Device can also be dropped in Monroeville Public Library's Book Return at any hour!"
 	
-	content="{\"accessToken\":\"$APIKey\",\"elements\":[{\"devices\":\"$UDID\",\"operation\":\"enable\",\"message\":\"$MessagetoSend\",\"phone_number\":\"$phonenumber\",\"footnote\":\"$footnote\"}]}"
+	#Set Variables in our Call.
+	OPERATION2PERFORM="enable"
+	DEVICES2BULKON="$UDID"
 	
-	#content="{\"accessToken\":\"$APIKey\",\"elements\":[{\"devices\":\"$UDID\",\"operation\":\"enable\",\"message\":\"$MessagetoSend\",\"phone_number\":\"$phonenumber\"}]}"
-
-	APIOUTPUT=$(curl  -s -k -X POST -d $content 'https://managerapi.mosyle.com/v2/lostmode')
+	cli_log "Operation $OPERATION2PERFORM called upon to act on $DEVICES2BULKON"
+	
+	#This is a new CURL call with JSON data - JCS 11/8/23
+	APIOUTPUT=$(curl --location 'https://managerapi.mosyle.com/v2/lostmode' \
+		--header 'content-type: application/json' \
+		--header "Authorization: Bearer $AuthToken" \
+		--data "$(Generate_JSON_LostModeOperations)" 2> /dev/null) 
+	
 
 	CMDStatus=$(echo "$APIOUTPUT" | cut -d ":" -f 3 | cut -d "," -f 1 | tr -d '"')
 
 	if [ "$CMDStatus" = "COMMAND_SENT" ]; then
 		echo "Command was Successful!"
-	
+
 	else
 		echo "Command yeilded Unknown Status ($APIOUTPUT)"
 	fi
 }
 
 PlayLostSound() {
-	content="{\"accessToken\":\"$APIKey\",\"elements\":[{\"devices\":\"$UDID\",\"operation\":\"play_sound\"}]}"
-	APIOUTPUT=$(curl -s -k -X POST -d $content 'https://managerapi.mosyle.com/v2/lostmode')
+	#Set Variables in our Call.
+	OPERATION2PERFORM="play_sound"
+	DEVICES2BULKON="$UDID"
+	
+	cli_log "Operation $OPERATION2PERFORM called upon to act on $DEVICES2BULKON"
+		
+	#This is a new CURL call with JSON data - JCS 11/8/23
+	APIOUTPUT=$(curl --location 'https://managerapi.mosyle.com/v2/lostmode' \
+		--header 'content-type: application/json' \
+		--header "Authorization: Bearer $AuthToken" \
+		--data "$(Generate_JSON_LostModeOperations)") 
 
-	###DEBUG SHOW STRING SENT TO MOSYLE
-	echo "curl -s -k -X POST -d $content 'https://managerapi.mosyle.com/v2/lostmode'"
+
+	# ###DEBUG SHOW STRING SENT TO MOSYLE
+	# echo "curl -s -k -X POST -d $content 'https://managerapi.mosyle.com/v2/lostmode'"
 
 	CMDStatus=$(echo "$APIOUTPUT" | cut -d ":" -f 3 | cut -d "," -f 1 | tr -d '"')
 	
 	echo "$CMDStatus"
+	echo "$APIOUTPUT"
 	
 	if [ "$CMDStatus" = "LOSTMODE_NOTENABLED" ]; then
 		echo "API Says iPad is not currently in Lost Mode.  Enabling."
@@ -90,9 +119,16 @@ PlayLostSound() {
 }
 
 DisableLostMode(){
-	# ParseIt
-	content="{\"accessToken\":\"$APIKey\",\"elements\":[{\"devices\":\"$UDID\",\"operation\":\"disable\"}]}"
-	APIOUTPUT=$(curl  -s -k -X POST -d $content 'https://managerapi.mosyle.com/v2/lostmode')
+	#Set Variables in our Call.
+	OPERATION2PERFORM="disable"
+	DEVICES2BULKON="$UDID"
+	
+	cli_log "Operation $OPERATION2PERFORM called upon to act on $DEVICES2BULKON"
+	#This is a new CURL call with JSON data - JCS 11/8/23
+	APIOUTPUT=$(curl --location 'https://managerapi.mosyle.com/v2/lostmode' \
+		--header 'content-type: application/json' \
+		--header "Authorization: Bearer $AuthToken" \
+		--data "$(Generate_JSON_LostModeOperations)")	
 	
 	CMDStatus=$(echo "$APIOUTPUT" | cut -d ":" -f 3 | cut -d "," -f 1 | tr -d '"')
 	
@@ -106,8 +142,17 @@ DisableLostMode(){
 }
 
 LocateDevice() {
-	content="{\"accessToken\":\"$APIKey\",\"elements\":[{\"devices\":\"$UDID\",\"operation\":\"request_location\"}]}"
-	APIOUTPUT=$(curl -s -k -X POST -d $content 'https://managerapi.mosyle.com/v2/lostmode')
+	#Set Variables in our Call.
+	OPERATION2PERFORM="request_location"
+	DEVICES2BULKON="$UDID"
+	
+	cli_log "Operation $OPERATION2PERFORM called upon to act on $DEVICES2BULKON"
+	
+	#This is a new CURL call with JSON data - JCS 11/8/23
+	APIOUTPUT=$(curl --location 'https://managerapi.mosyle.com/v2/lostmode' \
+		--header 'content-type: application/json' \
+		--header "Authorization: Bearer $AuthToken" \
+		--data "$(Generate_JSON_LostModeOperations)")
 
 	###DEBUG SHOW STRING SENT TO MOSYLE
 	#echo "curl -s -k -X POST -d $content 'https://managerapi.mosyle.com/v2/lostmode'"
@@ -239,20 +284,44 @@ DisplayCheckdLostModeData() {
 		fi
 }
 
+#Format for an iPad Data Dump of JSON
+Generate_JSON_InventoryOperations() {
+cat <<EOF
+	{"accessToken": "$MOSYLE_API_key",
+	"options": {
+		"os": "$PLATFORM2QUERY",
+		"page": "$THEPAGE",
+		"specific_columns": "$COLUMNS"
+	}
+}
+
+EOF
+}
+
+
 WHOISLOST() {
 	rm -Rf /tmp/.*.lost_ish.txt
 	#Initialize the base count variable. This will be
 	#used to figure out what page we are on and where
 	#we end up.
 	THECOUNT=0
+	PLATFORM2QUERY="ios"
+	COLUMNS="deviceudid,date_last_beat,tags,lostmode_status"
 
 	# Connect to Mosyle API multiple times (for each page) so we
 	# get all of the available data.
 	while true; do
 		let "THECOUNT=$THECOUNT+1"
 		THEPAGE="$THECOUNT"
-		content="{\"accessToken\":\"$APIKey\",\"options\":{\"os\":\"ios\",\"specific_columns\":\"deviceudid,date_last_beat,tags,lostmode_status\",\"page\":$THEPAGE}}"
-		APIOUTPUT=$(curl -s -k -X POST -d $content 'https://managerapi.mosyle.com/v2/listdevices') >> $LOG
+		# content="{\"accessToken\":\"$APIKey\",\"options\":{\"os\":\"ios\",\"specific_columns\":\"deviceudid,date_last_beat,tags,lostmode_status\",\"page\":$THEPAGE}}"
+		# APIOUTPUT=$(curl -s -k -X POST -d $content 'https://managerapi.mosyle.com/v2/listdevices') >> $LOG
+
+
+		#This is a new CURL call with JSON data - JCS 11/8/23
+		APIOUTPUT=$(curl --location 'https://managerapi.mosyle.com/v2/listdevices' \
+			--header 'content-type: application/json' \
+			--header "Authorization: Bearer $AuthToken" \
+			--data "$(Generate_JSON_IOSDUMPPostData)") >> $LOG
 
 		#echo "$content"
 

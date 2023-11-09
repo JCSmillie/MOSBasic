@@ -369,7 +369,7 @@ GetBearerToken() {
 	#Using JSON Post data from above try to get BearerToken
 	GrabToken=$(curl --include --location 'https://managerapi.mosyle.com/v2/login' \
 	--header 'Content-Type: application/json' \
-	--data-raw "$(Generate_JSON_PostData)")
+	--data-raw "$(Generate_JSON_PostData)" 2>/dev/null)
 	
 	AuthToken=$(echo "$GrabToken" | grep Authorization | cut -d ' ' -f 3 )
 
