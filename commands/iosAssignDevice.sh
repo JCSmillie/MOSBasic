@@ -54,10 +54,6 @@ EOF
 AssigniPad() {
 	#Before starting to grab data lets grab the Bearer Token
 	GetBearerToken
-	
-	# #Call out to Mosyle MDM to submit list of UDIDs which need Limbo'd
-	# content="{\"accessToken\":\"$APIKey\",\"elements\":[{\"id\":\"$USERNAME_GIVEN\",\"operation\":\"assign_device\",\"serial_number\":\"$RETURNSERIAL\"}]}"
-	# APIOUTPUT=$(curl  -s -k -X POST -d $content 'https://managerapi.mosyle.com/v2/users')
 
 	#This is a new CURL call with JSON data - JCS 11/8/23
 	APIOUTPUT=$(curl --location 'https://managerapi.mosyle.com/v2/users' \
@@ -65,14 +61,14 @@ AssigniPad() {
 		--header "Authorization: Bearer $AuthToken" \
 		--data "$(Generate_JSON_AssignDevice)") >> $LOG
 	
-
-
-	
 	CMDStatus=$(echo "$APIOUTPUT" | cut -d ":" -f 4 | cut -d "," -f 1 | tr -d '"' | tr -d '}]})')
 
 	#DEBUGGING
-	#echo "CMD Status--> $CMDStatus"
-	#echo "APIOUTPUT---> $APIOUTPUT"
+	if [ $"DEBUG" = Y ]; then
+		echo "CMD Status--> $CMDStatus"
+		echo "APIOUTPUT---> $APIOUTPUT"
+	fi
+
 	
 	if [ "$CMDStatus" = "DEVICES_NOTFOUND" ]; then
 		cli_log "Device not found in Mosyle.  Can't Assign!"
@@ -139,7 +135,6 @@ if [ "$1" = "--scan" ]; then
 #This would be a routine for doing a bunch of devices from file based on $1 equaling --mass
 # and $2 equaling where to find a file.  File would be asset tag per line.
 elif [ "$1" = "--mass" ]; then
-		echo "MASS ABILITY IS NOT YET READY..  Fail.. for now."
 		
 		if [ ! -s "$2" ]; then
 			echo "${Red}File given ($2) doesn't exist.  EPIC FAIL${reset}"
@@ -194,6 +189,7 @@ cat "/tmp/Scan2Assign.txt" | while read line; do
 		break
 	fi
 	
+	################HAY ME...  WHY AM I DOING THIS TWICE?  SEE ABOVE WHEN TAG AND NAME R GIVEN
 	#echo "DEBUG-> This is where we check if iPAd is Shared Mode"
 	#Call function to see if iPad is shared.  If it is we can't assign it.
 	IsThisiPadSharedMode
@@ -254,9 +250,17 @@ else
 	echo "------------------------------------------"
 	cat /tmp/Scan2Assign_ExtraInfo.txt
 
-	echo "Are you sure <Y/N>"
+	#If this was a Mass operation were not asking to confirm
+	#were just going to roll through it.  If its not mass then
+	#ask for confirmation.
+	if [ ! "$1" = "--MASS" ]; then
+		echo "Are you sure <Y/N>"
 
-	read shouldwedoit
+		read shouldwedoit
+		
+	else
+		shouldwedoit="Y"
+	fi
 
 	if [ "$shouldwedoit" = "Y" ]; then
 		echo "DOIN IT!"
