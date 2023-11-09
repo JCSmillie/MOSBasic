@@ -36,10 +36,37 @@ rm -Rf /tmp/Scan2Assign_ExtraInfo.txt
 
 
 
+
+#Format for an iPad Data Dump of JSON
+Generate_JSON_AssignDevice() {
+cat <<EOF
+	{"accessToken": "$MOSYLE_API_key",
+	"elements": [ {
+        "operation": "$USERNAME_GIVEN",
+    	"id": "new.user.1",
+		"serial_number": "$RETURNSERIAL"
+	} ]
+}
+EOF
+}
+
+
 AssigniPad() {
-	#Call out to Mosyle MDM to submit list of UDIDs which need Limbo'd
-	content="{\"accessToken\":\"$APIKey\",\"elements\":[{\"id\":\"$USERNAME_GIVEN\",\"operation\":\"assign_device\",\"serial_number\":\"$RETURNSERIAL\"}]}"
-	APIOUTPUT=$(curl  -s -k -X POST -d $content 'https://managerapi.mosyle.com/v2/users')
+	#Before starting to grab data lets grab the Bearer Token
+	GetBearerToken
+	
+	# #Call out to Mosyle MDM to submit list of UDIDs which need Limbo'd
+	# content="{\"accessToken\":\"$APIKey\",\"elements\":[{\"id\":\"$USERNAME_GIVEN\",\"operation\":\"assign_device\",\"serial_number\":\"$RETURNSERIAL\"}]}"
+	# APIOUTPUT=$(curl  -s -k -X POST -d $content 'https://managerapi.mosyle.com/v2/users')
+
+	#This is a new CURL call with JSON data - JCS 11/8/23
+	APIOUTPUT=$(curl --location 'https://managerapi.mosyle.com/v2/users' \
+		--header 'content-type: application/json' \
+		--header "Authorization: Bearer $AuthToken" \
+		--data "$(Generate_JSON_AssignDevice)") >> $LOG
+	
+
+
 	
 	CMDStatus=$(echo "$APIOUTPUT" | cut -d ":" -f 4 | cut -d "," -f 1 | tr -d '"' | tr -d '}]})')
 
