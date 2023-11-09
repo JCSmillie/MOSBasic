@@ -54,6 +54,19 @@ SorterOfiPadz() {
 }
 
 
+#Format for an iPad Data Dump of JSON
+Generate_JSON_Bulk2Limbo() {
+cat <<EOF
+	{"accessToken": "$MOSYLE_API_key",
+	"elements": [ {
+        "operation": "change_to_limbo",
+    	"devices": "$LIMBOSetUDiDs"
+	} ]
+}
+EOF
+}
+
+
 #############################
 #          Do Work          #
 #############################
@@ -104,9 +117,20 @@ if [ "$shouldwedoit" = "Y" ] || [ "$shouldwedoit" = "y" ]; then
 	if [ ! -z "$LIMBOSetUDiDs" ]; then
 		
 			echo "Making it So #1."
-			#Call out to Mosyle MDM to submit list of UDIDs which need Limbo'd
-			content="{\"accessToken\":\"$APIKey\",\"elements\":[{\"devices\":\"$LIMBOSetUDiDs\",\"operation\":\"change_to_limbo\"}]}"
-			curl  -s -k -X POST -d $content 'https://managerapi.mosyle.com/v2/bulkops'
+			#Before starting to grab data lets grab the Bearer Token
+			GetBearerToken
+			
+			# #Call out to Mosyle MDM to submit list of UDIDs which need Limbo'd
+			# content="{\"accessToken\":\"$APIKey\",\"elements\":[{\"devices\":\"$LIMBOSetUDiDs\",\"operation\":\"change_to_limbo\"}]}"
+			# curl  -s -k -X POST -d $content 'https://managerapi.mosyle.com/v2/bulkops'
+			
+			#This is a new CURL call with JSON data - JCS 11/8/23
+			curl --location 'https://managerapi.mosyle.com/v2/bulkops' \
+			--header 'Content-Type: application/json' \
+				--header "Authorization: Bearer $AuthToken" \
+				--data "$(Generate_JSON_Bulk2Limbo)"
+			
+			
 
 	else
 		#If we are here then we got nothing to work on
