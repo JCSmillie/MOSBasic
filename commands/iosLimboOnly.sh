@@ -66,6 +66,18 @@ cat <<EOF
 EOF
 }
 
+#Format for an iPad Data Dump of JSON
+Generate_JSON_BulkOperations() {
+cat <<EOF
+	{"accessToken": "$MOSYLE_API_key",
+	"elements": [ {
+        "operation": "$OPERATION2PERFORM",
+    	"devices": "$DEVICES2BULKON"
+
+	} ]
+}
+EOF
+}
 
 #############################
 #          Do Work          #
@@ -123,13 +135,27 @@ if [ "$shouldwedoit" = "Y" ] || [ "$shouldwedoit" = "y" ]; then
 			# #Call out to Mosyle MDM to submit list of UDIDs which need Limbo'd
 			# content="{\"accessToken\":\"$APIKey\",\"elements\":[{\"devices\":\"$LIMBOSetUDiDs\",\"operation\":\"change_to_limbo\"}]}"
 			# curl  -s -k -X POST -d $content 'https://managerapi.mosyle.com/v2/bulkops'
+			OPERATION2PERFORM="clear_commands"
+			DEVICES2BULKON="$LIMBOSetUDiDs"
 			
 			#This is a new CURL call with JSON data - JCS 11/8/23
 			curl --location 'https://managerapi.mosyle.com/v2/bulkops' \
 			--header 'Content-Type: application/json' \
 				--header "Authorization: Bearer $AuthToken" \
-				--data "$(Generate_JSON_Bulk2Limbo)"
+				--data "$(Generate_JSON_BulkOperations)"			
 			
+			#Log that we did something
+			cli_log "Bulk command $OPERATION2PERFORM was sent to the following devices: $DEVICES2BULKON"
+			
+			OPERATION2PERFORM="change_to_limbo"
+			DEVICES2BULKON="$LIMBOSetUDiDs"
+			#This is a new CURL call with JSON data - JCS 11/8/23
+			curl --location 'https://managerapi.mosyle.com/v2/bulkops' \
+			--header 'Content-Type: application/json' \
+				--header "Authorization: Bearer $AuthToken" \
+				--data "$(Generate_JSON_BulkOperations)"
+			#Log that we did something			
+			cli_log "Bulk command $OPERATION2PERFORM was sent to the following devices: $DEVICES2BULKON"
 			
 
 	else
