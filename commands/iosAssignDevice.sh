@@ -253,9 +253,9 @@ else
 	#If this was a Mass operation were not asking to confirm
 	#were just going to roll through it.  If its not mass then
 	#ask for confirmation.
-	if [ ! "$1" = "--MASS" ]; then
+	#Has confirmation been given?  Get it
+	if [ ! "$1" = "--mass" ]; then
 		echo "Are you sure <Y/N>"
-
 		read shouldwedoit
 		
 	else
