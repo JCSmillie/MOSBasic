@@ -65,6 +65,18 @@ SorterOfiPadz() {
 	fi
 }
 
+#Format for an iPad Data Dump of JSON
+Generate_JSON_BulkOperations() {
+cat <<EOF
+	{"accessToken": "$MOSYLE_API_key",
+	"elements": [ {
+        "operation": "$OPERATION2PERFORM",
+    	"devices": "$DEVICES2BULKON"
+	} ]
+}
+EOF
+}
+
 #############################
 #          Do Work          #
 #############################
@@ -226,16 +238,31 @@ if [ "$shouldwedoit" = "Y" ] || [ "$shouldwedoit" = "y" ]; then
 	#At this point we are almost ready to do the wipe and limbo
 	if [ ! -z "$LIMBOSetUDiDs" ]; then
 		
-			echo "Making it So #1."
-			#Call out to Mosyle MDM to submit list of UDIDs which need Limbo'd
-			content="{\"accessToken\":\"$APIKey\",\"elements\":[{\"devices\":\"$LIMBOSetUDiDs\",\"operation\":\"change_to_limbo\"}]}"
-			#echo "--> $content <--"
-			curl  -s -k -X POST -d $content 'https://managerapi.mosyle.com/v2/bulkops'
+		#Before starting to grab data lets grab the Bearer Token
+		GetBearerToken
+		
 
-			content="{\"accessToken\":\"$APIKey\",\"elements\":[{\"devices\":\"$LIMBOSetUDiDs\",\"operation\":\"wipe_devices\"}]}"
-			#echo "--> $content <--"
-			curl  -s -k -X POST -d $content 'https://managerapi.mosyle.com/v2/bulkops'
+		
+		echo "Making it So #1."
+		#This is a new CURL call with JSON data - JCS 11/8/23
+		OPERATION2PERFORM="change_to_limbo"
+		DEVICES2BULKON="$LIMBOSetUDiDs"
+		curl --location 'https://managerapi.mosyle.com/v2/bulkops' \
+		--header 'Content-Type: application/json' \
+			--header "Authorization: Bearer $AuthToken" \
+			--data "$(Generate_JSON_BulkOperations)"
+		
+		cli_log "Limbo commands sent against these devices: $DEVICES2BULKON"
 
+		OPERATION2PERFORM="wipe_devices"
+		DEVICES2BULKON="$LIMBOSetUDiDs"
+		#This is a new CURL call with JSON data - JCS 11/8/23
+		curl --location 'https://managerapi.mosyle.com/v2/bulkops' \
+		--header 'Content-Type: application/json' \
+			--header "Authorization: Bearer $AuthToken" \
+			--data "$(Generate_JSON_BulkOperations)"
+		
+		cli_log "Limbo commands sent against these devices: $DEVICES2BULKON"
 
 	else
 		#If we are here then we got nothing to work on
@@ -245,14 +272,22 @@ if [ "$shouldwedoit" = "Y" ] || [ "$shouldwedoit" = "y" ]; then
 	#At this point we are almost ready to do the wipe and limbo
 	if [ ! -z "$WIPEUDiDs" ]; then
 		
+		#Before starting to grab data lets grab the Bearer Token
+		GetBearerToken
+		
 			echo "Making it So #1."
-			#Call out to Mosyle MDM to submit list of UDIDs which need Wiped
-			content="{\"accessToken\":\"$APIKey\",\"elements\":[{\"devices\":\"$WIPEUDiDs\",\"operation\":\"wipe_devices\"}]}"
-			#echo "--> $content <--"
-			curl  -s -k -X POST -d $content 'https://managerapi.mosyle.com/v2/bulkops'
+			OPERATION2PERFORM="wipe_devices"
+			DEVICES2BULKON="$WIPEUDiDs"
+			#This is a new CURL call with JSON data - JCS 11/8/23
+			curl --location 'https://managerapi.mosyle.com/v2/bulkops' \
+			--header 'Content-Type: application/json' \
+				--header "Authorization: Bearer $AuthToken" \
+				--data "$(Generate_JSON_BulkOperations)"
+			
+			cli_log "Limbo commands sent against these devices: $DEVICES2BULKON"
 
 	else
-		echo "No UDIDs are in cache for Wipe.  Doing Nothing."
+		echo "No UDIDs are in cache for Wipe Only.  Doing Nothing."
 	fi
 	
 	#Check if this was an --uncache run and if so delete the cache file.
