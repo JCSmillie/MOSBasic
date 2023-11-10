@@ -8,8 +8,6 @@
 #		JCS - 10/21/2021  -v1
 #
 ################################################################
-
-
 source "$BAGCLI_WORKDIR/config"
 source "$BAGCLI_WORKDIR/common"
 

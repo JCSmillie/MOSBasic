@@ -53,19 +53,6 @@ SorterOfiPadz() {
 	fi
 }
 
-
-#Format for an iPad Data Dump of JSON
-Generate_JSON_Bulk2Limbo() {
-cat <<EOF
-	{"accessToken": "$MOSYLE_API_key",
-	"elements": [ {
-        "operation": "change_to_limbo",
-    	"devices": "$LIMBOSetUDiDs"
-	} ]
-}
-EOF
-}
-
 #Format for an iPad Data Dump of JSON
 Generate_JSON_BulkOperations() {
 cat <<EOF
