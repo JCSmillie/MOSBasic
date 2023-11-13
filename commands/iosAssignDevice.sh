@@ -35,15 +35,40 @@ rm -Rf /tmp/Scan2Assign_ExtraInfo.txt
 
 
 
+# #Format for an iPad Data Dump of JSON
+# Generate_JSON_AssignDevice() {
+# cat <<EOF
+# 	{"accessToken": "$MOSYLE_API_key",
+# 	"elements": [ {
+#         "operation": "save",
+#     	"id": "$USERNAME_GIVEN",
+#         "name": "$FirstName $LastName",
+#         "type": "S",
+#         "email": "$USERNAME_GIVEN@gatewayk12.net",
+#         "locations": [
+#             {
+#                 "name": "$LocationName",
+#                 "grade_level": "$Grade"
+#             }
+# 			],
+#         "welcome_email": 0
+# 		}
+# 		]
+# }
+#
+# EOF
+# }
+
 #Format for an iPad Data Dump of JSON
 Generate_JSON_AssignDevice() {
 cat <<EOF
 	{"accessToken": "$MOSYLE_API_key",
 	"elements": [ {
-        "operation": "$USERNAME_GIVEN",
-    	"id": "new.user.1",
-		"serial_number": "$RETURNSERIAL"
-	} ]
+        "operation": "assign_device",
+    	"id": "$USERNAME_GIVEN",
+        "serial_number": "$RETURNSERIAL"
+		}
+		]
 }
 EOF
 }
@@ -52,12 +77,12 @@ EOF
 AssigniPad() {
 	#Before starting to grab data lets grab the Bearer Token
 	GetBearerToken
-
+		
 	#This is a new CURL call with JSON data - JCS 11/8/23
 	APIOUTPUT=$(curl --location 'https://managerapi.mosyle.com/v2/users' \
 		--header 'content-type: application/json' \
 		--header "Authorization: Bearer $AuthToken" \
-		--data "$(Generate_JSON_AssignDevice)") >> $LOG
+		--data "$(Generate_JSON_AssignDevice)")
 	
 	CMDStatus=$(echo "$APIOUTPUT" | cut -d ":" -f 4 | cut -d "," -f 1 | tr -d '"' | tr -d '}]})')
 
@@ -65,6 +90,7 @@ AssigniPad() {
 	if [ $"DEBUG" = Y ]; then
 		echo "CMD Status--> $CMDStatus"
 		echo "APIOUTPUT---> $APIOUTPUT"
+		echo "$(Generate_JSON_AssignDevice)"
 	fi
 
 	
@@ -72,7 +98,12 @@ AssigniPad() {
 		cli_log "Device not found in Mosyle.  Can't Assign!"
 
 	elif echo "$APIOUTPUT" | grep -q "UNKNOWN_USER" ; then
-			cli_log "User not found in Mosyle.  Can't Assign!"		
+			cli_log "User not found in Mosyle.  Can't Assign!"	
+	
+	elif echo "$APIOUTPUT" | grep -q "INVALID_DATA" ; then
+			cli_log "Bad Data given to API.  Didn't work!"
+			echo "$APIOUTPUT >> $LOG"		
+				
 
 	elif [ "$CMDStatus" = "COMMAND_SENT" ]; then
 		cli_log "Command was Successful!"
