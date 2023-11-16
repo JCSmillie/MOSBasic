@@ -71,7 +71,7 @@ while true; do
 	curl --location 'https://managerapi.mosyle.com/v2/listdevices' \
 		--header 'content-type: application/json' \
 		--header "Authorization: Bearer $AuthToken" \
-		--data "$(Generate_JSON_IOSDUMPPostData)" -o /tmp/MOSBasicRAW-iOS-Page$THEPAGE.txt
+		--data "$(Generate_JSON_IOSDUMPPostData)" -o /tmp/MOSBasicRAW-iOS-Page$THEPAGE.txt 2> /dev/null
 
 
 
@@ -87,7 +87,7 @@ while true; do
 	LASTPAGE=$(cat "/tmp/MOSBasicRAW-iOS-Page$THEPAGE.txt" | grep 'accessToken Required')
 	if [ -n "$LASTPAGE" ]; then
 		let "THECOUNT=$THECOUNT-1"
-		cli_log "MAC CLIENTS-> AccessToken error..."
+		cli_log "iOS CLIENTS-> AccessToken error..."
 		break
 	fi
 	
@@ -97,13 +97,20 @@ while true; do
 		break
 	fi
 
-	#Preprocess the file.  We need to remove {"status":"OK","response": so can do operations with our python json to csv converter.  Yes
-	#I know this is still janky but hay I'm getting there.
-	cat /tmp/MOSBasicRAW-iOS-Page$THEPAGE.txt  | cut -d ':' -f 3- | sed 's/.$//' > /tmp/MOSBasicRAW-iOS-TEMPSPOT.txt
-	mv -f /tmp/MOSBasicRAW-iOS-TEMPSPOT.txt /tmp/MOSBasicRAW-iOS-Page$THEPAGE.txt
-	
-	#Call our python json to csv routine.  Output will be tab delimited so we can maintain our "tags" together.
-	$PYTHON2USE $BAGCLI_WORKDIR/modules/json2csv.py devices /tmp/MOSBasicRAW-iOS-Page$THEPAGE.txt "$TEMPOUTPUTFILE_MERGEDIOS"
+	LASTPAGE=$(cat "/tmp/MOSBasicRAW-iOS-Page$THEPAGE.txt" | grep 'Unauthorized')
+	if [ -n "$LASTPAGE" ]; then
+		cli_log "iOS CLIENTS-> Authorization error pulling page #$THEPAGE"
+
+	else
+		cli_log "iOS ClIENTS-> Processing page #$THEPAGE"
+		#Preprocess the file.  We need to remove {"status":"OK","response": so can do operations with our python json to csv converter.  Yes
+		#I know this is still janky but hay I'm getting there.
+		cat /tmp/MOSBasicRAW-iOS-Page$THEPAGE.txt  | cut -d ':' -f 3- | sed 's/.$//' > /tmp/MOSBasicRAW-iOS-TEMPSPOT.txt
+		mv -f /tmp/MOSBasicRAW-iOS-TEMPSPOT.txt /tmp/MOSBasicRAW-iOS-Page$THEPAGE.txt
+
+		#Call our python json to csv routine.  Output will be tab delimited so we can maintain our "tags" together.
+		$PYTHON2USE $BAGCLI_WORKDIR/modules/json2csv.py devices /tmp/MOSBasicRAW-iOS-Page$THEPAGE.txt "$TEMPOUTPUTFILE_MERGEDIOS"	
+	fi
 done
 
 # # #Build file of all this data now that we've sorted it out and parsed it.
