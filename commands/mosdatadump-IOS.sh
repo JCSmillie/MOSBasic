@@ -14,6 +14,8 @@ source "$BAGCLI_WORKDIR/config"
 source "$BAGCLI_WORKDIR/common"
 IFS=$'\n'
 
+DATECODEFORFILE=`date '+%Y-%m-%d_%H:%M'`
+
 
 CMDRAN="iOSdump"
 
@@ -50,7 +52,7 @@ rm -Rf "$TEMPOUTPUTFILE_Teachers"
 rm -Rf "$TEMPOUTPUTFILE_Limbo"
 rm -Rf "$TEMPOUTPUTFILE_Shared"
 #rm -Rf "$TEMPOUTPUTFILE_MERGEDIOS"
-cp "$TEMPOUTPUTFILE_MERGEDIOS" /tmp/$(date -d "today" +"%Y%m%d%H%M").MosyleiOSDump.txt
+cp "$TEMPOUTPUTFILE_MERGEDIOS" /tmp/Current-$DATECODEFORFILE.MosyleiOSDump.txt
 
 #Initialize the base count variable. This will be
 #used to figure out what page we are on and where
@@ -115,9 +117,18 @@ while true; do
 		mv -f /tmp/MOSBasicRAW-iOS-TEMPSPOT.txt /tmp/MOSBasicRAW-iOS-Page$THEPAGE.txt
 
 		#Call our python json to csv routine.  Output will be tab delimited so we can maintain our "tags" together.
-		$PYTHON2USE $BAGCLI_WORKDIR/modules/json2csv.py devices /tmp/MOSBasicRAW-iOS-Page$THEPAGE.txt "$TEMPOUTPUTFILE_MERGEDIOS"	
+		#$PYTHON2USE $BAGCLI_WORKDIR/modules/json2csv.py devices /tmp/MOSBasicRAW-iOS-Page$THEPAGE.txt "$TEMPOUTPUTFILE_MERGEDIOS"
+		$PYTHON2USE $BAGCLI_WORKDIR/modules/json2csv.py devices /tmp/MOSBasicRAW-iOS-Page$THEPAGE.txt /tmp/DUMPINPROGRESS-$DATECODEFORFILE.MosyleiOSDump.txt	
 	fi
 done
+
+##########
+####NOTE TO SELF.  THIS BLOCK NEEDS CHANGED TO EVENTUALY DO SOME
+####sort of test before swapping out the data file.
+#Delete Existing file
+rm -Rf "$TEMPOUTPUTFILE_MERGEDIOS"
+#Move newly generated file into place.
+mv /tmp/DUMPINPROGRESS-$DATECODEFORFILE.MosyleiOSDump.txt "$TEMPOUTPUTFILE_MERGEDIOS"
 
 # # #Build file of all this data now that we've sorted it out and parsed it.
 # # #we still need the single/individual files for legacy support of other
