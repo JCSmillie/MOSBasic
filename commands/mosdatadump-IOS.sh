@@ -49,7 +49,8 @@ rm -Rf "$TEMPOUTPUTFILE_Stu"
 rm -Rf "$TEMPOUTPUTFILE_Teachers"
 rm -Rf "$TEMPOUTPUTFILE_Limbo"
 rm -Rf "$TEMPOUTPUTFILE_Shared"
-rm -Rf "$TEMPOUTPUTFILE_MERGEDIOS"
+#rm -Rf "$TEMPOUTPUTFILE_MERGEDIOS"
+cp "$TEMPOUTPUTFILE_MERGEDIOS" /tmp/$(date -d "today" +"%Y%m%d%H%M").MosyleiOSDump.txt
 
 #Initialize the base count variable. This will be
 #used to figure out what page we are on and where
@@ -95,6 +96,11 @@ while true; do
 	if [ "$THECOUNT" -gt "$MAXPAGECOUNT" ]; then 
 		cli_log "MAC CLIENTS-> We have hit $THECOUNT pages...  Greater then our max.  Something is wrong."
 		break
+	fi
+
+	if [ ! -s "/tmp/MOSBasicRAW-iOS-Page$THEPAGE.txt" ]; then
+		cli_log "Page $THEPAGE reqested from Mosyle but had no data.  Skipping."
+		continue
 	fi
 
 	LASTPAGE=$(cat "/tmp/MOSBasicRAW-iOS-Page$THEPAGE.txt" | grep 'Unauthorized')

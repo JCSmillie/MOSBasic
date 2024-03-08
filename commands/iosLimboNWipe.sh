@@ -77,6 +77,25 @@ cat <<EOF
 EOF
 }
 
+#Alternative JSON Bulk operation that uses Return to Service Mode.
+Generate_JSON_BulkOperations_ALT() {
+cat <<EOF
+	{"accessToken": "$MOSYLE_API_key",
+	"elements": [ {
+        "operation": "$OPERATION2PERFORM",
+    	"devices": [
+			"$DEVICES2BULKON"
+			],
+		"options": {
+			"EnableReturnToService": "true",
+			"DisallowProximitySetup": "true",
+			"RevokeVPPLicenses": "true"
+		}	
+	} ]
+}
+EOF
+}
+
 #############################
 #          Do Work          #
 #############################
@@ -241,9 +260,20 @@ if [ "$shouldwedoit" = "Y" ] || [ "$shouldwedoit" = "y" ]; then
 		#Before starting to grab data lets grab the Bearer Token
 		GetBearerToken
 		
+		# #Call out to Mosyle MDM to submit list of UDIDs which need Limbo'd'
+		OPERATION2PERFORM="clear_commands"
+		DEVICES2BULKON="$LIMBOSetUDiDs"
+		
+		cli_log "Sending back command clear to $DEVICES2BULKON"
+		#This is a new CURL call with JSON data - JCS 11/8/23
+		curl --location 'https://managerapi.mosyle.com/v2/bulkops' \
+		--header 'Content-Type: application/json' \
+			--header "Authorization: Bearer $AuthToken" \
+			--data "$(Generate_JSON_BulkOperations)"
 
 		
-		echo "Making it So #1."
+		#echo "Making it So #1."
+		cli_log "Changing Device State to Limbo for $DEVICES2BULKON"
 		#This is a new CURL call with JSON data - JCS 11/8/23
 		OPERATION2PERFORM="change_to_limbo"
 		DEVICES2BULKON="$LIMBOSetUDiDs"
@@ -252,7 +282,7 @@ if [ "$shouldwedoit" = "Y" ] || [ "$shouldwedoit" = "y" ]; then
 			--header "Authorization: Bearer $AuthToken" \
 			--data "$(Generate_JSON_BulkOperations)"
 		
-		cli_log "Limbo commands sent against these devices: $DEVICES2BULKON"
+		cli_log "Sending Wipe Commands to $DEVICES2BULKON"
 
 		OPERATION2PERFORM="wipe_devices"
 		DEVICES2BULKON="$LIMBOSetUDiDs"
@@ -260,9 +290,9 @@ if [ "$shouldwedoit" = "Y" ] || [ "$shouldwedoit" = "y" ]; then
 		curl --location 'https://managerapi.mosyle.com/v2/bulkops' \
 		--header 'Content-Type: application/json' \
 			--header "Authorization: Bearer $AuthToken" \
-			--data "$(Generate_JSON_BulkOperations)"
+			--data "$(Generate_JSON_BulkOperations_ALT)"
 		
-		cli_log "Limbo commands sent against these devices: $DEVICES2BULKON"
+
 
 	else
 		#If we are here then we got nothing to work on
@@ -282,7 +312,9 @@ if [ "$shouldwedoit" = "Y" ] || [ "$shouldwedoit" = "y" ]; then
 			curl --location 'https://managerapi.mosyle.com/v2/bulkops' \
 			--header 'Content-Type: application/json' \
 				--header "Authorization: Bearer $AuthToken" \
-				--data "$(Generate_JSON_BulkOperations)"
+				--data "$(Generate_JSON_BulkOperations_ALT)"
+			
+			echo "$Generate_JSON_BulkOperations_ALT"
 			
 			cli_log "Limbo commands sent against these devices: $DEVICES2BULKON"
 

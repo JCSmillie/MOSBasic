@@ -75,7 +75,7 @@ while true; do
 	fi
 	
 	#TokenFailures
-	LASTPAGE=$(cat "/tmp/MOSBasicRAW-Mac-Page$THEPAGE.txt" | grep 'accessToken Required')
+	LASTPAGE=$(cat "/tmp/MOSBasicRAW-Users-Page$THEPAGE.txt" | grep 'accessToken Required')
 	if [ -n "$LASTPAGE" ]; then
 		let "THECOUNT=$THECOUNT-1"
 		cli_log "MOSYLE USERS-> AccessToken error..."
