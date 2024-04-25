@@ -58,6 +58,7 @@ cp "$TEMPOUTPUTFILE_MERGEDIOS" /tmp/Current-$DATECODEFORFILE.MosyleiOSDump.txt
 #used to figure out what page we are on and where
 #we end up.
 THECOUNT=0
+DataRequestFailedCount=0
 
 #Before starting to grab data lets grab the Bearer Token
 GetBearerToken
@@ -67,6 +68,12 @@ GetBearerToken
 while true; do
 	let "THECOUNT=$THECOUNT+1"
 	THEPAGE="$THECOUNT"
+	
+	if [ "$DataRequestFailedCount" -gt 5 ]; then
+		cli_log "TOO MANY DATA REQUEST FAILURES.  ABORT!!!!!"
+		exit 1
+	fi
+	
 
 	cli_log "iOS CLIENTS-> Asking MDM for Page $THEPAGE data...."
 
@@ -86,6 +93,14 @@ while true; do
 		break
 	fi
 
+	#Make sure file has content
+	if [ ! -s "/tmp/MOSBasicRAW-iOS-Page$THEPAGE.txt" ]; then
+	#if [[ ! -z $(cat "/tmp/MOSBasicRAW-iOS-Page$THEPAGE.txt") ]] ; then	
+		cli_log "Page $THEPAGE reqested from Mosyle but had no data.  Skipping."
+		let "DataRequestFailedCount=$DataRequestFailedCount+1"
+		continue
+	fi
+
 	#TokenFailures
 	LASTPAGE=$(cat "/tmp/MOSBasicRAW-iOS-Page$THEPAGE.txt" | grep 'accessToken Required')
 	if [ -n "$LASTPAGE" ]; then
@@ -98,11 +113,6 @@ while true; do
 	if [ "$THECOUNT" -gt "$MAXPAGECOUNT" ]; then 
 		cli_log "MAC CLIENTS-> We have hit $THECOUNT pages...  Greater then our max.  Something is wrong."
 		break
-	fi
-
-	if [ ! -s "/tmp/MOSBasicRAW-iOS-Page$THEPAGE.txt" ]; then
-		cli_log "Page $THEPAGE reqested from Mosyle but had no data.  Skipping."
-		continue
 	fi
 
 	LASTPAGE=$(cat "/tmp/MOSBasicRAW-iOS-Page$THEPAGE.txt" | grep 'Unauthorized')

@@ -48,6 +48,7 @@ rm -Rf "$TEMPOUTPUTFILE_Users"
 #used to figure out what page we are on and where
 #we end up.
 THECOUNT=0
+DataRequestFailedCount=0
 
 #Before starting to grab data lets grab the Bearer Token
 GetBearerToken
@@ -57,6 +58,11 @@ GetBearerToken
 while true; do
 	let "THECOUNT=$THECOUNT+1"
 	THEPAGE="$THECOUNT"
+
+	if [ "$DataRequestFailedCount" -gt 5 ]; then
+		cli_log "TOO MANY DATA REQUEST FAILURES.  ABORT!!!!!"
+		exit 1
+	fi
 
 	cli_log "MOSYLE USERS-> Asking MDM for Page $THEPAGE data...."
 
@@ -72,6 +78,14 @@ while true; do
 		let "THECOUNT=$THECOUNT-1"
 		cli_log "MOSYLE USERS-> Yo we are at the end of the list (Last good page was $THECOUNT)"
 		break
+	fi
+	
+	#Make sure file has content
+	if [ ! -s "/tmp/MOSBasicRAW-Users-Page$THEPAGE.txt" ]; then
+	#if [[ ! -z $(cat "/tmp/MOSBasicRAW-iOS-Page$THEPAGE.txt") ]] ; then	
+		cli_log "Page $THEPAGE reqested from Mosyle but had no data.  Skipping."
+		let "DataRequestFailedCount=$DataRequestFailedCount+1"
+		continue
 	fi
 	
 	#TokenFailures
