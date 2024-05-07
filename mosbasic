@@ -311,6 +311,9 @@ fi
 #### Now lets look at what options were fed at the time the command
 #### was called and act appropriately.
 case "$1" in
+tvdump)
+	"$BAGCLI_WORKDIR/commands/mosdatadump-AppleTVs.sh"
+	;; 	
 macdump)
 	"$BAGCLI_WORKDIR/commands/mosdatadump-Mac.sh"
 	;; 

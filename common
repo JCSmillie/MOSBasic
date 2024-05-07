@@ -38,6 +38,35 @@ cli_graffitti() {
 
 }
 
+ParseIt_tvos() {
+	#If "line" varible isnt filled then assume we gave
+	#data when the command was ran from the $1 variable.
+	if [ -z "$line" ]; then
+		line="$1"
+		
+	elif [ -z "$line" ] && [ -z "$1" ]; then
+		log_line "No data given.  Can't parse!"
+		exit
+	fi
+	
+	UDID=$(echo "$line" | cut -f 1 -d$'\t')
+	DeviceSerialNumber=$(echo "$line" | cut -f 2 -d$'\t')
+	CURRENTNAME=$(echo "$line" | cut -f 3 -d$'\t')
+	TAGS=$(echo "$line" | cut -f 4 -d$'\t')
+	ASSETTAG=$(echo "$line" | cut -f 5 -d$'\t')
+	LASTCHECKIN=$(echo "$line" | cut -f 6 -d$'\t')
+	#ENROLLMENT_TYPE=$(echo "$line" | cut -f 7 -d$'\t')
+	#USERID=$(echo "$line" | cut -f 8 -d$'\t')
+	#NAME=$(echo "$line" | cut -f 9 -d$'\t')
+	
+	if [ "$LASTCHECKIN" = "null" ]; then
+		LASTCHECKIN="NO-DATA"
+	else
+		#Take Epoch time and convert to hours
+		LASTCHECKIN=$($PYTHON2USE -c "import datetime; print(datetime.datetime.fromtimestamp(int("$LASTCHECKIN")).strftime('%Y-%m-%d %I:%M:%S %p'))")
+	fi
+}
+
 ParseIt_ios() {
 	#If "line" varible isnt filled then assume we gave
 	#data when the command was ran from the $1 variable.
@@ -366,25 +395,35 @@ EOF
 }
 
 GetBearerToken() {
-	#Using JSON Post data from above try to get BearerToken
-	GrabToken=$(curl --include --location 'https://managerapi.mosyle.com/v2/login' \
-	--header 'Content-Type: application/json' \
-	--data "$(Generate_JSON_PostData)" 2>/dev/null)
-	
-	AuthToken=$(echo "$GrabToken" | grep Authorization | cut -d ' ' -f 3 )
-
-	#Make sure we got data back and if so store it.
-	if [ -z "$AuthToken" ]; then
-		echo "No token given by Mostle.  FAIL."
-		exit 1
-	
+	FilesAge=$(( $(date +%s) - $(date -r /tmp/.MosyleAPI_BearToken +%s) ))
+	echo "Files Age-> $FilesAge"
+	if [ ${FilesAge} -lt 3600 ]; then
+		cli_log "Recently grabbed Bearer Token is less than an hour old ($FilesAge seconds.)  Reusing."
+		AuthToken=$(cat "/tmp/.MosyleAPI_BearToken")
+		
 	else
-		echo "Token Given.  Storing.."
-		#Strip any Spaces in the Token
-		AuthToken="${AuthToken//[[:space:]]/}"
-		#Drop the token to file.  Its good for 24hrs
-		#so maybe down the road we can reuse it.
-		echo "$AuthToken" > /tmp/.MosyleAPI_BearToken
+		cli_log "Pre-grabbed bearer token not found or too old.  Grabbing."
+		
+		#Using JSON Post data from above try to get BearerToken
+		GrabToken=$(curl --include --location 'https://managerapi.mosyle.com/v2/login' \
+		--header 'Content-Type: application/json' \
+		--data-raw "$(Generate_JSON_PostData)" 2>/dev/null )
+	
+		AuthToken=$(echo "$GrabToken" | grep Authorization | cut -d ' ' -f 3 )
+
+		#Make sure we got data back and if so store it.
+		if [ -z "$AuthToken" ]; then
+			echo "No token given by Mostle.  FAIL."
+			exit 1
+	
+		else
+			echo "Token Given.  Storing.."
+			#Strip any Spaces in the Token
+			AuthToken="${AuthToken//[[:space:]]/}"
+			#Drop the token to file.  Its good for 24hrs
+			#so maybe down the road we can reuse it.
+			echo "$AuthToken" > /tmp/.MosyleAPI_BearToken
+		fi
 	fi
 }
 
