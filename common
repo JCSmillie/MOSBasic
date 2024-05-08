@@ -396,7 +396,6 @@ EOF
 
 GetBearerToken() {
 	FilesAge=$(( $(date +%s) - $(date -r /tmp/.MosyleAPI_BearToken +%s) ))
-	echo "Files Age-> $FilesAge"
 	if [ ${FilesAge} -lt 3600 ]; then
 		cli_log "Recently grabbed Bearer Token is less than an hour old ($FilesAge seconds.)  Reusing."
 		AuthToken=$(cat "/tmp/.MosyleAPI_BearToken")
@@ -425,6 +424,50 @@ GetBearerToken() {
 			echo "$AuthToken" > /tmp/.MosyleAPI_BearToken
 		fi
 	fi
+}
+
+Generate_JSON_SetAssetTag() {
+cat <<EOF
+	{"accessToken": "$MOSYLE_API_key",
+	"elements": [ {
+        "serialnumber": "$DeviceSerialNumber",
+    	"asset_tag": "$ASSETTAG"
+	} ]
+}
+EOF
+}
+
+SetDeviceAssetTag() {
+	#Support passing variable as well as assuming variable.
+	if [ ! -z "$1" ]; then
+		DeviceSerialNumber="$1"
+	fi
+	
+	#Support passing variable as well as assuming variable.
+	if [ ! -z "$2" ]; then
+		ASSETTAG="$2"
+	fi	
+	
+	
+	if [ -z "$DeviceSerialNumber" ]; then
+		echo "No Serial number given.  FAIL!!!!"
+		exit 1
+		
+	elif [ -z "$DeviceSerialNumber" ]; then
+		echo "No Serial number given.  FAIL!!!!"
+		exit 1
+	else
+		cli_log "Serial-> $DeviceSerialNumber   /   $ASSETTAG <-Asset Tag"
+	fi
+
+
+
+		GetBearerToken
+	#This is a new CURL call with JSON data - JCS 11/8/23
+	APIOUTPUT=$(curl --location 'https://managerapi.mosyle.com/v2/devices' \
+		--header 'content-type: application/json' \
+		--header "Authorization: Bearer $AuthToken" \
+		--data "$(Generate_JSON_SetAssetTag)" ) 
 }
 
 

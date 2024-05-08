@@ -79,6 +79,7 @@ Commands:
 		    		it will be skipped and logged.  <<PLANNED NOT YET READY>>
   iosdump			Dump info for all iOS devices from Mosyle to local reference files.
   macdump			Dump info for all MacOS devices from Mosyle to local reference files.				
+  atvdump			Dump info for all AppleTV devices from Mosyle to local reference files.
   userdump			Dump info for all Users in Mosyle to local reference files.
   forcedatadump			Force dump all data (Mac, iOS, & Users) regardless of current cache state.
   iosassign			Info will be looked up and then device will be assigned.  <<REQUIRES USERLOOKUP MODULE>>
@@ -88,7 +89,9 @@ Commands:
   iosassign --mass		Give file with multiple devices in form of ASSET TAG,USERNAME.  One
   				per line.  All will be assigned properly. <<REQUIRES USERLOOKUP MODULE>>
   			
-  info <ASSET TAG/USERID/SERIAL>	Look up device assignment data by reference point  <ASSET TAG/USERID/SERIAL>		
+  info <ASSET TAG/USERID/SERIAL>	Look up device assignment data by reference point  <ASSET TAG/USERID/SERIAL>
+  setassettag			Set devices Asset tag.  Not to be confused with tags in general.  Must provide Serial (1st)
+  		  		and new asset tag (2nd.)
   listgroups --mac		Display list of all current Mac Device Groups in Mosyle
   listgroups --ios		Display list of all current iOS Device Groups in Mosyle
   
@@ -308,10 +311,28 @@ elif [ "$GETMACOSDATA" = "YES" ]; then
 	"$BAGCLI_WORKDIR/commands/mosdatadump-Mac.sh"
 fi
 
+
+if [ "$MB_DEBUG" = "Y" ]; then
+	echo "VARIABLES SUBMITTED TO THE SCRIPT!!!!!"
+	echo "======================================"
+	echo "Variable 1-> $1"
+	echo "Variable 2-> $2"
+	echo "Variable 3-> $3"
+	echo "Variable 4-> $4"
+	echo "======================================"	
+fi
+
+
+
+
+
 #### Now lets look at what options were fed at the time the command
 #### was called and act appropriately.
 case "$1" in
-tvdump)
+setassettag)
+	SetDeviceAssetTag "$2" "$3"
+	;;
+atvdump)
 	"$BAGCLI_WORKDIR/commands/mosdatadump-AppleTVs.sh"
 	;; 	
 macdump)
