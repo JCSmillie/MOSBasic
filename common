@@ -131,30 +131,43 @@ ParseIt_group() {
 }
 
 SerialFromTag() {
-	#Search through our known serials
-	SERIALIS=$(cat "$TEMPOUTPUTFILE_MERGEDIOS" | cut -d$'\t' -f 2-5,7-9 | grep "$TAG_GIVEN" | cut -d$'\t' -f 1 )
-	SERIALIS=$(cat "$TEMPOUTPUTFILE_MERGEDIOS" | grep "$SERIALIS")
+	#Sanity check our data before we go any further
+	CharCountDataGiven=$(echo -n "$TAG_GIVEN" | wc -c | tr -s " ")
+	echo "Char count-> $CharCountDataGiven"
+	#If tag given has more than 6 chars in it then it can't be right
+	if [ "$CharCountDataGiven" -lt 7 ] ; then
+		cli_log "Data given for tag ($TAG_GIVEN) appears to be an Asset tag.   Looking up."
+		echo "Data given for tag ($TAG_GIVEN) appears to be an Asset tag.   Looking up."
 	
-	HowManyReturns=$(echo "$SERIALIS" | wc -l)
-	HowManyReturns="${HowManyReturns//[[:space:]]/}"
+		#Search through our known serials
+		SERIALIS=$(cat "$TEMPOUTPUTFILE_MERGEDIOS" | cut -d$'\t' -f 2-5,7-9 | grep "$TAG_GIVEN" | cut -d$'\t' -f 1 )
+		SERIALIS=$(cat "$TEMPOUTPUTFILE_MERGEDIOS" | grep "$SERIALIS")
 	
-	#Check to see how many serial numbers came back.  More than 1 we have a problem.
-	if [ "$HowManyReturns" -gt 1 ]; then
-		cli_log "Attempted to find serial for #$TAG_GIVEN and got too many serials back!"
-		RETURNSERIAL="TOOMANYSERIALS"
+		HowManyReturns=$(echo "$SERIALIS" | wc -l)
+		HowManyReturns="${HowManyReturns//[[:space:]]/}"
 	
-	#echo "DEBUG--> $SERIALIS"
-	elif [ ! -z "$SERIALIS" ]; then
+		#Check to see how many serial numbers came back.  More than 1 we have a problem.
+		if [ "$HowManyReturns" -gt 1 ]; then
+			cli_log "Attempted to find serial for #$TAG_GIVEN and got too many serials back!"
+			RETURNSERIAL="TOOMANYSERIALS"
+	
+		#echo "DEBUG--> $SERIALIS"
+		elif [ ! -z "$SERIALIS" ]; then
 		
-		line="$SERIALIS"
-		ParseIt_ios
+			line="$SERIALIS"
+			ParseIt_ios
 		
-		RETURNSERIAL="$DeviceSerialNumber"
-		#echo "DEBUG--> $RETURNSERIAL"
+			RETURNSERIAL="$DeviceSerialNumber"
+			echo "DEBUG--> $RETURNSERIAL"
 
+		else
+			cli_log "Attempted to find serial for tag #$TAG_GIVEN and failed."
+			RETURNSERIAL="EPICFAIL"
+		fi
+	
 	else
-		cli_log "Attempted to find serial for tag #$TAG_GIVEN and failed."
-		RETURNSERIAL="EPICFAIL"
+		#We get here if TAG_GIVEN has more than 6 chars..  We assume its a serial.
+		RETURNSERIAL="$TAG_GIVEN"
 	fi
 
 }
@@ -534,6 +547,9 @@ SetDeviceName() {
 		cli_log "We are missing data ($DeviceSerialNumber / $NewDeviceName)"
 	fi
 }
+
+
+
 
 
 
