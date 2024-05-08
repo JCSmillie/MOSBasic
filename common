@@ -483,17 +483,17 @@ EOF
 }
 
 SetDeviceName() {
-	
-	TAG_GIVEN="$2"
-	SerialFromTag
-	
-	
-	#Support passing variable as well as assuming variable.
-	if [ ! -z "$1" ]; then
+	#Do we have serial already?	
+	if [ -z "$DeviceSerialNumber" ]; then
+		#We dont hacve a serial.  Gotta get it.
 		TAG_GIVEN="$1"
 		SerialFromTag
+		
+	else
+		cli_log "Serial ($DeviceSerialNumber) for device ($TAG_GIVEN) is already known.  Continuing."
 	fi
-	
+		
+
 	#Support passing variable as well as assuming variable.
 	if [ ! -z "$2" ]; then
 		NewDeviceName="$2"
@@ -522,14 +522,17 @@ SetDeviceName() {
 	fi
 		
 
-
-
+	if [[ ! -z "$DeviceSerialNumber" ]] && [[ ! -z "$NewDeviceName" ]]; then
 		GetBearerToken
-	#This is a new CURL call with JSON data - JCS 11/8/23
-	APIOUTPUT=$(curl --location 'https://managerapi.mosyle.com/v2/devices' \
-		--header 'content-type: application/json' \
-		--header "Authorization: Bearer $AuthToken" \
-		--data "$(Generate_JSON_SetDeviceName)" ) 
+		#This is a new CURL call with JSON data - JCS 11/8/23
+		APIOUTPUT=$(curl --location 'https://managerapi.mosyle.com/v2/devices' \
+			--header 'content-type: application/json' \
+			--header "Authorization: Bearer $AuthToken" \
+			--data "$(Generate_JSON_SetDeviceName)" ) 
+		
+	else
+		cli_log "We are missing data ($DeviceSerialNumber / $NewDeviceName)"
+	fi
 }
 
 
