@@ -92,6 +92,7 @@ Commands:
   info <ASSET TAG/USERID/SERIAL>	Look up device assignment data by reference point  <ASSET TAG/USERID/SERIAL>
   setassettag			Set devices Asset tag.  Not to be confused with tags in general.  Must provide Serial (1st)
   		  		and new asset tag (2nd.)
+  setdevicename			Set device name.  Give asset tag (1st) and new name (2nd)			
   listgroups --mac		Display list of all current Mac Device Groups in Mosyle
   listgroups --ios		Display list of all current iOS Device Groups in Mosyle
   
@@ -332,6 +333,9 @@ case "$1" in
 setassettag)
 	SetDeviceAssetTag "$2" "$3"
 	;;
+setdevicename)
+	SetDeviceName "$2" "$3"
+	;;	
 atvdump)
 	"$BAGCLI_WORKDIR/commands/mosdatadump-AppleTVs.sh"
 	;; 	

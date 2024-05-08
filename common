@@ -453,8 +453,8 @@ SetDeviceAssetTag() {
 		echo "No Serial number given.  FAIL!!!!"
 		exit 1
 		
-	elif [ -z "$DeviceSerialNumber" ]; then
-		echo "No Serial number given.  FAIL!!!!"
+	elif [ -z "$ASSETTAG" ]; then
+		echo "No Asset tag info given.  FAIL!!!!"
 		exit 1
 	else
 		cli_log "Serial-> $DeviceSerialNumber   /   $ASSETTAG <-Asset Tag"
@@ -468,6 +468,68 @@ SetDeviceAssetTag() {
 		--header 'content-type: application/json' \
 		--header "Authorization: Bearer $AuthToken" \
 		--data "$(Generate_JSON_SetAssetTag)" ) 
+}
+
+
+Generate_JSON_SetDeviceName() {
+cat <<EOF
+	{"accessToken": "$MOSYLE_API_key",
+	"elements": [ {
+        "serialnumber": "$DeviceSerialNumber",
+    	"name": "$NewDeviceName"
+	} ]
+}
+EOF
+}
+
+SetDeviceName() {
+	
+	TAG_GIVEN="$2"
+	SerialFromTag
+	
+	
+	#Support passing variable as well as assuming variable.
+	if [ ! -z "$1" ]; then
+		TAG_GIVEN="$1"
+		SerialFromTag
+	fi
+	
+	#Support passing variable as well as assuming variable.
+	if [ ! -z "$2" ]; then
+		NewDeviceName="$2"
+	fi	
+	
+	
+	if [ -z "$TAG_GIVEN" ]; then
+		echo "No serial or assset tag given.  FAIL!!!!"
+		exit 1
+		
+	elif [ -z "$NewDeviceName" ]; then
+		echo "No name given.  FAIL!!!!"
+		exit 1
+	else
+		
+		#Look up serial by tag
+		TAG_GIVEN="$1"
+		SerialFromTag
+		
+		cli_log "Serial-> $DeviceSerialNumber   /   $NewDeviceName <-New Device Name"
+	fi
+
+	#DEBUGGING
+	if [ "$MB_DEBUG" = "Y" ]; then
+		echo "$TAG_GIVEN  / $DeviceSerialNumber  /  $NewDeviceName"
+	fi
+		
+
+
+
+		GetBearerToken
+	#This is a new CURL call with JSON data - JCS 11/8/23
+	APIOUTPUT=$(curl --location 'https://managerapi.mosyle.com/v2/devices' \
+		--header 'content-type: application/json' \
+		--header "Authorization: Bearer $AuthToken" \
+		--data "$(Generate_JSON_SetDeviceName)" ) 
 }
 
 
