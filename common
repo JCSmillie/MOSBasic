@@ -408,9 +408,9 @@ EOF
 }
 
 GetBearerToken() {
-	FilesAge=$(( $(date +%s) - $(date -r /tmp/.MosyleAPI_BearToken +%s) ))
-	if [ ${FilesAge} -lt 3600 ]; then
-		cli_log "Recently grabbed Bearer Token is less than an hour old ($FilesAge seconds.)  Reusing."
+	FilesAge=$(( $(date +%s) - $(date -r /tmp/.MosyleAPI_BearToken +%s) ))	
+	if [[ -e "/tmp/.MosyleAPI_BearToken" ]] && [[ ${FilesAge} -lt 3600 ]]; then
+		cli_log "Recently grabbed Bearer Token is less than an hour old (${FilesAge} seconds.)  Reusing."
 		AuthToken=$(cat "/tmp/.MosyleAPI_BearToken")
 		
 	else
@@ -495,25 +495,28 @@ cat <<EOF
 EOF
 }
 
+#NOTE--> This function takes a serial and a device name.  These come from the 
+#command when its called.  However if no data is given we try to use values
+#already set to these variables.
 SetDeviceName() {
-	#Do we have serial already?	
-	if [ -z "$DeviceSerialNumber" ]; then
-		#We dont hacve a serial.  Gotta get it.
-		TAG_GIVEN="$1"
-		SerialFromTag
-		
+	#Support passing variable as well as assuming variable.
+	if [ ! -z "$1" ]; then
+		echo "SETTING DEVICE SERIAL NUMBER TO $1"
+		DeviceSerialNumber="$1"
 	else
-		cli_log "Serial ($DeviceSerialNumber) for device ($TAG_GIVEN) is already known.  Continuing."
-	fi
-		
-
+		echo "($1) not set.  Leaving variable as is ($DeviceSerialNumber)"
+	fi	
+	
 	#Support passing variable as well as assuming variable.
 	if [ ! -z "$2" ]; then
+		echo "SETTING DEVICE NAME $2"
 		NewDeviceName="$2"
+	else
+		echo "($2) not set.  Leaving variable as is ($NewDeviceName)"
 	fi	
 	
 	
-	if [ -z "$TAG_GIVEN" ]; then
+	if [ -z "$DeviceSerialNumber" ]; then
 		echo "No serial or assset tag given.  FAIL!!!!"
 		exit 1
 		
