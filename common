@@ -298,12 +298,9 @@ EOF
 
 GetCurrentInfo-ios(){
 	GetBearerToken
-	# content="{\"accessToken\":\"$APIKey\",\"options\":{\"os\":\"ios\",\"serial_numbers\":[\"$DeviceSerialNumber\"],\"specific_columns\":\"date_last_beat,lostmode_status,last_ip_beat,last_lan_ip,userid\"}}"
-	# output=$(curl -s -k -X POST -d $content 'https://managerapi.mosyle.com/v2/listdevices') >> $LOG
-	
-	
+
 	#This is a new CURL call with JSON data - JCS 11/8/23
-	output=$(curl --location 'https://managerapi.mosyle.com/v2/listdevices' \
+	output=$(curl -s --location 'https://managerapi.mosyle.com/v2/listdevices' \
 		--header 'content-type: application/json' \
 		--header "Authorization: Bearer $AuthToken" \
 		--data "$(Generate_JSON_IOSDUMPPostData)") 
@@ -408,14 +405,8 @@ EOF
 }
 
 GetBearerToken() {
-	FilesAge=$(( $(date +%s) - $(date -r /tmp/.MosyleAPI_BearToken +%s) ))	
-	if [[ -e "/tmp/.MosyleAPI_BearToken" ]] && [[ ${FilesAge} -lt 3600 ]]; then
-		cli_log "Recently grabbed Bearer Token is less than an hour old (${FilesAge} seconds.)  Reusing."
-		AuthToken=$(cat "/tmp/.MosyleAPI_BearToken")
-		
-	else
-		cli_log "Pre-grabbed bearer token not found or too old.  Grabbing."
-		
+	
+	SubFunctionGenerateBearerToken() {
 		#Using JSON Post data from above try to get BearerToken
 		GrabToken=$(curl --include --location 'https://managerapi.mosyle.com/v2/login' \
 		--header 'Content-Type: application/json' \
@@ -436,9 +427,28 @@ GetBearerToken() {
 			#so maybe down the road we can reuse it.
 			echo "$AuthToken" > /tmp/.MosyleAPI_BearToken
 		fi
+	
+	}
+	
+	if [[ -e "/tmp/.MosyleAPI_BearToken" ]]; then
+		FilesAge=$(( $(date +%s) - $(date -r /tmp/.MosyleAPI_BearToken +%s) ))
+		echo "Files Age-> ($FilesAge)"
+		if [[ ${FilesAge} -lt 3600 ]]; then
+			cli_log "Recently grabbed Bearer Token is less than an hour old (${FilesAge} seconds.)  Reusing."
+			AuthToken=$(cat "/tmp/.MosyleAPI_BearToken")
+			
+		else
+			cli_log "Token is too old (${FilesAge} seconds.)  Renewing."
+			rm -Rf "/tmp/.MosyleAPI_BearToken"
+			SubFunctionGenerateBearerToken
+		fi
+		
+	else
+		cli_log "Pre-grabbed bearer token not found or too old.  Grabbing."
+		SubFunctionGenerateBearerToken
+
 	fi
 }
-
 Generate_JSON_SetAssetTag() {
 cat <<EOF
 	{"accessToken": "$MOSYLE_API_key",
@@ -551,10 +561,37 @@ SetDeviceName() {
 	fi
 }
 
-
-
-
-
+POSTPROCESSING-SCRIPTS() {
+	#THIS IS SOMETHING IM TOYING WITH FOR ANOTHER RELEASE LATER.  
+	#I was thinking this in the case of iOSwipe but would need
+	#to effectively write code to process multiple devices. - JCS
+	if [ ! -z "$ASSETTAG" ]; then
+		#Any script in /Users/Shared/ShakeNBake/AddOnFunctions will be executed
+		#and told the tag of the device we are working on.
+		cli_log "Assset tag is know ($ASSETTAG.)  Calling additional AddonScripts."
+		for X in `ls $LOCALCONF/MOSBasic/Addons/ioswipe/POST-*.sh`; do
+			cli_log "Found/Executing-> $X $ASSETTAG $DeviceSERIAL $UDID"
+			#Call every script in this folder and tell it the tag
+			#we are using.
+			#"$X $ASSETTAG $DeviceSERIAL" 
+			bash -c "$X $ASSETTAG $DeviceSERIAL $UDID" 2>/dev/null
+		done
+	
+	elif [ ! -z "$DeviceSerialNumber" ]; then
+		log_line "Serial is know ($DeviceSerialNumber.)  Calling additional AddonScripts."
+		for X in `ls /Users/Shared/ShakeNBake/AddonFunctions/*.sh`; do
+		
+			ASSETTAG="UNKNOWN"
+		
+			cli_log "Found/Executing-> $X $ASSETTAG $DeviceSerialNumber $UDID"
+			#Call every script in this folder and tell it the tag
+			#we are using.
+			#"$X $ASSETTAG $DeviceSERIAL" 
+			bash -c "$X $ASSETTAG $DeviceSerialNumber $UDID" 2>/dev/null
+		done
+	
+	fi
+}
 
 #ColorCodes
 

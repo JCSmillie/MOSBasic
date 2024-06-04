@@ -61,7 +61,19 @@ SorterOfiPadz() {
 			LIMBOSetUDiDs=$(echo "$LIMBOSetUDiDs,$UDID")
 		fi
 		
+		if [ -z "$LIMBOTagsWeWillProcess" ]; then
+			LIMBOTagsWeWillProcess="$TAG_GIVEN"
+		else
+			#all others are additons to the variable
+			LIMBOTagsWeWillProcess=$(echo "$LIMBOTagsWeWillProcess,$TAG_GIVEN")
+		fi
+
+		echo "$TODAY - Wipe & Limbo (RTS-> $RTS_ENABLED) - $TAG_GIVEN" >> "$LOCALCONF/MOSBasic/Scand2WipeLimbo_ProcessingLog.txt"
+
 		echo "$RETURNSERIAL" >> /tmp/Scand2WipeLimbo_Serialz.txt
+		
+		echo "$RETURNSERIAL" >> $LOCALCONF/MOSBasic/InvUpdate.txt
+		
 	fi
 }
 
@@ -71,13 +83,16 @@ cat <<EOF
 	{"accessToken": "$MOSYLE_API_key",
 	"elements": [ {
         "operation": "$OPERATION2PERFORM",
-    	"devices": "$DEVICES2BULKON"
+    	"devices": [
+		"$DEVICES2BULKON"
+		]
 	} ]
 }
 EOF
 }
 
 #Alternative JSON Bulk operation that uses Return to Service Mode.
+#RTS ENABLED
 Generate_JSON_BulkOperations_ALT() {
 cat <<EOF
 	{"accessToken": "$MOSYLE_API_key",
@@ -96,9 +111,103 @@ cat <<EOF
 EOF
 }
 
+#RTS DISABLED
+Generate_JSON_BulkOperations_ALTNoRTS() {
+cat <<EOF
+	{"accessToken": "$MOSYLE_API_key",
+	"elements": [ {
+        "operation": "$OPERATION2PERFORM",
+    	"devices": [
+			"$DEVICES2BULKON"
+			],
+		"options": {
+			"DisallowProximitySetup": "true",
+			"RevokeVPPLicenses": "true"
+		}	
+	} ]
+}
+EOF
+}
+
+CalliPadWipeRoutine() {
+	#DEBUGGING
+	if [ "$MB_DEBUG" = "Y" ]; then
+			echo "******----DEBUG----*****--> RTS_ENABLED equals ($RTS_ENABLED)"
+			echo "******----DEBUG----*****--> Operation being performed-> ($OPERATION2PERFORM)"
+			echo "******----DEBUG----*****--> Devices acting on:"
+			echo "******----DEBUG----*****--> ($DEVICES2BULKON)"
+	fi
+
+	#Before starting to grab data lets grab the Bearer Token
+	GetBearerToken
+	
+	if [ "$RTS_ENABLED" = Y ]; then
+		echo "Making it So #1 - UTILIZING RTS."
+		#This is a new CURL call with JSON data - JCS 11/8/23
+		curl --location 'https://managerapi.mosyle.com/v2/bulkops' \
+		--header 'Content-Type: application/json' \
+			--header "Authorization: Bearer $AuthToken" \
+			--data "$(Generate_JSON_BulkOperations_ALT)"
+		
+		#echo "$Generate_JSON_BulkOperations_ALT"
+		if [ "$MB_DEBUG" = "Y" ]; then
+				echo "******----DEBUG----*****--> iPad Wipe Routine:"
+				echo "$Generate_JSON_BulkOperations_ALT"
+				echo "******----/DEBUG---*****"
+		fi
+		
+		cli_log "Wipe w/RTS commands sent against these devices: $DEVICES2BULKON"
+		
+	else
+		echo "Making it So #1 - Not Utilizing RTS."
+		#This is a new CURL call with JSON data - JCS 11/8/23
+		curl --location 'https://managerapi.mosyle.com/v2/bulkops' \
+		--header 'Content-Type: application/json' \
+			--header "Authorization: Bearer $AuthToken" \
+			--data "$(Generate_JSON_BulkOperations_ALTNoRTS)"
+		
+		#echo "$Generate_JSON_BulkOperations_ALT"
+		if [ "$MB_DEBUG" = "Y" ]; then
+				echo "******----DEBUG----*****--> iPad Wipe Routine:"
+				echo "$Generate_JSON_BulkOperations_ALTNoRTS"
+				echo "******----/DEBUG---*****"
+		fi
+		
+		cli_log "Wipe w/o RTS commands sent against these devices: $DEVICES2BULKON"		
+	fi
+		
+	
+}
+
 #############################
 #          Do Work          #
 #############################
+#Check to see if we should use Return to Service Mode
+if [ -z "$RTS_ENABLED" ]; then
+	echo " "
+	echo "ATTENTION!!!!!"
+	echo " **MOSBASIC SUPPORTS Return to Service Mode (RTS)"
+	echo "-------------------------------------------------"
+	echo "Wipe with Return to Service mode? <Y/N>"
+	echo "-------------------------------------------------"
+	read RTS_ENABLED
+	
+	echo "RTS_ENABLED ---> $RTS_ENABLED"
+	
+	# if [ ! "$RTS_ENABLED" = N ] || [ ! "$RTS_ENABLED" = n ]; then
+	# 	RTS_ENABLED="Y"
+	#
+	# fi
+	
+	cli_log "RTS MODE Enabled set to ($RTS_ENABLED)"
+fi
+
+
+echo "RTS_ENABLED ---> $RTS_ENABLED"
+
+
+
+
 #This would be a routine for doing Scan and Go based on $1 equaling --scan
 if [ "$1" = "--scan" ]; then
 
@@ -238,7 +347,7 @@ fi
 echo "Proceeding to Wipe & Limbo the following:"
 echo "------------------------------------------"	
 #cat /tmp/Scand2WipeLimbo_Serialz.txt
-echo "Limbo and Wipe UDIDs-> $LIMBOSetUDiDs"
+echo "Limbo and Wipe Asset Tags-> $LIMBOTagsWeWillProcess"
 
 echo "Proceeding to Wipe the following:"
 echo "----------------------------------"
@@ -251,9 +360,15 @@ if [ -z "$shouldwedoit" ]; then
 	read shouldwedoit
 fi
 
+#Has confirmation been given?  Get it
+if [ -z "$shouldwedoit" ]; then
+	echo "Are you sure <Y/N>"
+	read shouldwedoit
+fi
 
 if [ "$shouldwedoit" = "Y" ] || [ "$shouldwedoit" = "y" ]; then
-
+	
+	###SEND DEVICES TO LIMBO
 	#At this point we are almost ready to do the wipe and limbo
 	if [ ! -z "$LIMBOSetUDiDs" ]; then
 		
@@ -284,13 +399,10 @@ if [ "$shouldwedoit" = "Y" ] || [ "$shouldwedoit" = "y" ]; then
 		
 		cli_log "Sending Wipe Commands to $DEVICES2BULKON"
 
+		#Set Variables
 		OPERATION2PERFORM="wipe_devices"
 		DEVICES2BULKON="$LIMBOSetUDiDs"
-		#This is a new CURL call with JSON data - JCS 11/8/23
-		curl --location 'https://managerapi.mosyle.com/v2/bulkops' \
-		--header 'Content-Type: application/json' \
-			--header "Authorization: Bearer $AuthToken" \
-			--data "$(Generate_JSON_BulkOperations_ALT)"
+		CalliPadWipeRoutine
 		
 
 
@@ -302,21 +414,29 @@ if [ "$shouldwedoit" = "Y" ] || [ "$shouldwedoit" = "y" ]; then
 	#At this point we are almost ready to do the wipe and limbo
 	if [ ! -z "$WIPEUDiDs" ]; then
 		
-		#Before starting to grab data lets grab the Bearer Token
-		GetBearerToken
+		#Set Variables
+		OPERATION2PERFORM="wipe_devices"
+		DEVICES2BULKON="$WIPEUDiDs"
 		
-			echo "Making it So #1."
-			OPERATION2PERFORM="wipe_devices"
-			DEVICES2BULKON="$WIPEUDiDs"
-			#This is a new CURL call with JSON data - JCS 11/8/23
-			curl --location 'https://managerapi.mosyle.com/v2/bulkops' \
-			--header 'Content-Type: application/json' \
-				--header "Authorization: Bearer $AuthToken" \
-				--data "$(Generate_JSON_BulkOperations_ALT)"
-			
-			echo "$Generate_JSON_BulkOperations_ALT"
-			
-			cli_log "Limbo commands sent against these devices: $DEVICES2BULKON"
+		CalliPadWipeRoutine
+		
+		# #Before starting to grab data lets grab the Bearer Token
+		# GetBearerToken
+		#
+		# 	echo "Making it So #1."
+		# 	OPERATION2PERFORM="wipe_devices"
+		# 	DEVICES2BULKON="$WIPEUDiDs"
+		# 	#This is a new CURL call with JSON data - JCS 11/8/23
+		# 	curl --location 'https://managerapi.mosyle.com/v2/bulkops' \
+		# 	--header 'Content-Type: application/json' \
+		# 		--header "Authorization: Bearer $AuthToken" \
+		# 		--data "$(Generate_JSON_BulkOperations_ALT)"
+		#
+		# 	echo "$Generate_JSON_BulkOperations_ALT"
+		#
+		# 	cli_log "Limbo commands sent against these devices: $DEVICES2BULKON"
+		
+		
 
 	else
 		echo "No UDIDs are in cache for Wipe Only.  Doing Nothing."
@@ -327,6 +447,9 @@ if [ "$shouldwedoit" = "Y" ] || [ "$shouldwedoit" = "y" ]; then
 		echo "Cache purge option was run.  Will also delete the back cache file."
 		rm -Rf /tmp/Scand2Wipe_CACHE_Serialz.txt
 	fi
+	
+	
+	echo "Devices Processed--> $LIMBOTagsWeWillProcess"
 
 else
 	echo "Its ok... we all get cold feet sometimes...."
