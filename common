@@ -188,25 +188,43 @@ EOF
 
 #Ask Mosyle if a specific serial # is a Shared Mode iPad
 IsThisiPadSharedMode() {
-	GetBearerToken
-	# #Our query.  We are asking for a specific serial # and only asking back for UDID, Serial and enrollment type
-	# content="{\"accessToken\":\"$APIKey\",\"options\":{\"os\":\"ios\",\"serial_numbers\":[\"$DeviceSerialNumber\"],\"specific_columns\":\"deviceudid,serial_number,enrollment_type\"}}"
-	#
-	# #Do the Query
-	# output=$(curl -s -k -X POST -d $content 'https://managerapi.mosyle.com/v2/listdevices')
-
-	#This is a new CURL call with JSON data - JCS 11/8/23
-	output=$(curl --location 'https://managerapi.mosyle.com/v2/listdevices' \
-		--header 'content-type: application/json' \
-		--header "Authorization: Bearer $AuthToken" \
-		--data "$(Generate_JSON_IOSDUMPPostData)") >> $LOG
-
-	if echo "$output" | grep SHARED; then
-		echo "This is a Shared iPad."
+	#We have local files from MOSBasic which contain this info
+	#Lets check there first.
+	
+	
+	LocalFileHit=$(grep "$DeviceSerialNumber" "$TEMPOUTPUTFILE_MERGEDIOS" | cut -d$'\t' -f2,7)
+	
+	if echo "$LocalFileHit" | grep SHARED; then
+		#Data return says this iPad is in local file and is SHARED mode.
+		cli_log "LOCAL-> ($DeviceSerialNumber) This is a Shared iPad."
 		ISSHARED="TRUE"
-	else
+		
+	elif [ ! -z "$LocalFileHit" ]; then
+		#In this case we have a result in the file, but its not a SHARED device.
+		cli_log "LOCAL-> ($DeviceSerialNumber) This is NOT a Shared iPad."
 		ISSHARED="FALSE"
+	else
+		#All else fails ask Mosyle.	
+		GetBearerToken
+		# #Our query.  We are asking for a specific serial # and only asking back for UDID, Serial and enrollment type
+
+		#This is a new CURL call with JSON data - JCS 11/8/23
+		output=$(curl --location 'https://managerapi.mosyle.com/v2/listdevices' \
+			--header 'content-type: application/json' \
+			--header "Authorization: Bearer $AuthToken" \
+			--data "$(Generate_JSON_IOSDUMPPostData)") >> $LOG
+
+		if echo "$output" | grep SHARED; then
+			cli_log "MOSYLE-> ($DeviceSerialNumber) This is a Shared iPad."
+			ISSHARED="TRUE"
+		else
+			#This is if no one knows this serial (Local or Mosyle) which probably
+			#means this is a new iPad.
+			cli_log "NOTFOUND-> ($DeviceSerialNumber in LOCAL/MOSYLE."
+			ISSHARED="FALSE"
+		fi
 	fi
+	echo "SERIAL--> $DeviceSerialNumber - $RETURNSERIAL / $ISSHARED  <---Shared Device Status."
 }
 
 ####################################################

@@ -34,13 +34,73 @@ rm -Rf /tmp/Scand2WipeLimbo_Serialz.txt
 SorterOfiPadz() {
 	#Find out if the iPad we are operating on
 	#is a Shared mode iPad
-	IsThisiPadSharedMode
 	
-	#if Shared we only want to wipe
-	if [ "$ISSHARED" = "TRUE" ]; then
+	if [ ! -z "$2" ]; then
+		RETURNSERIAL="$2"
+		DeviceSerialNumber="$RETURNSERIAL"
+	fi
+	
+	if [ "$RETURNSERIAL" = "TOOMANYSERIALS" ]; then
+		cli_log "LOCAL-> $TAG_GIVEN cannot be found.  Skipping!"
 		
-		cli_log "$ASSETTAG is a Shared iPad.  Will not Limbo first; ONLY WIPE"
+		if [ -z "$SharediPadsProcessed" ]; then
+			FailediPads="$TAG_GIVEN"
+		else
+			#all others are additons to the variable
+			FailediPads=$(echo "$FailediPads,$TAG_GIVEN")
+		fi
+		
+	else
+		IsThisiPadSharedMode 
+		
+		#if Shared we only want to wipe
+		if [ "$ISSHARED" = "TRUE" ]; then
+		
+			cli_log "$TAG_GIVEN is a Shared iPad.  Will not Limbo first; ONLY WIPE"
+			
+			if [ -z "$SharediPadsProcessed" ]; then
+				SharediPadsProcessed="$TAG_GIVEN"
+			else
+				#all others are additons to the variable
+				SharediPadsProcessed=$(echo "$SharediPadsProcessed,$TAG_GIVEN")
+			fi
 	
+			# #if this is our first entry just fill the variable
+			# if [ -z "$WIPEUDiDs" ]; then
+			# 	WIPEUDiDs="$UDID"
+			# else
+			# 	#all others are additons to the variable
+			# 	WIPEUDiDs=$(echo "$WIPEUDiDs,$UDID")
+			# fi
+			#
+			# echo "$RETURNSERIAL" >> /tmp/Scand2Wipe_Serialz.txt
+		
+		else
+			#Otherwise Wipe and Limbo.
+			#if this is our first entry just fill the variable
+			if [ -z "$LIMBOSetUDiDs" ]; then
+				LIMBOSetUDiDs="$UDID"
+			else
+				#all others are additons to the variable
+				LIMBOSetUDiDs=$(echo "$LIMBOSetUDiDs,$UDID")
+			fi
+		
+			if [ -z "$LIMBOTagsWeWillProcess" ]; then
+				LIMBOTagsWeWillProcess="$TAG_GIVEN"
+			else
+				#all others are additons to the variable
+				LIMBOTagsWeWillProcess=$(echo "$LIMBOTagsWeWillProcess,$TAG_GIVEN")
+			fi
+
+			echo "$TODAY - Wipe & Limbo (RTS-> $RTS_ENABLED) - $TAG_GIVEN" >> "$LOCALCONF/MOSBasic/Scand2WipeLimbo_ProcessingLog.txt"
+
+			echo "$RETURNSERIAL" >> /tmp/Scand2WipeLimbo_Serialz.txt
+		
+			echo "$RETURNSERIAL" >> $LOCALCONF/MOSBasic/InvUpdate.txt
+		
+		fi
+		
+		#ALL DEVICES GOING THROUGH SHOULD GET WIPED.
 		#if this is our first entry just fill the variable
 		if [ -z "$WIPEUDiDs" ]; then
 			WIPEUDiDs="$UDID"
@@ -48,31 +108,8 @@ SorterOfiPadz() {
 			#all others are additons to the variable
 			WIPEUDiDs=$(echo "$WIPEUDiDs,$UDID")
 		fi
-		
+	
 		echo "$RETURNSERIAL" >> /tmp/Scand2Wipe_Serialz.txt
-		
-	else
-		#Otherwise Wipe and Limbo.
-		#if this is our first entry just fill the variable
-		if [ -z "$LIMBOSetUDiDs" ]; then
-			LIMBOSetUDiDs="$UDID"
-		else
-			#all others are additons to the variable
-			LIMBOSetUDiDs=$(echo "$LIMBOSetUDiDs,$UDID")
-		fi
-		
-		if [ -z "$LIMBOTagsWeWillProcess" ]; then
-			LIMBOTagsWeWillProcess="$TAG_GIVEN"
-		else
-			#all others are additons to the variable
-			LIMBOTagsWeWillProcess=$(echo "$LIMBOTagsWeWillProcess,$TAG_GIVEN")
-		fi
-
-		echo "$TODAY - Wipe & Limbo (RTS-> $RTS_ENABLED) - $TAG_GIVEN" >> "$LOCALCONF/MOSBasic/Scand2WipeLimbo_ProcessingLog.txt"
-
-		echo "$RETURNSERIAL" >> /tmp/Scand2WipeLimbo_Serialz.txt
-		
-		echo "$RETURNSERIAL" >> $LOCALCONF/MOSBasic/InvUpdate.txt
 		
 	fi
 }
@@ -247,7 +284,7 @@ if [ "$1" = "--scan" ]; then
 			
 			#Call Sorter function to seperate out the Shared iPads from regular iPads
 			#before we act.  Shared iPads should NEVER be limbo'd before wiping.
-			SorterOfiPadz
+			SorterOfiPadz "$RETURNSERIAL"
 		fi
 	done
 		
@@ -411,36 +448,28 @@ if [ "$shouldwedoit" = "Y" ] || [ "$shouldwedoit" = "y" ]; then
 		echo "No UDIDs are in cache for Limbo and Wipe.  Doing Nothing."
 	fi
 
-	#At this point we are almost ready to do the wipe and limbo
-	if [ ! -z "$WIPEUDiDs" ]; then
-		
-		#Set Variables
-		OPERATION2PERFORM="wipe_devices"
-		DEVICES2BULKON="$WIPEUDiDs"
-		
-		CalliPadWipeRoutine
-		
-		# #Before starting to grab data lets grab the Bearer Token
-		# GetBearerToken
-		#
-		# 	echo "Making it So #1."
-		# 	OPERATION2PERFORM="wipe_devices"
-		# 	DEVICES2BULKON="$WIPEUDiDs"
-		# 	#This is a new CURL call with JSON data - JCS 11/8/23
-		# 	curl --location 'https://managerapi.mosyle.com/v2/bulkops' \
-		# 	--header 'Content-Type: application/json' \
-		# 		--header "Authorization: Bearer $AuthToken" \
-		# 		--data "$(Generate_JSON_BulkOperations_ALT)"
-		#
-		# 	echo "$Generate_JSON_BulkOperations_ALT"
-		#
-		# 	cli_log "Limbo commands sent against these devices: $DEVICES2BULKON"
-		
-		
 
-	else
-		echo "No UDIDs are in cache for Wipe Only.  Doing Nothing."
-	fi
+	cli_log "Sending Wipe Commands to $DEVICES2BULKON"
+
+	#Set Variables
+	OPERATION2PERFORM="wipe_devices"
+	DEVICES2BULKON="$WIPEUDiDs"
+	CalliPadWipeRoutine
+
+
+	# #At this point we are almost ready to do the wipe and limbo
+	# if [ ! -z "$WIPEUDiDs" ]; then
+	#
+	# 	#Set Variables
+	# 	OPERATION2PERFORM="wipe_devices"
+	# 	DEVICES2BULKON="$WIPEUDiDs"
+	#
+	# 	CalliPadWipeRoutine
+	#
+	#
+	# else
+	# 	echo "No UDIDs are in cache for Wipe Only.  Doing Nothing."
+	# fi
 	
 	#Check if this was an --uncache run and if so delete the cache file.
 	if [ "$1" = "--uncache" ]; then
@@ -448,8 +477,18 @@ if [ "$shouldwedoit" = "Y" ] || [ "$shouldwedoit" = "y" ]; then
 		rm -Rf /tmp/Scand2Wipe_CACHE_Serialz.txt
 	fi
 	
+	#If we had shared iPads point them out here.
+	if [ ! -z "$SharediPadsProcessed" ]; then
+		cli_log "Shared Mode Devices (Not Limbo'd pre wipe)--> $SharediPadsProcessed"
+	fi
 	
-	echo "Devices Processed--> $LIMBOTagsWeWillProcess"
+	#Give the list of devices we wiped.
+	cli_log "Devices Wiped--> $LIMBOTagsWeWillProcess"
+	
+	#Point out any iPAds that failed.
+	if [ ! -z "$FailediPads" ]; then
+		cli_log "FAILED DEVICES-> $FailediPads"
+	fi
 
 else
 	echo "Its ok... we all get cold feet sometimes...."
