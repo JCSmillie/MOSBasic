@@ -109,6 +109,15 @@ SorterOfiPadz() {
 			WIPEUDiDs=$(echo "$WIPEUDiDs,$UDID")
 		fi
 	
+	
+		if [ -z "$TAGSofWhatWillBeWiped" ]; then
+			TAGSofWhatWillBeWiped="$TAG_GIVEN"
+		else
+			#all others are additons to the variable
+			TAGSofWhatWillBeWiped=$(echo "$TAGSofWhatWillBeWiped,$TAG_GIVEN")
+		fi
+	
+	
 		echo "$RETURNSERIAL" >> /tmp/Scand2Wipe_Serialz.txt
 		
 	fi
@@ -184,7 +193,7 @@ CalliPadWipeRoutine() {
 		curl --location 'https://managerapi.mosyle.com/v2/bulkops' \
 		--header 'Content-Type: application/json' \
 			--header "Authorization: Bearer $AuthToken" \
-			--data "$(Generate_JSON_BulkOperations_ALT)"
+			--data "$(Generate_JSON_BulkOperations_ALT)" >> $LOG
 		
 		#echo "$Generate_JSON_BulkOperations_ALT"
 		if [ "$MB_DEBUG" = "Y" ]; then
@@ -193,7 +202,7 @@ CalliPadWipeRoutine() {
 				echo "******----/DEBUG---*****"
 		fi
 		
-		cli_log "Wipe w/RTS commands sent against these devices: $DEVICES2BULKON"
+		cli_log "Wipe w/RTS commands sent against these devices: $TAGSofWhatWillBeWiped"
 		
 	else
 		echo "Making it So #1 - Not Utilizing RTS."
@@ -201,7 +210,7 @@ CalliPadWipeRoutine() {
 		curl --location 'https://managerapi.mosyle.com/v2/bulkops' \
 		--header 'Content-Type: application/json' \
 			--header "Authorization: Bearer $AuthToken" \
-			--data "$(Generate_JSON_BulkOperations_ALTNoRTS)"
+			--data "$(Generate_JSON_BulkOperations_ALTNoRTS)" >> $LOG
 		
 		#echo "$Generate_JSON_BulkOperations_ALT"
 		if [ "$MB_DEBUG" = "Y" ]; then
@@ -210,7 +219,7 @@ CalliPadWipeRoutine() {
 				echo "******----/DEBUG---*****"
 		fi
 		
-		cli_log "Wipe w/o RTS commands sent against these devices: $DEVICES2BULKON"		
+		cli_log "Wipe w/o RTS commands sent against these devices: $TAGSofWhatWillBeWiped"		
 	fi
 		
 	
@@ -381,15 +390,27 @@ else
 	fi
 fi
 
-echo "Proceeding to Wipe & Limbo the following:"
+echo "Following Devices will be set to Limbo:"
 echo "------------------------------------------"	
 #cat /tmp/Scand2WipeLimbo_Serialz.txt
-echo "Limbo and Wipe Asset Tags-> $LIMBOTagsWeWillProcess"
+echo "$LIMBOTagsWeWillProcess"
 
 echo "Proceeding to Wipe the following:"
 echo "----------------------------------"
 #cat /tmp/Scand2Wipe_Serialz.txt
-echo "Just Wipe UDIDs-> $WIPEUDiDs"
+echo "$TAGSofWhatWillBeWiped"
+
+#Point out any iPAds that failed.
+if [ ! -z "$FailediPads" ]; then
+	echo "The Following devices FAILED to lookup:"
+	echo "-----------------------------------------"
+	echo "$FailediPads"
+fi
+	
+#Just some spacing drops to make things line up better	
+echo " "
+echo " "
+
 
 #Has confirmation been given?  Get it
 if [ -z "$shouldwedoit" ]; then
@@ -416,23 +437,23 @@ if [ "$shouldwedoit" = "Y" ] || [ "$shouldwedoit" = "y" ]; then
 		OPERATION2PERFORM="clear_commands"
 		DEVICES2BULKON="$LIMBOSetUDiDs"
 		
-		cli_log "Sending back command clear to $DEVICES2BULKON"
+		cli_log "Sending back command clear to LIMBOTagsWeWillProcess"
 		#This is a new CURL call with JSON data - JCS 11/8/23
 		curl --location 'https://managerapi.mosyle.com/v2/bulkops' \
 		--header 'Content-Type: application/json' \
 			--header "Authorization: Bearer $AuthToken" \
-			--data "$(Generate_JSON_BulkOperations)"
+			--data "$(Generate_JSON_BulkOperations)" >> $LOG
 
 		
 		#echo "Making it So #1."
-		cli_log "Changing Device State to Limbo for $DEVICES2BULKON"
+		cli_log "Changing Device State to Limbo for LIMBOTagsWeWillProcess"
 		#This is a new CURL call with JSON data - JCS 11/8/23
 		OPERATION2PERFORM="change_to_limbo"
 		DEVICES2BULKON="$LIMBOSetUDiDs"
 		curl --location 'https://managerapi.mosyle.com/v2/bulkops' \
 		--header 'Content-Type: application/json' \
 			--header "Authorization: Bearer $AuthToken" \
-			--data "$(Generate_JSON_BulkOperations)"
+			--data "$(Generate_JSON_BulkOperations)"  >> $LOG
 		
 		cli_log "Sending Wipe Commands to $DEVICES2BULKON"
 
@@ -455,21 +476,6 @@ if [ "$shouldwedoit" = "Y" ] || [ "$shouldwedoit" = "y" ]; then
 	OPERATION2PERFORM="wipe_devices"
 	DEVICES2BULKON="$WIPEUDiDs"
 	CalliPadWipeRoutine
-
-
-	# #At this point we are almost ready to do the wipe and limbo
-	# if [ ! -z "$WIPEUDiDs" ]; then
-	#
-	# 	#Set Variables
-	# 	OPERATION2PERFORM="wipe_devices"
-	# 	DEVICES2BULKON="$WIPEUDiDs"
-	#
-	# 	CalliPadWipeRoutine
-	#
-	#
-	# else
-	# 	echo "No UDIDs are in cache for Wipe Only.  Doing Nothing."
-	# fi
 	
 	#Check if this was an --uncache run and if so delete the cache file.
 	if [ "$1" = "--uncache" ]; then

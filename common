@@ -224,7 +224,7 @@ IsThisiPadSharedMode() {
 			ISSHARED="FALSE"
 		fi
 	fi
-	echo "SERIAL--> $DeviceSerialNumber - $RETURNSERIAL / $ISSHARED  <---Shared Device Status."
+	echo "SERIAL--> $DeviceSerialNumber / $ISSHARED  <---Shared Device Status."
 }
 
 ####################################################
