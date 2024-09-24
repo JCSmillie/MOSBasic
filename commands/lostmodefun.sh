@@ -141,6 +141,29 @@ DisableLostMode(){
 	fi
 }
 
+DisableLostModeBULK(){
+	#Set Variables in our Call.
+	OPERATION2PERFORM="disable"
+	DEVICES2BULKON="$LIMBOSetUDiDs"
+	
+	cli_log "Operation $OPERATION2PERFORM called upon to act on $DEVICES2BULKON"
+	#This is a new CURL call with JSON data - JCS 11/8/23
+	APIOUTPUT=$(curl --location 'https://managerapi.mosyle.com/v2/lostmode' \
+		--header 'content-type: application/json' \
+		--header "Authorization: Bearer $AuthToken" \
+		--data "$(Generate_JSON_LostModeOperations)")	
+	
+	CMDStatus=$(echo "$APIOUTPUT" | cut -d ":" -f 3 | cut -d "," -f 1 | tr -d '"')
+	
+	if [ "$CMDStatus" = "LOSTMODE_NOTENABLED" ]; then
+		echo "API Says iPad is not currently in Lost Mode.  Can't DISABLE.  Call GSD HELPDESK!"
+	elif [ "$CMDStatus" = "COMMAND_SENT" ]; then
+		echo "Command was Successful!"		
+	else
+		echo "Command yeilded Unknown Status ($APIOUTPUT)"
+	fi
+}
+
 LocateDevice() {
 	#Set Variables in our Call.
 	OPERATION2PERFORM="request_location"

@@ -453,14 +453,20 @@ if [ "$shouldwedoit" = "Y" ] || [ "$shouldwedoit" = "y" ]; then
 		curl --location 'https://managerapi.mosyle.com/v2/bulkops' \
 		--header 'Content-Type: application/json' \
 			--header "Authorization: Bearer $AuthToken" \
-			--data "$(Generate_JSON_BulkOperations)"  >> $LOG
-		
-		cli_log "Sending Wipe Commands to $DEVICES2BULKON"
+			--data "$(Generate_JSON_BulkOperations)" >> $LOG
 
-		#Set Variables
-		OPERATION2PERFORM="wipe_devices"
-		DEVICES2BULKON="$LIMBOSetUDiDs"
-		CalliPadWipeRoutine
+		#echo "Making it So #1."
+		cli_log "Removing lost mode from LIMBOTagsWeWillProcess"
+		#This function comes from lostmodefun.sh
+		DisableLostModeBULK  
+
+		
+		# cli_log "Sending Wipe Commands to $DEVICES2BULKON"
+		#
+		# #Set Variables
+		# OPERATION2PERFORM="wipe_devices"
+		# DEVICES2BULKON="$LIMBOSetUDiDs"
+		# CalliPadWipeRoutine
 		
 
 
@@ -470,7 +476,7 @@ if [ "$shouldwedoit" = "Y" ] || [ "$shouldwedoit" = "y" ]; then
 	fi
 
 
-	cli_log "Sending Wipe Commands to $DEVICES2BULKON"
+	cli_log "Sending Wipe Commands to $LIMBOTagsWeWillProcess"
 
 	#Set Variables
 	OPERATION2PERFORM="wipe_devices"
