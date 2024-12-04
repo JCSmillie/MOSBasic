@@ -218,7 +218,9 @@ CheckLostMode() {
 		--header 'content-type: application/json' \
 		--header "Authorization: Bearer $AuthToken" \
 		--data "$(Generate_JSON_LostmodeCheck)")
+	
 	echo "$APIOUTPUT"
+	echo "SERIAL NUMBER--> $DeviceSerialNumber"
 
 
 	if echo "$APIOUTPUT" | grep "DEVICES_NOTFOUND"; then
@@ -323,7 +325,6 @@ EOF
 
 
 WHOISLOST() {
-	rm -Rf /tmp/.*.lost_ish.txt
 	#Initialize the base count variable. This will be
 	#used to figure out what page we are on and where
 	#we end up.
@@ -341,12 +342,17 @@ WHOISLOST() {
 
 
 		#This is a new CURL call with JSON data - JCS 11/8/23
-		APIOUTPUT=$(curl --location 'https://managerapi.mosyle.com/v2/listdevices' \
-			--header 'content-type: application/json' \
-			--header "Authorization: Bearer $AuthToken" \
-			--data "$(Generate_JSON_IOSDUMPPostData)") >> $LOG
+		# APIOUTPUT=$(curl --location 'https://managerapi.mosyle.com/v2/listdevices' \
+		# 	--header 'content-type: application/json' \
+		# 	--header "Authorization: Bearer $AuthToken" \
+		# 	--data "$(Generate_JSON_InventoryOperations)") >> $LOG
 
-		#echo "$content"
+		curl --location 'https://managerapi.mosyle.com/v2/listdevices' \
+					--header 'content-type: application/json' \
+					--header "Authorization: Bearer $AuthToken" \
+					--data "$(Generate_JSON_InventoryOperations)"
+
+		echo "APIOUTPUT--> $APIOUTPUT"
 
 
 		#Detect we just loaded a page with no content and stop.

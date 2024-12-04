@@ -50,11 +50,16 @@ ParseIt_tvos() {
 	fi
 	
 	UDID=$(echo "$line" | cut -f 1 -d$'\t')
-	DeviceSerialNumber=$(echo "$line" | cut -f 2 -d$'\t')
-	CURRENTNAME=$(echo "$line" | cut -f 3 -d$'\t')
-	TAGS=$(echo "$line" | cut -f 4 -d$'\t')
-	ASSETTAG=$(echo "$line" | cut -f 5 -d$'\t')
-	LASTCHECKIN=$(echo "$line" | cut -f 6 -d$'\t')
+	#DeviceSerialNumber=$(echo "$line" | cut -f 2 -d$'\t')
+	CURRENTNAME=$(echo "$line" | cut -f 4 -d$'\t')
+	#TAGS=$(echo "$line" | cut -f 4 -d$'\t')
+	#ASSETTAG=$(echo "$line" | cut -f 5 -d$'\t')
+	#LASTCHECKIN=$(echo "$line" | cut -f 6 -d$'\t')
+	DeviceSerialNumber=$(echo "$line" | cut -f 3 -d$'\t')
+	TAGS=$(echo "$line" | cut -f 5 -d$'\t')
+	ASSETTAG=$(echo "$line" | cut -f 6 -d$'\t')
+	LastCheckIn=$(echo "$line" | cut -f 7 -d$'\t')
+	UserID=$(echo "$line" | cut -f 8 -d$'\t')
 	#ENROLLMENT_TYPE=$(echo "$line" | cut -f 7 -d$'\t')
 	#USERID=$(echo "$line" | cut -f 8 -d$'\t')
 	#NAME=$(echo "$line" | cut -f 9 -d$'\t')
@@ -79,14 +84,19 @@ ParseIt_ios() {
 	fi
 	
 	UDID=$(echo "$line" | cut -f 1 -d$'\t')
-	DeviceSerialNumber=$(echo "$line" | cut -f 2 -d$'\t')
-	CURRENTNAME=$(echo "$line" | cut -f 3 -d$'\t')
-	TAGS=$(echo "$line" | cut -f 4 -d$'\t')
-	ASSETTAG=$(echo "$line" | cut -f 5 -d$'\t')
-	LASTCHECKIN=$(echo "$line" | cut -f 6 -d$'\t')
-	ENROLLMENT_TYPE=$(echo "$line" | cut -f 7 -d$'\t')
-	USERID=$(echo "$line" | cut -f 8 -d$'\t')
+	#DeviceSerialNumber=$(echo "$line" | cut -f 2 -d$'\t')
+	CURRENTNAME=$(echo "$line" | cut -f 4 -d$'\t')
+	#TAGS=$(echo "$line" | cut -f 4 -d$'\t')
+	#ASSETTAG=$(echo "$line" | cut -f 5 -d$'\t')
+	#LASTCHECKIN=$(echo "$line" | cut -f 6 -d$'\t')
+	ENROLLMENT_TYPE=$(echo "$line" | cut -f 2 -d$'\t')
+	#USERID=$(echo "$line" | cut -f 8 -d$'\t')
 	NAME=$(echo "$line" | cut -f 9 -d$'\t')
+	DeviceSerialNumber=$(echo "$line" | cut -f 3 -d$'\t')
+	TAGS=$(echo "$line" | cut -f 5 -d$'\t')
+	ASSETTAG=$(echo "$line" | cut -f 6 -d$'\t')
+	LastCheckIn=$(echo "$line" | cut -f 7 -d$'\t')
+	UserID=$(echo "$line" | cut -f 8 -d$'\t')
 	
 	if [ "$LASTCHECKIN" = "null" ]; then
 		LASTCHECKIN="NO-DATA"
@@ -107,14 +117,20 @@ ParseIt_MacOS() {
 		exit
 	fi
 	UDID=$(echo "$line" | cut -f 1 -d$'\t')
-	DeviceSerialNumber=$(echo "$line" | cut -f 2 -d$'\t')
+	#DeviceSerialNumber=$(echo "$line" | cut -f 2 -d$'\t')
 	CURRENTNAME=$(echo "$line" | cut -f 3 -d$'\t')
-	TAGS=$(echo "$line" | cut -f 4 -d$'\t')
-	ASSETTAG=$(echo "$line" | cut -f 5 -d$'\t')
-	LASTCHECKIN=$(echo "$line" | cut -f 6 -d$'\t')
-	ENROLLMENT_TYPE=$(echo "$line" | cut -f 7 -d$'\t')
-	USERID=$(echo "$line" | cut -f 8 -d$'\t')
+	#TAGS=$(echo "$line" | cut -f 4 -d$'\t')
+	#ASSETTAG=$(echo "$line" | cut -f 5 -d$'\t')
+	#LASTCHECKIN=$(echo "$line" | cut -f 6 -d$'\t')
+	ENROLLMENT_TYPE=$(echo "$line" | cut -f 2 -d$'\t')
+	#USERID=$(echo "$line" | cut -f 8 -d$'\t')
 	NAME=$(echo "$line" | cut -f 9 -d$'\t')
+	DeviceSerialNumber=$(echo "$line" | cut -f 3 -d$'\t')
+	TAGS=$(echo "$line" | cut -f 5 -d$'\t')
+	ASSETTAG=$(echo "$line" | cut -f 6 -d$'\t')
+	LastCheckIn=$(echo "$line" | cut -f 7 -d$'\t')
+	UserID=$(echo "$line" | cut -f 8 -d$'\t')
+	
 	
 	if [ "$LASTCHECKIN" = "null" ]; then
 		LASTCHECKIN="NO-DATA"
@@ -140,7 +156,7 @@ SerialFromTag() {
 		echo "Data given for tag ($TAG_GIVEN) appears to be an Asset tag.   Looking up."
 	
 		#Search through our known serials
-		SERIALIS=$(cat "$TEMPOUTPUTFILE_MERGEDIOS" | cut -d$'\t' -f 2-5,7-9 | grep "$TAG_GIVEN" | cut -d$'\t' -f 1 )
+		SERIALIS=$(cat "$TEMPOUTPUTFILE_MERGEDIOS" | cut -d$'\t' -f 3,6,8,9 | grep "$TAG_GIVEN" | cut -d$'\t' -f 1 )
 		SERIALIS=$(cat "$TEMPOUTPUTFILE_MERGEDIOS" | grep "$SERIALIS")
 	
 		HowManyReturns=$(echo "$SERIALIS" | wc -l)
