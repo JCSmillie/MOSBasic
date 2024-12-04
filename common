@@ -59,7 +59,7 @@ ParseIt_tvos() {
 	TAGS=$(echo "$line" | cut -f 5 -d$'\t')
 	ASSETTAG=$(echo "$line" | cut -f 6 -d$'\t')
 	LastCheckIn=$(echo "$line" | cut -f 7 -d$'\t')
-	UserID=$(echo "$line" | cut -f 8 -d$'\t')
+	UserID=$(echo "$line" | cut -f 9 -d$'\t')
 	#ENROLLMENT_TYPE=$(echo "$line" | cut -f 7 -d$'\t')
 	#USERID=$(echo "$line" | cut -f 8 -d$'\t')
 	#NAME=$(echo "$line" | cut -f 9 -d$'\t')
@@ -96,7 +96,7 @@ ParseIt_ios() {
 	TAGS=$(echo "$line" | cut -f 5 -d$'\t')
 	ASSETTAG=$(echo "$line" | cut -f 6 -d$'\t')
 	LastCheckIn=$(echo "$line" | cut -f 7 -d$'\t')
-	UserID=$(echo "$line" | cut -f 8 -d$'\t')
+	UserID=$(echo "$line" | cut -f 9 -d$'\t')
 	
 	if [ "$LASTCHECKIN" = "null" ]; then
 		LASTCHECKIN="NO-DATA"
@@ -129,7 +129,7 @@ ParseIt_MacOS() {
 	TAGS=$(echo "$line" | cut -f 5 -d$'\t')
 	ASSETTAG=$(echo "$line" | cut -f 6 -d$'\t')
 	LastCheckIn=$(echo "$line" | cut -f 7 -d$'\t')
-	UserID=$(echo "$line" | cut -f 8 -d$'\t')
+	UserID=$(echo "$line" | cut -f 9 -d$'\t')
 	
 	
 	if [ "$LASTCHECKIN" = "null" ]; then
@@ -350,7 +350,8 @@ GetCurrentInfo-ios(){
 		#What parse are we using
 		if echo "$output" | grep -q "userid"; then
 			#iPad is assigned
-			MicroParse=$(echo "$output"| awk 'BEGIN{FS=",";RS="},{"}{print $0}' | perl -pe 's/.*"date_last_beat":"?(.*?)"?,"lostmode_status":"(.*?)","last_ip_beat":"?(.*?)"?,"last_lan_ip":?(.*?),"userid":"?(.*?)","usertype":"?(.*?)",*.*/\1\t\2\t\3\t\4\t\5\t\6\t\7/')			
+			MicroParse=$(echo "$output"| awk 'BEGIN{FS=",";RS="},{"}{print $0}' | perl -pe 's/.*"date_last_beat":"?(.*?)"?,"lostmode_status":"(.*?)","last_ip_beat":"?(.*?)"?,"last_lan_ip":?(.*?),"userid":"?(.*?)",*.*/\1\t\2\t\3\t\4\t\5\t\6/')			
+			#MicroParse=$(echo "$output"| awk 'BEGIN{FS=",";RS="},{"}{print $0}' | perl -pe 's/.*"date_last_beat":"?(.*?)"?,"lostmode_status":"(.*?)","last_ip_beat":"?(.*?)"?,"last_lan_ip":?(.*?),"userid":"?(.*?),*.*/\1\t\2\t\3\t\4\t\5\t\6\t\7/')
 		else
 			#iPad not assigned.  Use this one.
 			MicroParse=$(echo "$output"| awk 'BEGIN{FS=",";RS="},{"}{print $0}' | perl -pe 's/.*"date_last_beat":"?(.*?)"?,"lostmode_status":"(.*?)","last_ip_beat":"?(.*?)"?,"last_lan_ip":"?(.*?)",*.*/\1\t\2\t\3\t\4\t\5/')
@@ -391,8 +392,6 @@ EOF
 }
 GetCurrentInfo-macos(){
 	GetBearerToken
-	# content="{\"accessToken\":\"$APIKey\",\"options\":{\"os\":\"mac\",\"serial_numbers\":[\"$DeviceSerialNumber\"],\"specific_columns\":\"date_last_beat,lostmode_status,last_ip_beat,last_lan_ip\"}}"
-	# output=$(curl -s -k -X POST -d $content 'https://managerapi.mosyle.com/v2/listdevices') >> $LOG
 
 	#This is a new CURL call with JSON data - JCS 11/8/23
 	output=$(curl --location 'https://managerapi.mosyle.com/v2/listdevices' \
