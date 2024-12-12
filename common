@@ -105,6 +105,14 @@ ParseIt_ios() {
 		#echo "ParseIt_ios Time Conversion:::: ($LASTCHECKIN)"
 		LASTCHECKIN=$($PYTHON2USE -c "import datetime; print(datetime.datetime.fromtimestamp(int("$LASTCHECKIN")).strftime('%Y-%m-%d %I:%M:%S %p'))")
 	fi
+	# echo "DEBUG-> UDID-> $UDID"
+	# echo "DEBUG-> NAME-> $NAME"
+	# echo "DEBUG-> TAGS-> $TAGS"
+	# echo "DEBUG-> ASSETTAG-> $ASSETTAG"
+	# echo "DEBUG-> LASTCHECKIN-> $LASTCHECKIN"
+				
+
+
 }
 
 ParseIt_MacOS() {
@@ -119,7 +127,7 @@ ParseIt_MacOS() {
 	fi
 	UDID=$(echo "$line" | cut -f 1 -d$'\t')
 	#DeviceSerialNumber=$(echo "$line" | cut -f 2 -d$'\t')
-	CURRENTNAME=$(echo "$line" | cut -f 3 -d$'\t')
+	CURRENTNAME=$(echo "$line" | cut -f 4 -d$'\t')
 	#TAGS=$(echo "$line" | cut -f 4 -d$'\t')
 	#ASSETTAG=$(echo "$line" | cut -f 5 -d$'\t')
 	#LASTCHECKIN=$(echo "$line" | cut -f 6 -d$'\t')
@@ -157,7 +165,7 @@ SerialFromTag() {
 		echo "Data given for tag ($TAG_GIVEN) appears to be an Asset tag.   Looking up."
 	
 		#Search through our known serials
-		SERIALIS=$(cat "$TEMPOUTPUTFILE_MERGEDIOS" | cut -d$'\t' -f 3,6,8,9 | grep "$TAG_GIVEN" | cut -d$'\t' -f 1 )
+		SERIALIS=$(cat "$TEMPOUTPUTFILE_MERGEDIOS" | cut -d$'\t' -f 	 | grep "$TAG_GIVEN" | cut -d$'\t' -f 1 )
 		SERIALIS=$(cat "$TEMPOUTPUTFILE_MERGEDIOS" | grep "$SERIALIS")
 	
 		HowManyReturns=$(echo "$SERIALIS" | wc -l)

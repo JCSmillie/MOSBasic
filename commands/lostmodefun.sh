@@ -210,10 +210,6 @@ EOF
 
 CheckLostMode() {
 	# #Build Query.  Just asking for current data on last beat, lostmode status, and location data if we can get it.
-	# content="{\"accessToken\":\"$APIKey\",\"options\":{\"os\":\"ios\",\"serial_numbers\":[\"$DeviceSerialNumber\"],\"specific_columns\":\"deviceudid,date_last_beat,tags,lostmode_status,longitude,latitude\"}}"
-	#
-	# APIOUTPUT=$(curl -s -k -X POST -d $content 'https://managerapi.mosyle.com/v2/listdevices')
-
 	APIOUTPUT=$(curl --location 'https://managerapi.mosyle.com/v2/listdevices' \
 		--header 'content-type: application/json' \
 		--header "Authorization: Bearer $AuthToken" \
@@ -309,6 +305,7 @@ DisplayCheckdLostModeData() {
 		fi
 }
 
+
 #Format for an iPad Data Dump of JSON
 Generate_JSON_InventoryOperations() {
 cat <<EOF
@@ -316,43 +313,35 @@ cat <<EOF
 	"options": {
 		"os": "$PLATFORM2QUERY",
 		"page": "$THEPAGE",
-		"specific_columns": "$COLUMNS"
+		"page_size": "1000",
+		"specific_columns": "$SpecificColumns"
 	}
 }
-
 EOF
 }
 
 
+
 WHOISLOST() {
+	rm -Rf /tmp/LostModeFun.REPORT.txt
 	#Initialize the base count variable. This will be
 	#used to figure out what page we are on and where
 	#we end up.
 	THECOUNT=0
 	PLATFORM2QUERY="ios"
-	COLUMNS="deviceudid,date_last_beat,tags,lostmode_status"
+	SpecificColumns="deviceudid,date_last_beat,tags,lostmode_status"
 
-	# Connect to Mosyle API multiple times (for each page) so we
-	# get all of the available data.
+	Connect to Mosyle API multiple times (for each page) so we
+	get all of the available data.
 	while true; do
 		let "THECOUNT=$THECOUNT+1"
 		THEPAGE="$THECOUNT"
-		# content="{\"accessToken\":\"$APIKey\",\"options\":{\"os\":\"ios\",\"specific_columns\":\"deviceudid,date_last_beat,tags,lostmode_status\",\"page\":$THEPAGE}}"
-		# APIOUTPUT=$(curl -s -k -X POST -d $content 'https://managerapi.mosyle.com/v2/listdevices') >> $LOG
-
 
 		#This is a new CURL call with JSON data - JCS 11/8/23
-		# APIOUTPUT=$(curl --location 'https://managerapi.mosyle.com/v2/listdevices' \
-		# 	--header 'content-type: application/json' \
-		# 	--header "Authorization: Bearer $AuthToken" \
-		# 	--data "$(Generate_JSON_InventoryOperations)") >> $LOG
-
-		curl --location 'https://managerapi.mosyle.com/v2/listdevices' \
-					--header 'content-type: application/json' \
-					--header "Authorization: Bearer $AuthToken" \
-					--data "$(Generate_JSON_InventoryOperations)"
-
-		echo "APIOUTPUT--> $APIOUTPUT"
+		APIOUTPUT=$(curl --location 'https://managerapi.mosyle.com/v2/listdevices' \
+			--header 'content-type: application/json' \
+			--header "Authorization: Bearer $AuthToken" \
+			--data "$(Generate_JSON_InventoryOperations)") >> $LOG
 
 
 		#Detect we just loaded a page with no content and stop.
@@ -362,6 +351,17 @@ WHOISLOST() {
 			cli_log "Yo we are at the end of the list (Last good page was $THECOUNT)"
 			break
 		fi
+
+		#Detect we just loaded a page with no content and stop.
+		LASTPAGE=$(echo $APIOUTPUT | grep UNKNOWN_COLUMNS)
+		if [ -n "$LASTPAGE" ]; then
+			let "THECOUNT=$THECOUNT-1"
+			cli_log "Hit error; Unknown Columns (Last good page was $THECOUNT)"
+			break
+		fi
+
+
+
 
 		FAILURE=$(echo $APIOUTPUT | grep INVALID_JSON)
 		if [ -n "$FAILURE" ]; then
@@ -375,10 +375,25 @@ WHOISLOST() {
 		echo "-----------------------"
 		#Now take the JSON data we received and parse it into tab
 		#delimited output.
-		echo "$APIOUTPUT"| awk 'BEGIN{FS=",";RS="},{"}{print $0}' | grep ENABLED | perl -pe 's/.*"deviceudid":"?(.*?)"?,"date_last_beat":"?(.*?)"?,"tags":"(.*?)","lostmode_status":"?(.*?)",*.*/\1\t\2\t\3\t\4/' | cut -d ']' -f 1  >> /tmp/.enabled.lost_ish.txt
-		echo "$APIOUTPUT"| awk 'BEGIN{FS=",";RS="},{"}{print $0}' | grep PENDINGTOENABLE | perl -pe 's/.*"deviceudid":"?(.*?)"?,"date_last_beat":"?(.*?)"?,"tags":"(.*?)","lostmode_status":"?(.*?)",*.*/\1\t\2\t\3\t\4/' | cut -d ']' -f 1  >> /tmp/.pending2enable.lost_ish.txt
-		echo "$APIOUTPUT"| awk 'BEGIN{FS=",";RS="},{"}{print $0}' | grep PENDINGTODISABLE | perl -pe 's/.*"deviceudid":"?(.*?)"?,"date_last_beat":"?(.*?)"?,"tags":"(.*?)","lostmode_status":"?(.*?)",*.*/\1\t\2\t\3\t\4/' | cut -d ']' -f 1  >> /tmp/.pending2disable.lost_ish.txt
+
+		echo "$APIOUTPUT" > /tmp/LostModeFun.$THEPAGE.txt
+
+		#Preprocess the file.  We need to remove {"status":"OK","response": so can do operations with our python json to csv converter.  Yes
+		#I know this is still janky but hay I'm getting there.
+		cat /tmp/LostModeFun.$THEPAGE.txt  | cut -d ':' -f 3- | sed 's/.$//' > /tmp/LostModeFun.TEMPSPOT.txt
+		mv -f /tmp/LostModeFun.TEMPSPOT.txt /tmp/LostModeFun.$THEPAGE.txt
+
+		#Call our python json to csv routine.  Output will be tab delimited so we can maintain our "tags" together.
+		$PYTHON2USE $BAGCLI_WORKDIR/modules/json2csv.py devices /tmp/LostModeFun.$THEPAGE.txt /tmp/LostModeFun.REPORT.txt
+
+
+
 	done
+
+	#Split up the dump to seperate files to handle seperately
+	cat /tmp/LostModeFun.REPORT.txt | grep ENABLED > /tmp/.enabled.lost_ish.txt
+	cat /tmp/LostModeFun.REPORT.txt | grep PENDINGTOENABLE > /tmp/.pending2enable.lost_ish.txt
+	cat /tmp/LostModeFun.REPORT.txt | grep PENDINGTODISABLE > /tmp/.pending2disable.lost_ish.txt
 
 	#Work the Enabled Pile...
 	echo "${Magenta}             Devices Currently IN LOST MODE (ENABLED)${reset}"
@@ -389,47 +404,52 @@ WHOISLOST() {
 		LASTBEATLMQ=$(echo "$DataFromLostModeQuery" |  cut -f 2 -d$'\t' )
 		TAGSLMQ=$(echo "$DataFromLostModeQuery" | cut -f 3 -d$'\t')
 		LOSTMODELMQ=$(echo "$DataFromLostModeQuery" |  cut -f 4 -d$'\t' )
-		
-		##Take Epoch time and convert to a date
-		LASTCHECKINLMQ=$($PYTHON2USE -c "import datetime; print(datetime.datetime.fromtimestamp(int("$LASTBEATLMQ")).strftime('%Y-%m-%d %I:%M:%S %p'))")
-		
 
-		
+		# ##Take Epoch time and convert to a date
+		# LASTCHECKINLMQ=$($PYTHON2USE -c "import datetime; print(datetime.datetime.fromtimestamp(int("$LASTBEATLMQ")).strftime('%Y-%m-%d %I:%M:%S %p'))")
+
+
+
 		#Now query our cache'd info to fill in the blanks.
 		UDID2Lookup=$(cat "$TEMPOUTPUTFILE_MERGEDIOS" | grep "$UDID2LookupLMQ")
-		
+
 		#Pass the info we just got to the parse routine.
 		line="$UDID2Lookup"
 		ParseIt_ios
 		
+		# echo "DEBUG2-> UDID-> $UDID"
+		# echo "DEBUG2-> NAME-> $NAME"
+		# echo "DEBUG2-> TAGS-> $TAGS"
+		# echo "DEBUG2-> ASSETTAG-> $ASSETTAG"
+		# echo "DEBUG2-> LASTCHECKIN-> $LASTCHECKIN"
+
 		if [ -z "$USERID" ]; then
 			USERID="NotAss"
 			NAME="NOT ASSIGNED"
 		fi
-		
+
 		if [ -z "$TAGSLMQ" ]; then
 			TAGSLMQ="NO TAGS"
 		fi
-		
+
 		#Figure out how many hours ago last beat was
 		current_time=$(date +%s)
 		current_time=$(expr "$current_time" / 3600 )
 		before_time=$(expr "$LASTBEATLMQ" / 3600 )
 		hoursagoLMQ=$(expr "$current_time" - "$before_time" )
 		
+		echo "$UDID2Lookup"
+
 		#Based on hours above color code our output.  Green is day or less, Yellow is 3
 		#days or less, and red is everything else.
-		if [ "$hoursagoLMQ" -lt 24 ]; then
-			echo "${Green}$ASSETTAG / $LASTCHECKINLMQ / $USERID / $NAME / $TAGSLMQ ${reset}"
-		elif [ "$hoursagoLMQ" -lt 72 ]; then
-			echo "${Yellow}$ASSETTAG / $LASTCHECKINLMQ / $USERID / $NAME / $TAGSLMQ ${reset}"
-		else
-			echo "${Red}$ASSETTAG  / $LASTCHECKINLMQ / $USERID / $NAME / $TAGSLMQ ${reset}"	
-		fi
-		
-		# UDID="$UDID2LookupLMQ"
-		# PlayLostSound
-		
+		# if [ "$hoursagoLMQ" -lt 24 ]; then
+		# 	echo "${Green} $ASSETTAG / $LASTCHECKIN / $USERID / $NAME / $TAGS ${reset}"
+		# elif [ "$hoursagoLMQ" -lt 72 ]; then
+		# 	echo "${Yellow} $ASSETTAG / $LASTCHECKIN / $USERID / $NAME / $TAGS ${reset}"
+		# else
+		# 	echo "${Red} $ASSETTAG  / $LASTCHECKIN / $USERID / $NAME / $TAGS ${reset}"
+		# fi
+
 		#Lets fill a variable of UDIDs to work with later....
 		#if this is our first entry just fill the variable
 		if [ -z "$PlaySoundUDiDs" ]; then
@@ -438,8 +458,8 @@ WHOISLOST() {
 			#all others are additons to the variable
 			PlaySoundUDiDs=$(echo "$PlaySoundUDiDs,$UDID2LookupLMQ")
 		fi
-		
-		
+
+
 	done
 	echo " "
 	echo " "
@@ -450,7 +470,7 @@ WHOISLOST() {
 	PlayLostSound
 	echo " "
 	echo " "
-	
+
 	#Work the Enabled Pile...
 	echo "${Magenta}             Devices Currently WAITING TO GO TO LOST MODE${reset}"
 	echo "${Blue}-----------************************************************-----------${reset}"
@@ -460,46 +480,52 @@ WHOISLOST() {
 		LASTBEATLMQ=$(echo "$DataFromLostModeQuery" |  cut -f 2 -d$'\t' )
 		TAGSLMQ=$(echo "$DataFromLostModeQuery" | cut -f 3 -d$'\t')
 		LOSTMODELMQ=$(echo "$DataFromLostModeQuery" |  cut -f 4 -d$'\t' )
-		
+
 		#Take Epoch time and convert to hours
 		LASTCHECKINLMQ=$($PYTHON2USE -c "import datetime; print(datetime.datetime.fromtimestamp(int("$LASTBEATLMQ")).strftime('%Y-%m-%d %I:%M:%S %p'))")
 
 		#Now query our cache'd info to fill in the blanks.
 		UDID2Lookup=$(cat "$TEMPOUTPUTFILE_MERGEDIOS" | grep "$UDID2LookupLMQ")
-		
+
+		if [ -z "$UDID2Lookup" ]; then
+			log_line "ERROR: Device UDID not found in MOSBasic data!"
+			break
+		fi
+
 		#Pass the info we just got to the parse routine.
 		line="$UDID2Lookup"
 		ParseIt_ios
-		
+
 		if [ -z "$USERID" ]; then
 			USERID="NotAss"
 			NAME="NOT ASSIGNED"
 		fi
-		
+
 		if [ -z "$TAGSLMQ" ]; then
 			TAGSLMQ="NO TAGS"
 		fi
-		
+
 		#Figure out how many hours ago last beat was
 		current_time=$(date +%s)
 		current_time=$(expr "$current_time" / 3600 )
 		before_time=$(expr "$LASTBEATLMQ" / 3600 )
 		hoursagoLMQ=$(expr "$current_time" - "$before_time" )
-		
-		#Based on hours above color code our output.  Green is day or less, Yellow is 3
-		#days or less, and red is everything else.
-		if [ "$hoursagoLMQ" -lt 24 ]; then
-			echo "${Green}$ASSETTAG / $LASTCHECKINLMQ / $USERID / $NAME / $TAGSLMQ ${reset}"
-		elif [ "$hoursagoLMQ" -lt 72 ]; then
-			echo "${Yellow}$ASSETTAG/ $LASTCHECKINLMQ / $USERID / $NAME / $TAGSLMQ ${reset}"
-		else
-			echo "${Red}$ASSETTAG / $LASTCHECKINLMQ / $USERID / $NAME / $TAGSLMQ ${reset}"	
-		fi
-		
+
+		echo "$UDID2Lookup"
+		# #Based on hours above color code our output.  Green is day or less, Yellow is 3
+		# #days or less, and red is everything else.
+		# if [ "$hoursagoLMQ" -lt 24 ]; then
+		# 	echo "${Green}$ASSETTAG / $LASTCHECKINLMQ / $USERID / $NAME / $TAGSLMQ ${reset}"
+		# elif [ "$hoursagoLMQ" -lt 72 ]; then
+		# 	echo "${Yellow}$ASSETTAG/ $LASTCHECKINLMQ / $USERID / $NAME / $TAGSLMQ ${reset}"
+		# else
+		# 	echo "${Red}$ASSETTAG / $LASTCHECKINLMQ / $USERID / $NAME / $TAGSLMQ ${reset}"
+		# fi
+
 	done
 
 	echo " "
-	echo " "	
+	echo " "
 
 }
 
