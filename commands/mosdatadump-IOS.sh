@@ -35,9 +35,8 @@ cat <<EOF
 	{"accessToken": "$MOSYLE_API_key",
 	"options": {
 		"os": "ios",
-		"page_size": "10000",
+		"page": "$THEPAGE",
 		"specific_columns": "deviceudid,serial_number,device_name,tags,asset_tag,userid,enrollment_type,username,date_app_info"
-
 	}
 }
 EOF
@@ -66,15 +65,15 @@ GetBearerToken
 
 # Connect to Mosyle API multiple times (for each page) so we
 # get all of the available data.
-# while true; do
-	# let "THECOUNT=$THECOUNT+1"
-	# THEPAGE="$THECOUNT"
-	THEPAGE="1"
-	# if [ "$DataRequestFailedCount" -gt 5 ]; then
-	# 	cli_log "TOO MANY DATA REQUEST FAILURES.  ABORT!!!!!"
-	# 	exit 1
-	# fi
-	#
+while true; do
+	let "THECOUNT=$THECOUNT+1"
+	THEPAGE="$THECOUNT"
+	
+	if [ "$DataRequestFailedCount" -gt 5 ]; then
+		cli_log "TOO MANY DATA REQUEST FAILURES.  ABORT!!!!!"
+		exit 1
+	fi
+	
 
 	cli_log "iOS CLIENTS-> Asking MDM for Page $THEPAGE data...."
 
@@ -86,21 +85,21 @@ GetBearerToken
 
 
 
-	# #Detect we just loaded a page with no content and stop.
-	# LASTPAGE=$(cat "/tmp/MOSBasicRAW-iOS-Page$THEPAGE.txt" | grep DEVICES_NOTFOUND)
-	# if [ -n "$LASTPAGE" ]; then
-	# 	let "THECOUNT=$THECOUNT-1"
-	# 	cli_log "iOS CLIENTS-> Yo we are at the end of the list (Last good page was $THECOUNT)"
-	# 	break
-	# fi
+	#Detect we just loaded a page with no content and stop.
+	LASTPAGE=$(cat "/tmp/MOSBasicRAW-iOS-Page$THEPAGE.txt" | grep DEVICES_NOTFOUND)
+	if [ -n "$LASTPAGE" ]; then
+		let "THECOUNT=$THECOUNT-1"
+		cli_log "iOS CLIENTS-> Yo we are at the end of the list (Last good page was $THECOUNT)"
+		break
+	fi
 
-	# #Make sure file has content
-	# if [ ! -s "/tmp/MOSBasicRAW-iOS-Page$THEPAGE.txt" ]; then
-	# #if [[ ! -z $(cat "/tmp/MOSBasicRAW-iOS-Page$THEPAGE.txt") ]] ; then
-	# 	cli_log "Page $THEPAGE reqested from Mosyle but had no data.  Skipping."
-	# 	let "DataRequestFailedCount=$DataRequestFailedCount+1"
-	# 	continue
-	# fi
+	#Make sure file has content
+	if [ ! -s "/tmp/MOSBasicRAW-iOS-Page$THEPAGE.txt" ]; then
+	#if [[ ! -z $(cat "/tmp/MOSBasicRAW-iOS-Page$THEPAGE.txt") ]] ; then	
+		cli_log "Page $THEPAGE reqested from Mosyle but had no data.  Skipping."
+		let "DataRequestFailedCount=$DataRequestFailedCount+1"
+		continue
+	fi
 
 	#TokenFailures
 	LASTPAGE=$(cat "/tmp/MOSBasicRAW-iOS-Page$THEPAGE.txt" | grep 'accessToken Required')
@@ -109,12 +108,12 @@ GetBearerToken
 		cli_log "iOS CLIENTS-> AccessToken error..."
 		break
 	fi
-
-	# #Are we on more pages then our max (IE something wrong)
-	# if [ "$THECOUNT" -gt "$MAXPAGECOUNT" ]; then
-	# 	cli_log "MAC CLIENTS-> We have hit $THECOUNT pages...  Greater then our max.  Something is wrong."
-	# 	break
-	# fi
+	
+	#Are we on more pages then our max (IE something wrong)
+	if [ "$THECOUNT" -gt "$MAXPAGECOUNT" ]; then 
+		cli_log "MAC CLIENTS-> We have hit $THECOUNT pages...  Greater then our max.  Something is wrong."
+		break
+	fi
 
 	LASTPAGE=$(cat "/tmp/MOSBasicRAW-iOS-Page$THEPAGE.txt" | grep 'Unauthorized')
 	if [ -n "$LASTPAGE" ]; then
@@ -131,7 +130,7 @@ GetBearerToken
 		#$PYTHON2USE $BAGCLI_WORKDIR/modules/json2csv.py devices /tmp/MOSBasicRAW-iOS-Page$THEPAGE.txt "$TEMPOUTPUTFILE_MERGEDIOS"
 		$PYTHON2USE $BAGCLI_WORKDIR/modules/json2csv.py devices /tmp/MOSBasicRAW-iOS-Page$THEPAGE.txt /tmp/DUMPINPROGRESS-$DATECODEFORFILE.MosyleiOSDump.txt	
 	fi
-# done
+done
 
 ##########
 ####NOTE TO SELF.  THIS BLOCK NEEDS CHANGED TO EVENTUALY DO SOME
