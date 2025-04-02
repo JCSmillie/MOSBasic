@@ -473,7 +473,7 @@ SubFunctionGenerateBearerToken() {
 GetBearerToken() {
 	UnixVersion=$(uname)
 	
-	if [ "$UnixVersion" = "Darwin"]; then
+	if [ "$UnixVersion" = "Darwin" ]; then
 	
 		if [[ -e "/tmp/.MosyleAPI_BearToken" ]]; then
 			FilesAge=$(( $(date +%s) - $(date -r /tmp/.MosyleAPI_BearToken +%s) ))
@@ -514,6 +514,7 @@ GetBearerToken() {
 			#Strip any Spaces in the Token
 			AuthToken="${AuthToken//[[:space:]]/}"
 		fi
+	fi
 		
 }
 Generate_JSON_SetAssetTag() {
