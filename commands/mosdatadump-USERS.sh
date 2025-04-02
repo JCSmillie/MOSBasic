@@ -33,7 +33,8 @@ cat <<EOF
 	"options": {
 		"os": "ios",
 		"page": "$THEPAGE",
-		"specific_columns": "id,name,managedappleid,type"
+		"specific_columns": "id,name,managedappleid,type",
+		"page_size": "1000"
 	}
 }
 EOF
