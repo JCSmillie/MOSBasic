@@ -446,32 +446,31 @@ cat <<EOF
 EOF
 }
 
-GetBearerToken() {
-	
-	SubFunctionGenerateBearerToken() {
-		#Using JSON Post data from above try to get BearerToken
-		GrabToken=$(curl --include --location 'https://managerapi.mosyle.com/v2/login' \
-		--header 'Content-Type: application/json' \
-		--data-raw "$(Generate_JSON_PostData)" 2>/dev/null )
-	
-		AuthToken=$(echo "$GrabToken" | grep Authorization | cut -d ' ' -f 3 )
+SubFunctionGenerateBearerToken() {
+	#Using JSON Post data from above try to get BearerToken
+	GrabToken=$(curl --include --location 'https://managerapi.mosyle.com/v2/login' \
+	--header 'Content-Type: application/json' \
+	--data-raw "$(Generate_JSON_PostData)" 2>/dev/null )
 
-		#Make sure we got data back and if so store it.
-		if [ -z "$AuthToken" ]; then
-			echo "No token given by Mostle.  FAIL."
-			exit 1
-	
-		else
-			echo "Token Given.  Storing.."
-			#Strip any Spaces in the Token
-			AuthToken="${AuthToken//[[:space:]]/}"
-			#Drop the token to file.  Its good for 24hrs
-			#so maybe down the road we can reuse it.
-			echo "$AuthToken" > /tmp/.MosyleAPI_BearToken
-		fi
-	
-	}
-	
+	AuthToken=$(echo "$GrabToken" | grep Authorization | cut -d ' ' -f 3 )
+
+	#Make sure we got data back and if so store it.
+	if [ -z "$AuthToken" ]; then
+		echo "No token given by Mostle.  FAIL."
+		exit 1
+
+	else
+		echo "Token Given.  Storing.."
+		#Strip any Spaces in the Token
+		AuthToken="${AuthToken//[[:space:]]/}"
+		#Drop the token to file.  Its good for 24hrs
+		#so maybe down the road we can reuse it.
+		echo "$AuthToken" > /tmp/.MosyleAPI_BearToken
+	fi
+
+}
+
+GetBearerToken() {
 	if [[ -e "/tmp/.MosyleAPI_BearToken" ]]; then
 		FilesAge=$(( $(date +%s) - $(date -r /tmp/.MosyleAPI_BearToken +%s) ))
 		echo "Files Age-> ($FilesAge)"
