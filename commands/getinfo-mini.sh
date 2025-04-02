@@ -86,14 +86,14 @@ if [ ! -z "$FoundItIOS" ]; then
 				echo "DeviceSerialNumber=$DeviceSerialNumber"
 				echo "CURRENTNAME=$CURRENTNAME"
 				echo "TAGS=$TAGS"
-				echo "ASSET TAG=$ASSETTAG"
+				echo "ASSETTAG=$ASSETTAG"
 				echo "LASTCHECKIN=$LASTCHECKIN"
 				echo "ENROLLMENT_TYPE=$ENROLLMENT_TYPE"
 				echo "USERID=$USERID"
-				echo "ASSIGNED TO=$NAME"
-				echo "Lost Mode Status=$LOSTMODESTATUS"
-				echo "Last WAN IP=$LAST_IP_BEAT"
-				echo "Last LAN IP=$LAST_LAN_IP"							
+				echo "ASSIGNEDTO=$NAME"
+				echo "LOSTMODESTATUS=$LOSTMODESTATUS"
+				echo "LAST_IP_BEAT=$LAST_IP_BEAT"
+				echo "LAST_LAN_IP=$LAST_LAN_IP"								
 			fi
 
 
@@ -115,14 +115,14 @@ if [ ! -z "$FoundItIOS" ]; then
 			echo "DeviceSerialNumber=$DeviceSerialNumber"
 			echo "CURRENTNAME=$CURRENTNAME"
 			echo "TAGS=$TAGS"
-			echo "ASSET TAG=$ASSETTAG"
+			echo "ASSETTAG=$ASSETTAG"
 			echo "LASTCHECKIN=$LASTCHECKIN"
 			echo "ENROLLMENT_TYPE=$ENROLLMENT_TYPE"
 			echo "USERID=$USERID"
-			echo "ASSIGNED TO=$NAME"
-			echo "Lost Mode Status=$LOSTMODESTATUS"
-			echo "Last WAN IP=$LAST_IP_BEAT"
-			echo "Last LAN IP=$LAST_LAN_IP"		
+			echo "ASSIGNEDTO=$NAME"
+			echo "LOSTMODESTATUS=$LOSTMODESTATUS"
+			echo "LAST_IP_BEAT=$LAST_IP_BEAT"
+			echo "LAST_LAN_IP=$LAST_LAN_IP"		
 
 		fi
 	fi
