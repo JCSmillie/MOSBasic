@@ -471,24 +471,50 @@ SubFunctionGenerateBearerToken() {
 }
 
 GetBearerToken() {
-	if [[ -e "/tmp/.MosyleAPI_BearToken" ]]; then
-		FilesAge=$(( $(date +%s) - $(date -r /tmp/.MosyleAPI_BearToken +%s) ))
-		echo "Files Age-> ($FilesAge)"
-		if [[ ${FilesAge} -lt 3600 ]]; then
-			cli_log "Recently grabbed Bearer Token is less than an hour old (${FilesAge} seconds.)  Reusing."
-			AuthToken=$(cat "/tmp/.MosyleAPI_BearToken")
+	UnixVersion=$(uname)
+	
+	if [ "$UnixVersion" = "Darwin"]; then
+	
+		if [[ -e "/tmp/.MosyleAPI_BearToken" ]]; then
+			FilesAge=$(( $(date +%s) - $(date -r /tmp/.MosyleAPI_BearToken +%s) ))
+			echo "Files Age-> ($FilesAge)"
+			if [[ ${FilesAge} -lt 3600 ]]; then
+				cli_log "Recently grabbed Bearer Token is less than an hour old (${FilesAge} seconds.)  Reusing."
+				AuthToken=$(cat "/tmp/.MosyleAPI_BearToken")
 			
+			else
+				cli_log "Token is too old (${FilesAge} seconds.)  Renewing."
+				rm -Rf "/tmp/.MosyleAPI_BearToken"
+				SubFunctionGenerateBearerToken
+			fi
+		
 		else
-			cli_log "Token is too old (${FilesAge} seconds.)  Renewing."
-			rm -Rf "/tmp/.MosyleAPI_BearToken"
+			cli_log "Pre-grabbed bearer token not found or too old.  Grabbing."
 			SubFunctionGenerateBearerToken
+
 		fi
 		
 	else
-		cli_log "Pre-grabbed bearer token not found or too old.  Grabbing."
-		SubFunctionGenerateBearerToken
+		#This is a contengency for Linux.  I don't know why but it doesnt like the way
+		#I detect if we have a token cache'd.  For now we just grab a new one each time if Linux.
+		#Using JSON Post data from above try to get BearerToken
+		GrabToken=$(curl --include --location 'https://managerapi.mosyle.com/v2/login' \
+		--header 'Content-Type: application/json' \
+		--data "$(Generate_JSON_PostData)" 2>/dev/null)
+	
+		AuthToken=$(echo "$GrabToken" | grep Authorization | cut -d ' ' -f 3 )
 
-	fi
+		#Make sure we got data back and if so store it.
+		if [ -z "$AuthToken" ]; then
+			echo "No token given by Mostle.  FAIL."
+			exit 1
+	
+		else
+			echo "Token Given.  Storing.."
+			#Strip any Spaces in the Token
+			AuthToken="${AuthToken//[[:space:]]/}"
+		fi
+		
 }
 Generate_JSON_SetAssetTag() {
 cat <<EOF
