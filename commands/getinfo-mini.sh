@@ -56,11 +56,6 @@ if [ ! -z "$FoundItIOS" ]; then
 		echo "Tag Check-> $FoundItIOS"
 	fi
 	
-	#Throw up a banner for the iPads section
-	echo "${Red}--------------------------------------------------${reset}"
-	echo "${Red}|==               ${Yellow}iPads/iPhones${Red}                ==|${reset}"
-	echo "${Red}--------------------------------------------------${reset}"
-
 	#Check to see how many results we got.
 	WCC=$(echo "$FoundItIOS" | wc -l )
 	WCC="${WCC//[[:space:]]/}"
