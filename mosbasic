@@ -390,6 +390,9 @@ whoislost)
 serialcheck)
 	"$BAGCLI_WORKDIR/commands/SerialinMosyle.sh" "$2" "$3"
 	;;			
+getinfomini)
+	"$BAGCLI_WORKDIR/commands/getinfo-mini.sh" "$2"
+	;;			
   *)
     cli_help
     ;;
