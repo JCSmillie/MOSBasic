@@ -202,7 +202,7 @@ cat <<EOF
 	"options": {
 		"os": "ios",
 		"serial_numbers": "$DeviceSerialNumber",
-		"specific_columns": "deviceudid,date_last_beat,tags,lostmode_status,longitude,latitude"
+		"specific_columns": "deviceudid,date_last_beat,tags,lostmode_status,longitude,latitude,altitude"
 	}
 }
 EOF
@@ -255,6 +255,7 @@ CheckLostMode() {
 		LOSTMODE=$(echo "$JSON" | grep lostmode_status | tail -1 | cut -d ':' -f 2 | cut -d '"' -f 2)
 		LONGITUDE=$(echo "$JSON" | grep longitude | tail -1 | cut -d ':' -f 2 | cut -d '"' -f 2)
 		LATITUDE=$(echo "$JSON" | grep latitude | tail -1 | cut -d ':' -f 2 | cut -d '"' -f 2)
+		ALTITUDE=$(echo "$JSON" | grep altitude | tail -1 | cut -d ':' -f 2 | cut -d '"' -f 2)
 		
 		if [ "$MB_DEBUG" = "Y" ]; then
 			echo "($UDID) / ($LASTBEAT) / ($TAGS) / ($LOSTMODE) / ($LONGITUDE) / ($LATITUDE)"
