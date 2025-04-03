@@ -82,21 +82,21 @@ ParseIt_ios() {
 		log_line "No data given.  Can't parse!"
 		exit
 	fi
-	
+
 	UDID=$(echo "$line" | cut -f 1 -d$'\t')
 	#DeviceSerialNumber=$(echo "$line" | cut -f 2 -d$'\t')
-	CURRENTNAME=$(echo "$line" | cut -f 4 -d$'\t')
-	#TAGS=$(echo "$line" | cut -f 4 -d$'\t')
-	#ASSETTAG=$(echo "$line" | cut -f 5 -d$'\t')
+	CURRENTNAME=$(echo "$line" | cut -f 3 -d$'\t')
+	TAGS=$(echo "$line" | cut -f 4 -d$'\t')
+	ASSETTAG=$(echo "$line" | cut -f 5 -d$'\t')
 	#LASTCHECKIN=$(echo "$line" | cut -f 6 -d$'\t')
-	ENROLLMENT_TYPE=$(echo "$line" | cut -f 2 -d$'\t')
+	ENROLLMENT_TYPE=$(echo "$line" | cut -f 7 -d$'\t')
 	#USERID=$(echo "$line" | cut -f 8 -d$'\t')
-	NAME=$(echo "$line" | cut -f 9 -d$'\t')
-	DeviceSerialNumber=$(echo "$line" | cut -f 3 -d$'\t')
+	NAME=$(echo "$line" | cut -f 8 -d$'\t')
+	DeviceSerialNumber=$(echo "$line" | cut -f 2 -d$'\t')
 	TAGS=$(echo "$line" | cut -f 5 -d$'\t')
 	ASSETTAG=$(echo "$line" | cut -f 6 -d$'\t')
-	LASTCHECKIN=$(echo "$line" | cut -f 7 -d$'\t')
-	USERID=$(echo "$line" | cut -f 9 -d$'\t')
+	LASTCHECKIN=$(echo "$line" | cut -f 9 -d$'\t')
+	USERID=$(echo "$line" | cut -f 6 -d$'\t')
 	
 	if [ "$LASTCHECKIN" = "null" ]; then
 		LASTCHECKIN="NO-DATA"
@@ -341,12 +341,12 @@ EOF
 
 GetCurrentInfo-ios(){
 	GetBearerToken
-
 	#This is a new CURL call with JSON data - JCS 11/8/23
 	output=$(curl -s --location 'https://managerapi.mosyle.com/v2/listdevices' \
 		--header 'content-type: application/json' \
 		--header "Authorization: Bearer $AuthToken" \
 		--data "$(Generate_JSON_IOSDUMPPostData)") 
+
 	
 	if echo "$output" | grep "DEVICES_NOTFOUND"; then
 		log_line "No updated info available for $DeviceSerialNumber"

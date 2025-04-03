@@ -34,7 +34,7 @@ if [ -z "$1" ]; then
 fi
 
 #Find by Asset Tag, Serial, or Username.  Same Search actually works both ways.
-FoundItIOS=$(cat "$TEMPOUTPUTFILE_MERGEDIOS" | cut -d$'\t' -f 3,6,8,9 | grep "$1")
+FoundItIOS=$(cat "$TEMPOUTPUTFILE_MERGEDIOS" | cut -d$'\t' -f 2,5,6 | grep "$1")
 #Strip FoundIt down to JUST THE SERIAL #
 FoundItIOS=$(echo "$FoundItIOS" | cut -d$'\t' -f 1)
 if [ "$MB_DEBUG" = "Y" ]; then
@@ -42,7 +42,7 @@ if [ "$MB_DEBUG" = "Y" ]; then
 fi
 
 #Find by Asset Tag, Serial, or Username.  Same Search actually works both ways.
-FoundItMACOS=$(cat "$TEMPOUTPUTFILE_MERGEDMAC" | cut -d$'\t' -f 3,6,8,9 | grep "$1")
+FoundItMACOS=$(cat "$TEMPOUTPUTFILE_MERGEDMAC" | cut -d$'\t' -f 2,5,6 | grep "$1")
 #Strip FoundIt down to JUST THE SERIAL #
 FoundItMACOS=$(echo "$FoundItMACOS" | cut -d$'\t' -f 1)
 if [ "$MB_DEBUG" = "Y" ]; then
