@@ -45,7 +45,8 @@ if [ -z "$TAG_GIVEN" ]; then
 fi
 
 #Get the serial number from the tag.
-SorterOfiPadz-blkopz
+SerialFromTag
+
 
 if [ "$RETURNSERIAL" = "EPICFAIL" ]; then
 	echo "${Red}Cant find $1 in cached Mosyle data.  EPIC FAIL${reset}"
@@ -57,7 +58,7 @@ else
 	
 	#Call Sorter function to seperate out the Shared iPads from regular iPads
 	#before we act.  Shared iPads should NEVER be limbo'd before wiping.
-	SorterOfiPadz
+	SorterOfiPadz-blkopz
 
 	#IF we are sending a single ASSET Tag just do it.  Otherwise
 	#seek confirmation.

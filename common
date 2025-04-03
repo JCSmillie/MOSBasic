@@ -733,8 +733,7 @@ cat <<EOF
 	{"accessToken": "$MOSYLE_API_key",
 	"elements": [ {
         "operation": "$OPERATION2PERFORM",
-    	"devices": "$DEVICES2BULKON"
-
+    	"devices": [ "$DEVICES2BULKON" ]
 	} ]
 }
 EOF

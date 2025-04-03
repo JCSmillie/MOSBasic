@@ -65,7 +65,7 @@ fi
 
 echo "Proceeding to RESTART the following:"
 echo "------------------------------------------"	
-echo "RESTART UDIDs-> $RESTARTSetUDiDs"
+echo "RESTART UDIDs-> $blkopzSetUDiDs"
 
 #Has confirmation been given?  Get it
 if [ -z "$shouldwedoit" ]; then
@@ -77,7 +77,7 @@ fi
 if [ "$shouldwedoit" = "Y" ] || [ "$shouldwedoit" = "y" ]; then
 
 	#At this point we are almost ready to do the wipe and RESTART
-	if [ ! -z "$RESTARTSetUDiDs" ]; then
+	if [ ! -z "$blkopzSetUDiDs" ]; then
 		
 			echo "Making it So #1."
 			#Before starting to grab data lets grab the Bearer Token
@@ -86,8 +86,8 @@ if [ "$shouldwedoit" = "Y" ] || [ "$shouldwedoit" = "y" ]; then
 			# #Call out to Mosyle MDM to submit list of UDIDs which need RESTART'd
 			# content="{\"accessToken\":\"$APIKey\",\"elements\":[{\"devices\":\"$RESTARTSetUDiDs\",\"operation\":\"change_to_RESTART\"}]}"
 			# curl  -s -k -X POST -d $content 'https://managerapi.mosyle.com/v2/bulkops'
-			OPERATION2PERFORM="clear_commands"
-			DEVICES2BULKON="$vLIMBOSetUDiDs"
+			OPERATION2PERFORM="restart_devices"
+			DEVICES2BULKON="$blkopzSetUDiDs"
 			
 			#This is a new CURL call with JSON data - JCS 11/8/23
 			curl --location 'https://managerapi.mosyle.com/v2/bulkops' \
@@ -98,16 +98,7 @@ if [ "$shouldwedoit" = "Y" ] || [ "$shouldwedoit" = "y" ]; then
 			#Log that we did something
 			cli_log "Bulk command $OPERATION2PERFORM was sent to the following devices: $DEVICES2BULKON"
 			
-			OPERATION2PERFORM="change_to_RESTART"
-			DEVICES2BULKON="$blkopzSetUDiDs"
-			#This is a new CURL call with JSON data - JCS 11/8/23
-			curl --location 'https://managerapi.mosyle.com/v2/bulkops' \
-			--header 'Content-Type: application/json' \
-				--header "Authorization: Bearer $AuthToken" \
-				--data "$(Generate_JSON_BulkOperations)"
-			#Log that we did something			
-			cli_log "Bulk command $OPERATION2PERFORM was sent to the following devices: $DEVICES2BULKON"
-			
+			echo "$(Generate_JSON_BulkOperations)"
 
 	else
 		#If we are here then we got nothing to work on
