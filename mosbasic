@@ -392,7 +392,10 @@ serialcheck)
 	;;			
 getinfomini)
 	"$BAGCLI_WORKDIR/commands/getinfo-mini.sh" "$2"
-	;;			
+	;;	
+restart)
+	"$BAGCLI_WORKDIR/commands/restart.sh" "$2"
+	;;	
   *)
     cli_help
     ;;
