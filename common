@@ -700,7 +700,45 @@ DisableLostModeBULK(){
 	fi
 }
 
+#These two Functions come from the iOSLimbo.sh.  When I started writing
+# the restart command, since they both use the bulkops method, I didn't want
+# to duplicate the work.  There is a like named function in iOSLimboWipe.sh which
+# is much more complicated hence why I left it alone, for now. -JCS 25/04/02
+SorterOfiPadz-blkopz() {
+	#Find out if the iPad we are operating on
+	#is a Shared mode iPad
+	IsThisiPadSharedMode
+	
+	#if Shared we only want to wipe
+	if [ "$ISSHARED" = "TRUE" ]; then
+		cli_log "$ASSETTAG is a Shared iPad.  Cant send to Limbo."
+	    exit 1
+	else
+		
+		####NOTE
+		#Otherwise send to Limbo.
+		#if this is our first entry just fill the variable
+		if [ -z "$blkopzSetUDiDs" ]; then
+			blkopzSetUDiDs="$UDID"
+		else
+			#all others are additons to the variable
+			blkopzSetUDiDs=$(echo "$blkopzSetUDiDs,$UDID")
+		fi
+	fi
+}
 
+#Format for an iPad Data Dump of JSON
+Generate_JSON_BulkOperations() {
+cat <<EOF
+	{"accessToken": "$MOSYLE_API_key",
+	"elements": [ {
+        "operation": "$OPERATION2PERFORM",
+    	"devices": "$DEVICES2BULKON"
+
+	} ]
+}
+EOF
+}
 
 
 

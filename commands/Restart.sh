@@ -2,11 +2,11 @@
 
 ################################################################
 #
-#	iosLimboOnly.sh  
+#	restart.sh  
 #		Script takes input of asset tag, looks up serial, then
-#		tells Mosyle to Limbo the device.  NO WIPE.
+#		tells Mosyle to restart the device.
 #
-#		JCS - 2/16/2023  -v1
+#		JCS - 04/02/2025
 #
 ################################################################
 
@@ -16,7 +16,7 @@ source "$BAGCLI_WORKDIR/common"
 IFS=$'\n'
 
 
-CMDRAN="iOSLimboOnly"
+CMDRAN="restart"
 
 if [ "$MB_DEBUG" = "Y" ]; then
 	echo "Variable 1-> $1"
@@ -26,10 +26,8 @@ if [ "$MB_DEBUG" = "Y" ]; then
 fi
 
 #Delete our file of previous scanned devices if it exists
-rm -Rf /tmp/Scand2Wipe.txt
-rm -Rf /tmp/Scand2Wipe_Serialz.txt
-rm -Rf /tmp/Scand2WipeLimbo_Serialz.txt
-
+rm -Rf /tmp/Scand2Restart.txt
+rm -Rf /tmp/Scand2Restart_Serialz.txt
 
 
 #############################
@@ -45,7 +43,7 @@ if [ -z "$TAG_GIVEN" ]; then
 fi
 
 #Get the serial number from the tag.
-SorterOfiPadz-blkopz
+SerialFromTag
 
 if [ "$RETURNSERIAL" = "EPICFAIL" ]; then
 	echo "${Red}Cant find $1 in cached Mosyle data.  EPIC FAIL${reset}"
@@ -56,8 +54,8 @@ else
 	echo "Asset tag $TAG_GIVEN is $RETURNSERIAL."	
 	
 	#Call Sorter function to seperate out the Shared iPads from regular iPads
-	#before we act.  Shared iPads should NEVER be limbo'd before wiping.
-	SorterOfiPadz
+	#before we act.  Shared iPads should NEVER be RESTART'd before wiping.
+	SorterOfiPadz-blkopz
 
 	#IF we are sending a single ASSET Tag just do it.  Otherwise
 	#seek confirmation.
@@ -65,9 +63,9 @@ else
 fi
 
 
-echo "Proceeding to Limbo the following:"
+echo "Proceeding to RESTART the following:"
 echo "------------------------------------------"	
-echo "Limbo UDIDs-> $blkopzSetUDiDs"
+echo "RESTART UDIDs-> $RESTARTSetUDiDs"
 
 #Has confirmation been given?  Get it
 if [ -z "$shouldwedoit" ]; then
@@ -78,18 +76,18 @@ fi
 
 if [ "$shouldwedoit" = "Y" ] || [ "$shouldwedoit" = "y" ]; then
 
-	#At this point we are almost ready to do the wipe and limbo
-	if [ ! -z "$blkopzSetUDiDs" ]; then
+	#At this point we are almost ready to do the wipe and RESTART
+	if [ ! -z "$RESTARTSetUDiDs" ]; then
 		
 			echo "Making it So #1."
 			#Before starting to grab data lets grab the Bearer Token
 			GetBearerToken
 			
-			# #Call out to Mosyle MDM to submit list of UDIDs which need Limbo'd
-			# content="{\"accessToken\":\"$APIKey\",\"elements\":[{\"devices\":\"$LIMBOSetUDiDs\",\"operation\":\"change_to_limbo\"}]}"
+			# #Call out to Mosyle MDM to submit list of UDIDs which need RESTART'd
+			# content="{\"accessToken\":\"$APIKey\",\"elements\":[{\"devices\":\"$RESTARTSetUDiDs\",\"operation\":\"change_to_RESTART\"}]}"
 			# curl  -s -k -X POST -d $content 'https://managerapi.mosyle.com/v2/bulkops'
 			OPERATION2PERFORM="clear_commands"
-			DEVICES2BULKON="$blkopzSetUDiDs"
+			DEVICES2BULKON="$vLIMBOSetUDiDs"
 			
 			#This is a new CURL call with JSON data - JCS 11/8/23
 			curl --location 'https://managerapi.mosyle.com/v2/bulkops' \
@@ -100,7 +98,7 @@ if [ "$shouldwedoit" = "Y" ] || [ "$shouldwedoit" = "y" ]; then
 			#Log that we did something
 			cli_log "Bulk command $OPERATION2PERFORM was sent to the following devices: $DEVICES2BULKON"
 			
-			OPERATION2PERFORM="change_to_limbo"
+			OPERATION2PERFORM="change_to_RESTART"
 			DEVICES2BULKON="$blkopzSetUDiDs"
 			#This is a new CURL call with JSON data - JCS 11/8/23
 			curl --location 'https://managerapi.mosyle.com/v2/bulkops' \
@@ -113,7 +111,7 @@ if [ "$shouldwedoit" = "Y" ] || [ "$shouldwedoit" = "y" ]; then
 
 	else
 		#If we are here then we got nothing to work on
-		echo "No UDIDs are in cache for Limbo and Wipe.  Doing Nothing."
+		echo "No UDIDs are in cache for RESTART and Wipe.  Doing Nothing."
 	fi
 
 else
