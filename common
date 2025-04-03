@@ -352,9 +352,9 @@ GetCurrentInfo-ios(){
 		log_line "No updated info available for $DeviceSerialNumber"
 
 	else
-		# if [ "$MB_DEBUG" = "Y" ]; then
+		if [ "$MB_DEBUG" = "Y" ]; then
 			echo "$output" > "/tmp/$DeviceSerialNumber.GetCurrentInfo-ios.txt"
-		# fi
+		fi
 
 		#What parse are we using
 		if echo "$output" | grep -q "userid"; then
