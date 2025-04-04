@@ -98,6 +98,10 @@ ParseIt_ios() {
 	LASTCHECKIN=$(echo "$line" | cut -f 9 -d$'\t')
 	USERID=$(echo "$line" | cut -f 6 -d$'\t')
 	
+	if [ "$TAGS" = "null" ] ; then
+		TAGS=""
+	fi
+	
 	if [ "$LASTCHECKIN" = "null" ]; then
 		LASTCHECKIN="NO-DATA"
 	else
