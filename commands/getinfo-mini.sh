@@ -75,18 +75,21 @@ if [ ! -z "$FoundItIOS" ]; then
 			if [ -z "$ENROLLMENT_TYPE" ]; then
 			cli_log "$1 <$ASSETTAG/$DeviceSerialNumber> Is in Limbo or Shared Mode."
 			else
+				echo "=============DATAOUTPUT============="
 				echo "UDID=$UDID"
 				echo "DeviceSerialNumber=$DeviceSerialNumber"
 				echo "CURRENTNAME=$CURRENTNAME"
 				echo "TAGS=$TAGS"
 				echo "ASSETTAG=$ASSETTAG"
 				echo "LASTCHECKIN=$LASTCHECKIN"
+				echo "LASTCHECKINRAW=$LASTCHECKINRAW"
 				echo "ENROLLMENT_TYPE=$ENROLLMENT_TYPE"
 				echo "USERID=$USERID"
 				echo "ASSIGNEDTO=$NAME"
 				echo "LOSTMODESTATUS=$LOSTMODESTATUS"
 				echo "LAST_IP_BEAT=$LAST_IP_BEAT"
-				echo "LAST_LAN_IP=$LAST_LAN_IP"								
+				echo "LAST_LAN_IP=$LAST_LAN_IP"		
+				echo "NEEDSOSUPDATE=$NEEDSOSUPDATE"						
 			fi
 
 
@@ -104,18 +107,21 @@ if [ ! -z "$FoundItIOS" ]; then
 		if [ -z "$ENROLLMENT_TYPE" ]; then
 			cli_log "$1 <$ASSETTAG/$DeviceSerialNumber> Is in Limbo or Shared Mode."
 		else
+			echo "=============DATAOUTPUT============="
 			echo "UDID=$UDID"
 			echo "DeviceSerialNumber=$DeviceSerialNumber"
 			echo "CURRENTNAME=$CURRENTNAME"
 			echo "TAGS=$TAGS"
 			echo "ASSETTAG=$ASSETTAG"
 			echo "LASTCHECKIN=$LASTCHECKIN"
+			echo "LASTCHECKINRAW=$LASTCHECKINRAW"
 			echo "ENROLLMENT_TYPE=$ENROLLMENT_TYPE"
 			echo "USERID=$USERID"
 			echo "ASSIGNEDTO=$NAME"
 			echo "LOSTMODESTATUS=$LOSTMODESTATUS"
 			echo "LAST_IP_BEAT=$LAST_IP_BEAT"
-			echo "LAST_LAN_IP=$LAST_LAN_IP"		
+			echo "LAST_LAN_IP=$LAST_LAN_IP"	
+			echo "NEEDSOSUPDATE=$NEEDSOSUPDATE"	
 
 		fi
 	fi

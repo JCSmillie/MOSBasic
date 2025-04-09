@@ -330,7 +330,7 @@ cat <<EOF
 		"os": "ios",
 		"serial_numbers": "$DeviceSerialNumber",
 		"page": "$THEPAGE",
-		"specific_columns": "date_last_beat,lostmode_status,last_ip_beat,last_lan_ip,userid"
+		"specific_columns": "date_last_beat,lostmode_status,last_ip_beat,last_lan_ip,userid,needosupdate"
 	}
 }
 EOF
@@ -356,11 +356,11 @@ GetCurrentInfo-ios(){
 		#What parse are we using
 		if echo "$output" | grep -q "userid"; then
 			#iPad is assigned
-			MicroParse=$(echo "$output"| awk 'BEGIN{FS=",";RS="},{"}{print $0}' | perl -pe 's/.*"date_last_beat":"?(.*?)"?,"lostmode_status":"(.*?)","last_ip_beat":"?(.*?)"?,"last_lan_ip":?(.*?),"userid":"?(.*?)",*.*/\1\t\2\t\3\t\4\t\5\t\6/')
+			MicroParse=$(echo "$output"| awk 'BEGIN{FS=",";RS="},{"}{print $0}' | perl -pe 's/.*"date_last_beat":"?(.*?)"?,"lostmode_status":"(.*?)","last_ip_beat":"?(.*?)"?,"last_lan_ip":?(.*?),"userid":"?(.*?)","needosupdate":"?(.*?)*.*/\1\t\2\t\3\t\4\t\5\t\6\t\7/')
 			#MicroParse=$(echo "$output"| awk 'BEGIN{FS=",";RS="},{"}{print $0}' | perl -pe 's/.*"date_last_beat":"?(.*?)"?,"lostmode_status":"(.*?)","last_ip_beat":"?(.*?)"?,"last_lan_ip":?(.*?),"userid":"?(.*?),*.*/\1\t\2\t\3\t\4\t\5\t\6\t\7/')
 		else
 			#iPad not assigned.  Use this one.
-			MicroParse=$(echo "$output"| awk 'BEGIN{FS=",";RS="},{"}{print $0}' | perl -pe 's/.*"date_last_beat":"?(.*?)"?,"lostmode_status":"(.*?)","last_ip_beat":"?(.*?)"?,"last_lan_ip":"?(.*?)",*.*/\1\t\2\t\3\t\4\t\5/')
+			MicroParse=$(echo "$output"| awk 'BEGIN{FS=",";RS="},{"}{print $0}' | perl -pe 's/.*"date_last_beat":"?(.*?)"?,"lostmode_status":"(.*?)","last_ip_beat":"?(.*?)"?,"last_lan_ip":"?(.*?)","needsosupdate":"?(.*?),*.*/\1\t\2\t\3\t\4\t\5\t\6/')
 		fi
 
 		LASTCHECKIN=$(echo "$MicroParse" |  cut -f 1 -d$'\t' )
@@ -368,6 +368,8 @@ GetCurrentInfo-ios(){
 		LAST_IP_BEAT=$(echo "$MicroParse" |  cut -f 3 -d$'\t' )
 		LAST_LAN_IP=$(echo "$MicroParse" |  cut -f 4 -d$'\t' )
 		USERID=$(echo "$MicroParse" |  cut -f 5 -d$'\t' )
+		NEEDSOSUPDATE=$(echo "$MicroParse" |  cut -f 6 -d$'\t' )
+		LASTCHECKINRAW="$LASTCHECKIN"
 
 		#If device is unassigned then set the USERID to be UNASSIGNED
 		if [ ! -n "$USERID" ]; then
