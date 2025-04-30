@@ -10,7 +10,12 @@
 #
 ################################################################
 
-BAGCLI_WORKDIR=/Users/jsmillie/GitHub/MOSBasic
+#MOSBasic scripts are used here and relied on
+BAGCLI_WORKDIR=$(readlink /usr/local/bin/mosbasic)
+#Remove our command name from the ou	 above
+BAGCLI_WORKDIR=${BAGCLI_WORKDIR/mosbasic/}
+export BAGCLI_WORKDIR
+
 TEMPOUTPUTFILE=/tmp/groups.txt
 
 source "$BAGCLI_WORKDIR/config"
@@ -26,16 +31,38 @@ if [ "$MB_DEBUG" = "Y" ]; then
 	echo "Variable 4-> $4"
 fi
 
+Generate_JSON_ListGroups() {
+cat <<EOF
+	{"accessToken": "$MOSYLE_API_key",
+	"options": {
+		"os": "ios",
+		"page": "$THEPAGE",
+		"page_size": "1000"
+	}
+}
+EOF
+}
 ################################
 #            DO WORK           #
 ################################
 listgroupsios() {
+	GetBearerToken
 	THECOUNT=0
 	while true; do
 		let "THECOUNT=$THECOUNT+1"
 		THEPAGE="$THECOUNT"
-		content="{\"accessToken\":\"$APIKey\",\"options\":{\"os\":\"ios\",\"page\":$THEPAGE}}"
-		output=$(curl -s -k -X POST -d $content 'https://managerapi.mosyle.com/v2/listdevicegroups') >> $LOG
+		
+		#This is a new CURL call with JSON data - JCS 11/8/23
+		output=$(curl -s --location 'https://managerapi.mosyle.com/v2/listdevicegroups' \
+			--header 'content-type: application/json' \
+			--header "Authorization: Bearer $AuthToken" \
+			--data "$(Generate_JSON_ListGroups)") 
+		
+		echo "$(Generate_JSON_ListGroups)"
+		
+		
+		#content="{\"accessToken\":\"$APIKey\",\"options\":{\"os\":\"ios\",\"page\":$THEPAGE}}"
+		#output=$(curl -s -k -X POST -d $content 'https://managerapi.mosyle.com/v2/listdevicegroups') >> $LOG
 	
 		#Detect we just loaded a page with no content and stop.
 		LASTPAGE=$(echo $output | grep '"groups":\[\]')
