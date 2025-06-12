@@ -228,32 +228,6 @@ CalliPadWipeRoutine() {
 #############################
 #          Do Work          #
 #############################
-#Check to see if we should use Return to Service Mode
-if [ -z "$RTS_ENABLED" ]; then
-	echo " "
-	echo "ATTENTION!!!!!"
-	echo " **MOSBASIC SUPPORTS Return to Service Mode (RTS)"
-	echo "-------------------------------------------------"
-	echo "Wipe with Return to Service mode? <Y/N>"
-	echo "-------------------------------------------------"
-	read RTS_ENABLED
-	
-	echo "RTS_ENABLED ---> $RTS_ENABLED"
-	
-	# if [ ! "$RTS_ENABLED" = N ] || [ ! "$RTS_ENABLED" = n ]; then
-	# 	RTS_ENABLED="Y"
-	#
-	# fi
-	
-	cli_log "RTS MODE Enabled set to ($RTS_ENABLED)"
-fi
-
-
-echo "RTS_ENABLED ---> $RTS_ENABLED"
-
-
-
-
 #This would be a routine for doing Scan and Go based on $1 equaling --scan
 if [ "$1" = "--scan" ]; then
 
@@ -363,7 +337,36 @@ elif [ "$1" = "--uncache" ]; then
 		done
 	fi
 		
+elif [ "$1" = "--norts" ]; then
+	TAG_GIVEN="$2"
+	RTS_ENABLED="N"
+
+	SerialFromTag	
+	
+	if [ "$RETURNSERIAL" = "EPICFAIL" ]; then
+		echo "${Red}Cant find $1 in cached Mosyle data.  EPIC FAIL${reset}"
 		
+		HOWMANY=$(wc -l < /tmp/Scand2Wipe_CACHE_Serialz.txt)
+		if [ "$HOWMANY" -gt "0" ]; then
+			echo "There are $HOWMANY serials waiting in cache to be processed."
+		fi
+		
+		
+		exit 1
+	
+	else
+		echo "Asset tag $TAG_GIVEN is $RETURNSERIAL.    Cache'ng for later..."
+		echo "$RETURNSERIAL,$UDID" >> /tmp/Scand2Wipe_CACHE_Serialz.txt
+		
+		#Call Sorter function to seperate out the Shared iPads from regular iPads
+		#before we act.  Shared iPads should NEVER be limbo'd before wiping.
+		SorterOfiPadz
+
+		#IF we are sending a single ASSET Tag just do it.  Otherwise
+		#seek confirmation.
+		shouldwedoit="Y"
+	fi
+			
 
 
 #This Routine is for doing a single asset tag.
@@ -389,6 +392,30 @@ else
 		shouldwedoit="Y"
 	fi
 fi
+
+#Check to see if we should use Return to Service Mode
+if [ -z "$RTS_ENABLED" ]; then
+	echo " "
+	echo "ATTENTION!!!!!"
+	echo " **MOSBASIC SUPPORTS Return to Service Mode (RTS)"
+	echo "-------------------------------------------------"
+	echo "Wipe with Return to Service mode? <Y/N>"
+	echo "-------------------------------------------------"
+	read RTS_ENABLED
+	
+	echo "RTS_ENABLED ---> $RTS_ENABLED"
+	
+	# if [ ! "$RTS_ENABLED" = N ] || [ ! "$RTS_ENABLED" = n ]; then
+	# 	RTS_ENABLED="Y"
+	#
+	# fi
+	
+	cli_log "RTS MODE Enabled set to ($RTS_ENABLED)"
+fi
+
+
+echo "RTS_ENABLED ---> $RTS_ENABLED"
+
 
 echo "Following Devices will be set to Limbo:"
 echo "------------------------------------------"	
