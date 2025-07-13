@@ -1,5 +1,6 @@
-# WARNING!!!!!  
-As of 11/8/23 MOSBasic doesn't work with Mosyle anymore.  I have to change my routines to include bearer tokens.  Just learned this today now that nothing is working anymore...  Stay tuned! -JCS
+# Is this project dead (7/12/25)?
+Nope.  I've been updating and fixing things as they happen.  Thinking of ways to make eveything better and then life kinda blew up in my face for a bit.  MOSBasic is a huge part of my next thing, MUSKY.  PSU MacAdmins 2025 is next week.  Stay tuned!!! 
+-JCS 
 
 # MOSBasic
 
