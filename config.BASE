@@ -1,4 +1,19 @@
 #------------------------------------
+#=- Items in this section have   -=
+#=- general values to get your   -=
+#=- setup going but can also be -=
+#=- tuned.                                  -=
+#------------------------------------
+#This is the maximum number of pages any
+#dump will make before giving up.  Typically
+#this will be when the API gives us data we
+#dont understand or our credential is expired
+#both would lead to tons of pages of error.  This
+#is our fail safe to stop the spam.  -- JCS
+MAXPAGECOUNT="15"
+NumberOfReturnsPerPage="1000"
+
+#------------------------------------
 #=- Nothing below this line should -=
 #=- Be Changed...                  -=
 #------------------------------------

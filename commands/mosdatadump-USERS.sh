@@ -34,7 +34,7 @@ cat <<EOF
 		"os": "ios",
 		"page": "$THEPAGE",
 		"specific_columns": "id,name,managedappleid,type",
-		"page_size": "1000"
+		"page_size": "$NumberOfReturnsPerPage"
 	}
 }
 EOF

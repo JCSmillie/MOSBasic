@@ -37,7 +37,7 @@ cat <<EOF
 		"os": "ios",
 		"page": "$THEPAGE",
 		"specific_columns": "deviceudid,serial_number,device_name,tags,asset_tag,userid,enrollment_type,username,date_app_info",
-		"page_size": "1000"
+		"page_size": "$NumberOfReturnsPerPage"
 	}
 }
 EOF
