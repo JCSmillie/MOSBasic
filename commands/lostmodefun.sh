@@ -227,7 +227,7 @@ CheckLostMode() {
 	elif echo "$APIOUTPUT" | grep "ENABLED"; then 
 		#echo "Lost Mode is enabled."
 		#Parse what was returned.
-		JSON=$(echo "$APIOUTPUT" | /usr/local/munki/munki-python -m json.tool)		
+		JSON=$(echo "$APIOUTPUT" | "$PYTHON2USE" -m json.tool)		
 		
 		if [ "$MB_DEBUG" = "Y" ]; then
 			echo "LOST ENABLED--> $JSON"
@@ -237,7 +237,7 @@ CheckLostMode() {
 		
 	else
 		#Only enabled state gives us more than we need.  All other states we can go with bare minimum
-		JSON=$(echo "$APIOUTPUT" | /usr/local/munki/munki-python -m json.tool)
+		JSON=$(echo "$APIOUTPUT" | "$PYTHON2USE" -m json.tool)
 		if [ "$MB_DEBUG" = "Y" ]; then
 			echo "ALL OTHER STATUSES--> $JSON"
 		fi
