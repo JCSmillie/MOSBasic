@@ -147,6 +147,13 @@ if [ "$MB_DEBUG" = "Y" ]; then
 	cli_log "Variable 4-> $4"
 fi
 
+#Make sure data points exists and we can read it
+if [[ -r "$TEMPOUTPUTFILE_MERGEDClasses" && -s "$TEMPOUTPUTFILE_MERGEDClasses" ]]; then
+	cli_log "Reference file available.  Continuing."
+else
+	cli_log "Reference file is missing, unreadable, or empty.  FAIL!!"
+	exit 1
+fi
 
 #Make sure we were given criteria to do a look up
 if [ -z "$1" ]; then
