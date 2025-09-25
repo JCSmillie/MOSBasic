@@ -31,9 +31,8 @@ Generate_JSON_UserDUMPPostData() {
 cat <<EOF
 	{"accessToken": "$MOSYLE_API_key",
 	"options": {
-		"os": "ios",
 		"page": "$THEPAGE",
-		"specific_columns": "id,name,managedappleid,type",
+		"specific_columns":  [ "id","name","managedappleid","type" ],
 		"page_size": "$NumberOfReturnsPerPage"
 	}
 }
