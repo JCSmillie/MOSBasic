@@ -113,9 +113,17 @@ GetInfo_MosyleClass() {
 		#Loop through all results one at a time and display.
 		echo "$MOSB_C_Query" | while read FoundOne; do
 
-			FoundOne=$(cat "$TEMPOUTPUTFILE_MERGEDClasses" | grep "$FoundOne")
-			ParseIt_MosyleClass "$FoundOne"
+			FoundOneOfOne=$(cat "$TEMPOUTPUTFILE_MERGEDClasses" | grep "$FoundOne")
+			
+			
+			#I need to debug this..  Sending data to the command
+			#doesnt work.  I bet its something stupid but its late. --JCS FIX BUG
+			MCline="$FoundOneOfOne"
+			ParseIt_MosyleClass "$FoundOneOfOne"
+			
 
+			echo "This is the line we looked for--> ($FoundOneOfOne)"
+			echo "------------------------------------------------------------"
 			echo " ID-> $MosyleClassID"
 			echo " Class Name-> $MosyleClassName"
 			echo " Class Location-> $MosyleClassLocation"
