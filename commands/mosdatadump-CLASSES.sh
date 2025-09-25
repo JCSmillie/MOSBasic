@@ -23,6 +23,13 @@ if [ "$MB_DEBUG" = "Y" ]; then
 	echo "Variable 4-> $4"
 fi
 
+#Classes - EDUONLY
+TEMPOUTPUTFILE_MERGEDClasses="/tmp/Mosyle_active_Classes_MergedClasses.txt"
+
+
+
+
+
 #The source file is a local file which holds a variable containing
 #our MosyleAPI key.  Should look like:
 #     MOSYLE_API_key="<<<<<<<<OUR-KEY>>>>>>>>"
@@ -189,5 +196,6 @@ else
 	cli_log "CLASSES DUMP-> DEBUG IS ENABLED.  NOT CLEANING UP REMAINING FILES!!!!"
 fi
 
+#Drop latest grab where it belongs.
+cat  /tmp/Mosyle_active_Classes.txt > "$TEMPOUTPUTFILE_MERGEDClasses"
 
-cat /tmp/MOSBasicRAW-ClassDump-TEMPSPOT.txt
