@@ -111,6 +111,14 @@ Commands:
 				for end of year operations where you want to release a ton of Macs
 				or iPads.  Send the output to Mosyle support to have those all removed.
 				Output file is optional.
+
+${Red} EXTREMELY BETA STUFF: ${reset}
+${Yellow} --You were warned.... ${reset}
+${Orange}  classdump${reset}			Dump info for all Classes from Mosyle to local reference files.
+  				Ref file is /tmp/Mosyle_active_Classes_MergedClasses.txt
+${Orange}  class-search <classid/teacherid/stuid/other>${reset}	Look up device assignment data by reference point 
+  						<classid/teacherid/stuid/other> ${Red}**This is PROOF OF CONCEPT**${reset}
+
 "
   exit 1
 }
@@ -361,6 +369,9 @@ forcedatadump)
 	;;
 info)
 	"$BAGCLI_WORKDIR/commands/getinfo.sh" "$2"
+	;;
+class-search)
+	"$BAGCLI_WORKDIR/commands/getinfo-classes.sh" "$2"
 	;;
 ioswipe)
 	"$BAGCLI_WORKDIR/commands/iosLimboNWipe.sh" "$2" "$3"
