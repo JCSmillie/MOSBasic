@@ -353,6 +353,9 @@ iosdump)
 userdump)
 	"$BAGCLI_WORKDIR/commands/mosdatadump-USERS.sh"
 	;;
+classdump)
+	"$BAGCLI_WORKDIR/commands/mosdatadump-CLASSES.sh"
+	;;
 forcedatadump)
 	ForceMassDump
 	;;
