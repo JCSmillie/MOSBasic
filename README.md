@@ -1,7 +1,3 @@
-# Is this project dead (7/12/25)?
-Nope.  I've been updating and fixing things as they happen.  Thinking of ways to make eveything better and then life kinda blew up in my face for a bit.  MOSBasic is a huge part of my next thing, MUSKY.  PSU MacAdmins 2025 is next week.  Stay tuned!!! 
--JCS 
-
 # MOSBasic
 
 Easy to use command line tools for interacting with MOSYLE MDM.  In places I also will interact with IncidentIQ ticket system for data.  I'm going to try to run my inventory check module so anyone could easily write their own module for the ticket system they use.  Will post a note about that in the wiki later when we get there.  This command was built for daily use at Gateway School District so we could easily maniplulate devices without having to go to the GUI every time.  It is 
@@ -15,6 +11,8 @@ Easy to use command line tools for interacting with MOSYLE MDM.  In places I als
  * Assign devices single, masss (scan from the command line,) or by file
  * Deassign device (send to Limbo) single, masss (scan from the command line,) or by file
  * Wipe device (requires device to have recently checked in)
+ 
+ **NOTE** There are some pre-requisites for this project now in 2025.  Hoping to keep to the standards though.
  
  Today if you type the _mosbasic_ command with no argument it tells you it can do the following things:
  ```
@@ -113,6 +111,8 @@ Or we can disable lost mode:
  
 The above example is just dealing with lost devices, but mosbasic can do more.  See the wiki.
  
+## Prerequisites
+ASOF 9/25/25 Machine where MOSBasic will be installed must have zsh, bash, perl, jq, and python3 available.
  
 ## Configuration
  To get started you need to use the _RUNME1st_CONFIGSCRIPT.sh_ to setup.  _RUNME1st_CONFIGSCRIPT.sh_ command will prompt you through the setup process of:
@@ -128,11 +128,6 @@ Its great that MOS makes me think of two things I love working on:
  * MOSyle
  * [MOS Technology](https:_en.wikipedia.org/wiki/MOS_Technology), Commodore's chip foundry out in West Chester, PA
 
-
-
-  
-  
-  
 ## Module Support
 MOSBasic supports external modules for lookup support.  When you run _RUNME1st_CONFIGSCRIPT.sh_ you will be asked if you want support for external modules.  Today the only supported options are: iiq, other, and none.
   * iiq-> IndcidentIQ support.  This also requires $LOCALCONF/.incidentIQ to exist.  You must create this file by hand.
@@ -155,6 +150,14 @@ In this folder you will find scripts that rely on MOSBasic to do other functions
  
  I use **autoload is-at-least** in ShakeNBake to do compares on what Apple says a device should use and what the device has.  When cfgutil executes ShakeNBake though it doesn't call the Autoload command... It doesn't know what it is.  I know this has something to do with how cfgutil loads scripts and their support files but haven't put my finger on a good fix.  In the short term when launching ShakeNBake use this line instead-> `cfgutil exec -a 'zsh -c "/Users/Shared/ShakeNBake/ShakeNBake_V3.sh"'`  This will insure that all the shell files get loaded.  Also There is something weird with Ventura Beta (as of 7/14/22) and multiple iPads (more than 4) on a single bus.  I've seen this with my Thundersync unit.  Needs more testing and I'll report it.  For now run only in Monterey if you can.
 
+#Nifty Beta Stuff 0.3.0.BETA - 9-25-25
+Might be wondering why the version bump...  Well this is to accomodate the addition of a new set of data points MOSBasic can dump now - CLASSES.  Not only does it dump but I also put together a very basic proof of concept "Get Info for Classes" command.  I'm not sure what the future is yet on this, but I know I needed this support.  I explain better in the code comments themselves.
+ 
+Another reason for the version bump is I'm moving away a tad from my first ideas of what MOSBasic should be in particular that it should only depend on whats available to it by default on any MacOS running machine.  In recent years Apple has anounced plans for the future sunset of including some shells and languages from their base distribution so I can't assume these things exist anymore.  I also have slowly been making code changes here and there to be more Linux friendly.. and Docker friendly.  As my other project Musky is heavily dependant on MOSBASIC as its backend one of my big ideas right now is a Musky/MOSBasic docker so that anyone can just edit 2 files and fire it up, go to town.  I DO have this working for Gateway SD today, but its not ready for public consumption yet.
+ 
+One final note about the beta stuff.  There are a lot of "Additional Config" options I've added to MOSBasic through the year to get MUSKY off the ground that are not documented.  I will try to get that done before the next version. 
+-JCS
+ 
 
 # Disclaimer
 While all of this stuff is used on a daily bases at Gateway School District in our persuit to best support the students there is always a chance for a bug to be found that doesn't effect me.  I'm not a master coder by any means but know enough to get myself into trouble... so don't be surprised if there is a better way to do things I'm not using.  As far as I'm aware there is nothing malacious in my code.  It only works on files created by itself and shouldn't hurt anything.  That being said end responsibility I take none and as my favorite AppleSE always said "Mileage may very" but I hope this does work for you.
