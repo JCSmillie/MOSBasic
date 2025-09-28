@@ -68,7 +68,8 @@ cat <<EOF
 	{"accessToken": "$MOSYLE_API_key",
 	"options": {
 		"page": "$THEPAGE",
-		"specific_columns": ["id","class_name","location","teacher","students","coordinators"]
+		"specific_columns": ["id","class_name","location","teacher","students","coordinators"],
+		"page_size": "$NumberOfReturnsPerPage"
 	}
 }
 EOF
@@ -168,11 +169,11 @@ while true; do
 		break
 	fi
 	
-	#Are we on more pages then our max (IE something wrong)
-	if [ "$THECOUNT" -gt "$MAXPAGECOUNT" ]; then 
-		cli_log "MOSYLE CLASSES-> We have hit $THECOUNT pages...  Greater then our max.  Something is wrong."
-		break
-	fi
+	# #Are we on more pages then our max (IE something wrong)
+	# if [ "$THECOUNT" -gt "$MAXPAGECOUNT" ]; then
+	# 	cli_log "MOSYLE CLASSES-> We have hit $THECOUNT pages...  Greater then our max.  Something is wrong."
+	# 	break
+	# fi
 
 	#Detect we just loaded a page with no content and stop.
 	LASTPAGE=$(echo "$output" | grep NO_CLASSES_FOUND)
