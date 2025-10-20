@@ -603,5 +603,11 @@ else
 	exit 1
 fi
 
+#Check if we need to return JSON.
+if $JSON_MODE; then
+    # Return JSON for web/PHP caller
+    #echo "{\"status\":\"$RESULT\",\"message\":\"$MESSAGE\"}"
+	echo "$APIOUTPUT"
+fi
 
 
