@@ -357,7 +357,6 @@ GetCurrentInfo-ios(){
 		if echo "$output" | grep -q "userid"; then
 			#iPad is assigned
 			MicroParse=$(echo "$output"| awk 'BEGIN{FS=",";RS="},{"}{print $0}' | perl -pe 's/.*"date_last_beat":"?(.*?)"?,"lostmode_status":"(.*?)","last_ip_beat":"?(.*?)"?,"last_lan_ip":?(.*?),"userid":"?(.*?)","needosupdate":"?(.*?)*.*/\1\t\2\t\3\t\4\t\5\t\6\t\7/')
-			#MicroParse=$(echo "$output"| awk 'BEGIN{FS=",";RS="},{"}{print $0}' | perl -pe 's/.*"date_last_beat":"?(.*?)"?,"lostmode_status":"(.*?)","last_ip_beat":"?(.*?)"?,"last_lan_ip":?(.*?),"userid":"?(.*?),*.*/\1\t\2\t\3\t\4\t\5\t\6\t\7/')
 		else
 			#iPad not assigned.  Use this one.
 			MicroParse=$(echo "$output"| awk 'BEGIN{FS=",";RS="},{"}{print $0}' | perl -pe 's/.*"date_last_beat":"?(.*?)"?,"lostmode_status":"(.*?)","last_ip_beat":"?(.*?)"?,"last_lan_ip":"?(.*?)","needsosupdate":"?(.*?),*.*/\1\t\2\t\3\t\4\t\5\t\6/')
@@ -705,9 +704,15 @@ DisableLostModeBULK(){
 # to duplicate the work.  There is a like named function in iOSLimboWipe.sh which
 # is much more complicated hence why I left it alone, for now. -JCS 25/04/02
 SorterOfiPadz-blkopz() {
-	#Find out if the iPad we are operating on
-	#is a Shared mode iPad
-	IsThisiPadSharedMode
+	
+	if $JSON_MODE; then
+		cli_log "Skipping Shared Mode check.  JSON MODE enabled."
+		ISSHARED="FALSE"
+	else
+		#Find out if the iPad we are operating on
+		#is a Shared mode iPad
+		IsThisiPadSharedMode
+	fi
 	
 	#if Shared we only want to wipe
 	if [ "$ISSHARED" = "TRUE" ]; then

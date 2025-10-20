@@ -342,16 +342,18 @@ fi
 
 # ============================================================
 # MOSBasic - universal output mode selector
-# Detects if called from PHP/web context or CLI.
+# Looks for --json flag and if so we try to finish
+# to stout in JSON format. - JCS 10/19/25
 # ============================================================
-
-PARENT_CMD=$(ps -o comm= $PPID | tr '[:upper:]' '[:lower:]')
-
-if [[ "$PARENT_CMD" == *php* || "$PARENT_CMD" == *apache* ]]; then
-    JSON_MODE=true
-else
-    JSON_MODE=false
-fi
+#Also add the option to force it to happen.
+JSON_MODE=false
+for arg in "$@"; do
+    if [[ "$arg" == "--json" ]]; then
+        JSON_MODE=true
+		cli_log "JSON OUTPUT ENABLED."
+        break
+    fi
+done
 
 #### Now lets look at what options were fed at the time the command
 #### was called and act appropriately.
