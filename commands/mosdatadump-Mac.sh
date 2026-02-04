@@ -30,13 +30,24 @@ fi
 #Format for an iPad Data Dump of JSON
 Generate_JSON_MacOSDUMPPostData() {
 cat <<EOF
-	{"accessToken": "$MOSYLE_API_key",
-	"options": {
-		"os": "mac",
-		"page": "$THEPAGE",
-		"specific_columns": "deviceudid,serial_number,device_name,tags,asset_tag,userid,enrollment_type,username,date_app_info",
-		"page_size": "$NumberOfReturnsPerPage"
-	}
+{
+  "accessToken": "$MOSYLE_API_key",
+  "options": {
+    "os": "mac",
+    "page": "$THEPAGE",
+    "specific_columns": [
+      "deviceudid",
+      "serial_number",
+      "device_name",
+      "tags",
+      "asset_tag",
+      "userid",
+      "enrollment_type",
+      "username",
+      "date_app_info"
+    ],
+    "page_size": "$NumberOfReturnsPerPage"
+  }
 }
 EOF
 }
