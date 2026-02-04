@@ -2,17 +2,25 @@
 
 ################################################################
 #
-#	mosdatadump-CLASSES.sh  
-#		Script to query Mosyle and return a list of class names and the student usernames 
-#		into a single file.  
+#	mosdatadump-CLASSES.sh
+#		Script to query Mosyle and return a list of class names and the student usernames
+#		into a single file.
 #
 #		JCS - 9/2/2025
+#   PATCHED - 02/04/2026
+#
+#   Fixes:
+#   - Normalize wrapped/unwrapped Mosyle JSON (unwrap response)
+#   - Strip trailing '%' if present
+#   - Option A last page detection: status==OK and classes==[]
+#   - Make jq processing operate on normalized JSON (.classes)
+#   - Sanitize bearer token once (don’t re-login every page)
 #
 ################################################################
+
 source "$BAGCLI_WORKDIR/config"
 source "$BAGCLI_WORKDIR/common"
 IFS=$'\n'
-
 
 CMDRAN="classdump"
 
@@ -26,84 +34,108 @@ fi
 #Classes - EDUONLY
 TEMPOUTPUTFILE_MERGEDClasses="/tmp/Mosyle_active_Classes_MergedClasses.txt"
 
-
-
-
-
-#The source file is a local file which holds a variable containing
-#our MosyleAPI key.  Should look like:
-#     MOSYLE_API_key="<<<<<<<<OUR-KEY>>>>>>>>"
-# This file should have rights on it as secure as possible.  Runner
-# of our scripts needs to read it but no one else.
-#MOSBasic scripts are used here and relied on
+# MOSBasic scripts are used here and relied on
 BAGCLI_WORKDIR=$(readlink /usr/local/bin/mosbasic)
-#Remove our command name from the ou	 above
 BAGCLI_WORKDIR=${BAGCLI_WORKDIR/mosbasic/}
 export BAGCLI_WORKDIR
- 
-source "$BAGCLI_WORKDIR/config"
 
- #shellcheck source=common
+source "$BAGCLI_WORKDIR/config"
 . "$BAGCLI_WORKDIR/common"
 LOG=/dev/null
 
 #################################
 #            Functions          #
 #################################
+
 log_line() {
 	echo "$1"
 }
 
-ParseIt() {
-	ClassID=$(echo "$line" | cut -f 1 -d$'\t')
-	ClassName=$(echo "$line" | cut -f 2 -d$'\t')
-	Students=$(echo "$line" | cut -f 3 -d$'\t' | tr -d \" | tr -d [ | tr -d ])
-}
-
-#According to documentation avaialble 9/2/25 these are the possible columns.
+#According to documentation available 9/2/25 these are the possible columns.
 # id, class_name, course_name, location, teacher, students, coordinators, account
 # I'm not querying course_name or account currently -JCS
 Generate_JSON_ClassDUMPPostData() {
 cat <<EOF
-	{"accessToken": "$MOSYLE_API_key",
-	"options": {
-		"page": "$THEPAGE",
-		"specific_columns": ["id","class_name","location","teacher","students","coordinators"],
-		"page_size": "$NumberOfReturnsPerPage"
-	}
+{
+  "accessToken": "$MOSYLE_API_key",
+  "options": {
+    "page": "$THEPAGE",
+    "specific_columns": ["id","class_name","location","teacher","students","coordinators"],
+    "page_size": "$NumberOfReturnsPerPage"
+  }
 }
 EOF
 }
 
+# Normalize Mosyle JSON so downstream code sees top-level "classes"
+# - unwraps {"status":"OK","response":{...}} into { ... }
+# - strips trailing '%'
+Normalize_Mosyle_Classes_JSON() {
+  local INFILE="$1"
+  local OUTFILE="$2"
 
-GetClassData(){
-	GetBearerToken
+  python3 - "$INFILE" "$OUTFILE" <<'PY'
+import json, sys
 
-	#This is a new CURL call with JSON data - JCS 11/8/23
-	output=$(curl -s --location 'https://managerapi.mosyle.com/v2/listclasses' \
-		--header 'content-type: application/json' \
-		--header "Authorization: Bearer $AuthToken" \
-		--data "$(Generate_JSON_ClassDUMPPostData)") 
-	
-	#Drop out whats returned to file.  We do this DIRECT
-	#so that if error is returned we can see it here BEFORE
-	#the script dumps out.
-	echo "$output" > /tmp/MOSBasicRAW-ClassDump-Page$THEPAGE.txt
+inp, outp = sys.argv[1], sys.argv[2]
+raw = open(inp, "r", encoding="utf-8", errors="replace").read().strip()
 
+if raw.endswith('%'):
+    raw = raw[:-1].rstrip()
+
+try:
+    d = json.loads(raw)
+except Exception:
+    with open(outp, "w", encoding="utf-8") as f:
+        f.write(raw + "\n")
+    sys.exit(2)
+
+# unwrap response if present
+if isinstance(d, dict) and isinstance(d.get("response"), dict):
+    d = d["response"]
+
+with open(outp, "w", encoding="utf-8") as f:
+    json.dump(d, f)
+    f.write("\n")
+PY
 }
 
-#Yes unlike prior Mosyle processors this one uses
-#jq to process the JSON.  While MOSBasic initially
-#started out as what can I do with Shell and MosyleAPI
-#my shift is moving towards how can MOSBasic serve
-#musky.  As such no shortcuts will be taken, but reliability
-#changes would be considred. -JCS 9/2/25
-##
-#Process return data from JSON to csv but using ";" as seperator.
+# Option A: last-page detection for classes
+# Return code 0 => YES last page (status OK + classes empty list)
+IsLastClassesPage() {
+  local FILE="$1"
+  python3 - "$FILE" <<'PY'
+import json, sys
+p=sys.argv[1]
+raw=open(p,"r",encoding="utf-8",errors="replace").read().strip()
+if raw.endswith('%'):
+    raw = raw[:-1].rstrip()
+
+d=json.loads(raw)
+classes = d.get("classes", None)
+status  = d.get("status", "")
+
+if status == "OK" and isinstance(classes, list) and len(classes) == 0:
+    sys.exit(0)
+sys.exit(1)
+PY
+}
+
+GetClassData() {
+	# This function writes the raw page response to a file and leaves it for the caller to normalize/parse.
+	curl -s --location 'https://managerapi.mosyle.com/v2/listclasses' \
+		--header 'content-type: application/json' \
+		--header "Authorization: Bearer $AuthToken" \
+		--data "$(Generate_JSON_ClassDUMPPostData)" \
+		-o "/tmp/MOSBasicRAW-ClassDump-Page$THEPAGE.txt"
+}
+
+# Process normalized JSON to csv but using ";" as separator.
+# Expects normalized JSON with top-level "classes"
 convert_mosyle_json_to_csv_inline() {
   jq -r '
-    if (.response.classes != null and (.response.classes | type == "array")) then
-      .response.classes[] |
+    if (.classes != null and (.classes | type == "array")) then
+      .classes[] |
       [
         .id,
         .class_name,
@@ -117,86 +149,92 @@ convert_mosyle_json_to_csv_inline() {
       empty
     end
   ' 2>/dev/null |
-  sed 's/","/;/g; s/^"//; s/"$//' |
-  awk 'BEGIN { print "ID;Class Name;Location;Teacher;Students;Coordinators" } { print }'
+  sed 's/","/;/g; s/^"//; s/"$//'
 }
 
 ################################
 #            DO WORK           #
 ################################
-#Clear out our files
+
 rm -Rf /tmp/Mosyle_active_Classes.txt
 
-#Initialize the base count variable. This will be
-#used to figure out what page we are on and where
-#we end up.
 THECOUNT=0
 DataRequestFailedCount=0
 
-# Connect to Mosyle API multiple times (for each page) so we
-# get all of the available data.
+# Get bearer token ONCE
+GetBearerToken
+
+# Sanitize token
+AuthToken="${AuthToken//$'\r'/}"
+AuthToken="${AuthToken//$'\n'/}"
+AuthToken="${AuthToken//[[:space:]]/}"
+AuthToken="${AuthToken#Bearer}"
+
+# Ensure header exists once
+echo "ID;Class Name;Location;Teacher;Students;Coordinators" > /tmp/Mosyle_active_Classes.txt
+
 while true; do
 	let "THECOUNT=$THECOUNT+1"
 	THEPAGE="$THECOUNT"
-	
-	#Check for how many failed calls we've made up to
-	#last query made by the script.  If more than 5 kill the skip...
+
 	if [ "$DataRequestFailedCount" -gt 5 ]; then
-		cli_log "TOO MANY DATA REQUEST FAILURES.  ABORT!!!!!"
+		cli_log "TOO MANY DATA REQUEST FAILURES. ABORT!!!!!"
 		exit 1
 	fi
 
-	#Note to log
 	cli_log "MOSYLE CLASSES-> Asking MDM for Page $THEPAGE data...."
-	#Run the query for $THEPAGE
+
+	# Run query for this page to raw file
 	GetClassData
-	
-	#Make sure output has content
-	if [ -z "$output" ]; then
-	#if [[ ! -z $(cat "/tmp/MOSBasicRAW-iOS-Page$THEPAGE.txt") ]] ; then	
-		cli_log "Page $THEPAGE reqested from Mosyle but had no data.  Skipping."
+
+	# Make sure output file has content
+	if [ ! -s "/tmp/MOSBasicRAW-ClassDump-Page$THEPAGE.txt" ]; then
+		cli_log "Page $THEPAGE requested from Mosyle but had no data. Skipping."
 		let "DataRequestFailedCount=$DataRequestFailedCount+1"
-		#Jumping to next page
 		continue
 	fi
-	
-	#TokenFailures
-	LASTPAGE=$(echo "$output" | grep 'accessToken Required')
-	if [ -n "$LASTPAGE" ]; then
-		#Report last page as issue not this run.
+
+	# Normalize into .norm.json
+	Normalize_Mosyle_Classes_JSON \
+		"/tmp/MOSBasicRAW-ClassDump-Page$THEPAGE.txt" \
+		"/tmp/MOSBasicRAW-ClassDump-Page$THEPAGE.norm.json"
+
+	if [ $? -ne 0 ]; then
+		cli_log "MOSYLE CLASSES-> Page $THEPAGE returned non-JSON (or malformed). Skipping."
+		let "DataRequestFailedCount=$DataRequestFailedCount+1"
+		continue
+	fi
+
+	# Token failures
+	if grep -qi 'accessToken Required' "/tmp/MOSBasicRAW-ClassDump-Page$THEPAGE.txt"; then
 		let "THECOUNT=$THECOUNT-1"
 		cli_log "MOSYLE CLASSES-> AccessToken error...(Page $THECOUNT)"
 		break
 	fi
-	
-	# #Are we on more pages then our max (IE something wrong)
-	# if [ "$THECOUNT" -gt "$MAXPAGECOUNT" ]; then
-	# 	cli_log "MOSYLE CLASSES-> We have hit $THECOUNT pages...  Greater then our max.  Something is wrong."
-	# 	break
-	# fi
 
-	#Detect we just loaded a page with no content and stop.
-	LASTPAGE=$(echo "$output" | grep NO_CLASSES_FOUND)
-	if [ -n "$LASTPAGE" ]; then
+	# Legacy "no classes" string (keep, but Option A is primary)
+	if grep -q 'NO_CLASSES_FOUND' "/tmp/MOSBasicRAW-ClassDump-Page$THEPAGE.txt"; then
 		let "THECOUNT=$THECOUNT-1"
-		cli_log "Yo we are at the end of the list (Last good page was $THECOUNT)"
+		cli_log "MOSYLE CLASSES-> End of list (Last good page was $THECOUNT)"
 		break
 	fi
 
-	#Send the return data (if we gort this far) to convert to csv
-	# and drop to local tmp file.
-	echo "$output" | convert_mosyle_json_to_csv_inline >> /tmp/Mosyle_active_Classes.txt
+	# Option A: status OK + classes []
+	if IsLastClassesPage "/tmp/MOSBasicRAW-ClassDump-Page$THEPAGE.norm.json"; then
+		let "THECOUNT=$THECOUNT-1"
+		cli_log "MOSYLE CLASSES-> End of list (Last good page was $THECOUNT)"
+		break
+	fi
+
+	# Append converted rows (no header here; we wrote it once at the top)
+	cat "/tmp/MOSBasicRAW-ClassDump-Page$THEPAGE.norm.json" | convert_mosyle_json_to_csv_inline >> /tmp/Mosyle_active_Classes.txt
 done
 
-#At this point I would run a follow up script to used the data we parsed above. All data above ends up 
-#in an csv style sheet so its easy to use the "cut" command to parse that data.
 if [ ! "$MB_DEBUG" = "Y" ]; then
-	#Unless we are debugging then we need to cleanup after ourselves
-	rm /tmp/MOSBasicRAW-ClassDump-*.txt
+	rm /tmp/MOSBasicRAW-ClassDump-*.txt 2>/dev/null
+	rm /tmp/MOSBasicRAW-ClassDump-*.norm.json 2>/dev/null
 else
-	cli_log "CLASSES DUMP-> DEBUG IS ENABLED.  NOT CLEANING UP REMAINING FILES!!!!"
+	cli_log "CLASSES DUMP-> DEBUG IS ENABLED. NOT CLEANING UP REMAINING FILES!!!!"
 fi
 
-#Drop latest grab where it belongs.
-cat  /tmp/Mosyle_active_Classes.txt > "$TEMPOUTPUTFILE_MERGEDClasses"
-
+cat /tmp/Mosyle_active_Classes.txt > "$TEMPOUTPUTFILE_MERGEDClasses"
