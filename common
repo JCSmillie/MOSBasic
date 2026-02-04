@@ -197,13 +197,20 @@ SerialFromTag() {
 #Format for an iPad Data Dump of JSON
 Generate_JSON_SharediPadPostData() {
 cat <<EOF
-	{"accessToken": "$MOSYLE_API_key",
-	"options": {
-		"os": "ios",
-		"serial_numbers": "$DeviceSerialNumber",
-		"page": "$THEPAGE",
-		"specific_columns": "deviceudid,serial_number,enrollment_type"
-	}
+{
+  "accessToken": "$MOSYLE_API_key",
+  "options": {
+    "os": "ios",
+    "serial_numbers": [
+      "$DeviceSerialNumber"
+    ],
+    "page": "$THEPAGE",
+    "specific_columns": [
+      "deviceudid",
+      "serial_number",
+      "enrollment_type"
+    ]
+  }
 }
 EOF
 }
@@ -325,13 +332,23 @@ CheckBuildVersion() {
 #Format for an iPad Data Dump of JSON
 Generate_JSON_IOSDUMPPostData() {
 cat <<EOF
-	{"accessToken": "$MOSYLE_API_key",
-	"options": {
-		"os": "ios",
-		"serial_numbers": "$DeviceSerialNumber",
-		"page": "$THEPAGE",
-		"specific_columns": "date_last_beat,lostmode_status,last_ip_beat,last_lan_ip,userid,needosupdate"
-	}
+{
+  "accessToken": "$MOSYLE_API_key",
+  "options": {
+    "os": "ios",
+    "serial_numbers": [
+      "$DeviceSerialNumber"
+    ],
+    "page": "$THEPAGE",
+    "specific_columns": [
+      "date_last_beat",
+      "lostmode_status",
+      "last_ip_beat",
+      "last_lan_ip",
+      "userid",
+      "needosupdate"
+    ]
+  }
 }
 EOF
 }
@@ -387,13 +404,22 @@ GetCurrentInfo-ios(){
 
 Generate_JSON_MacOSDUMPPostData() {
 cat <<EOF
-	{"accessToken": "$MOSYLE_API_key",
-	"options": {
-		"os": "mac",
-		"serial_numbers": "$DeviceSerialNumber",
-		"page": "$THEPAGE",
-		"specific_columns": "date_last_beat,lostmode_status,last_ip_beat,last_lan_ip,userid"
-	}
+{
+  "accessToken": "$MOSYLE_API_key",
+  "options": {
+    "os": "mac",
+    "serial_numbers": [
+      "$DeviceSerialNumber"
+    ],
+    "page": "$THEPAGE",
+    "specific_columns": [
+      "date_last_beat",
+      "lostmode_status",
+      "last_ip_beat",
+      "last_lan_ip",
+      "userid"
+    ]
+  }
 }
 EOF
 }
