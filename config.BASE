@@ -1,3 +1,44 @@
+#MOSBasic
+#
+#   __  __  ____   _____ ____            _
+#  |  \/  |/ __ \ / ____|  _ \          (_)
+#  | \  / | |  | | (___ | |_) | __ _ ___ _  ___
+#  | |\/| | |  | |\___ \|  _ < / _` / __| |/ __|
+#  | |  | | |__| |____) | |_) | (_| \__ \ | (__
+#  |_|  |_|\____/|_____/|____/ \__,_|___/_|\___|
+#
+#
+#Python version since as of 12.2.1 we no longer have python to lean on by default install
+PYTHON2USE=/usr/bin/python3
+
+#Common Variables
+LOCALCONF="$HOME"	#Where your local config files are
+LOG="$LOCALCONF/MOSBasic/actions.log"	#Where Logs are kept
+
+###EXTERNAL MODULES SUPPORT
+#This support is for external support systems which
+#can help to do outside lookups of things like usernames,
+#open tickets, make tickets, etc.  Read the README in
+#the modules directory for more info.  By default this
+#is all disabled.  Uncomment the support you want.
+#source "$BAGCLI_WORKDIR/modules/Default.sh"
+
+#IncidentIQ support
+source "$BAGCLI_WORKDIR/modules/incidentiq.sh"
+
+#source "$BAGCLI_WORKDIR/modules/Default.sh"
+
+#DEBUG
+MB_DEBUG="N"
+
+#LEGACY FILES SUPPORT
+LEGACYFILES="N"
+
+#Messages to use for Lost Mode - JCS Added 11/9/23
+LOSTMODEMessagetoSend="Please take this device to the main office or call the GatorIT HelpDesk!"
+LOSTMODEphonenumber="Outside-> 412-373-5870 option 4 /  x15108 <-Inside"
+LOSTMODEfootnote="Device can also be dropped in Monroeville Public Library's Book Return at any hour!"
+
 #------------------------------------
 #=- Items in this section have   -=
 #=- general values to get your   -=
@@ -10,8 +51,9 @@
 #dont understand or our credential is expired
 #both would lead to tons of pages of error.  This
 #is our fail safe to stop the spam.  -- JCS
-MAXPAGECOUNT="15"
+MAXPAGECOUNT="50"
 NumberOfReturnsPerPage="1000"
+
 
 #------------------------------------
 #=- Nothing below this line should -=
